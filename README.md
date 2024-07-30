@@ -1,12 +1,16 @@
 ## Gold Price AI Service
 
-This service leverages the power of artificial intelligence (AI) to predict gold prices in Thailand, specifically for the 96.5% gold bar. By combining web scraping and AI analysis, it empowers traders and investors with valuable insights.
+This service leverages the power of artificial intelligence (AI), specifically utilizing the Langchain library, to predict gold prices in Thailand, focusing on the 96.5% gold bar. By combining web scraping and AI analysis, it empowers traders and investors with valuable insights.
+
+![alt text](./images/goldprice-log.png)
+![alt text](./images/gold-price-line-notification.jpg)
 
 **Features:**
 
 * **AI-Powered Gold Price Prediction:** Employing advanced AI algorithms, the service analyzes historical data and market trends to predict the most likely future prices for 96.5% gold bars in Thailand.
 * **Data-Driven Insights:** The service meticulously scrapes gold price information from reliable web sources, ensuring AI models are trained on comprehensive and up-to-date data.
 * **AI-Generated Market Summaries:** Beyond prediction, the service employs AI to intelligently summarize market movements and key factors influencing gold prices, offering valuable context to your investment decisions.
+* **Line Notify Integration:** Receive timely notifications about significant price changes, market summaries, and predictions directly to your Line app for quick decision-making.
 
 **Setup:**
 
