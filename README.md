@@ -30,3 +30,33 @@ To utilize this service, you'll need to acquire API keys from the following prov
 1. Run the `npm start` script (or equivalent script in your project).
 2. The service will automatically scrape data (if using Serp API), analyze it using AI, and present the predicted gold price along with supporting summaries.
 3. Setup a cron job to run the scrip periodically.
+
+
+**Usage in Docker:**
+1. Build the image
+```
+  docker build -t goldpriceai:latest .
+```
+
+2. Running the Image
+Please find the variable name in config/env.example
+```
+  docker run -e VARIABLE_NAME=value -p 8888:8888 goldpriceai:latest
+```
+
+**Setup cronjob:**
+1. Edit Crontab:
+```
+crontab -e
+```
+
+2. Add Cron Job Entry: run script /opt/app/runscript.sh on Mon to Sat at 9am and 5pm
+
+```
+0 9,17 * * 1-6 /opt/app/runscript.sh
+```
+
+3. Testing Your Cron Job (Optional):
+```
+crontab -l | crontab -
+```

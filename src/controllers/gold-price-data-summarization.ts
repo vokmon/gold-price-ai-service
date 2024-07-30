@@ -8,7 +8,7 @@ export default class GoldPriceDataSummarization {
   async summarizeGoldPriceDataByContext(
     context: string
   ): Promise<GoldPriceSummary> {
-    console.log("Summarizing data...");
+    console.log(`Summarizing data with context\n${context}`);
     const currentDate = getCurrentDate("th-TH");
     const chain = await getChain(
       summaryPageTemplate,

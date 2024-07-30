@@ -7,7 +7,7 @@ const timeout = 1000 * 60 * 5; // 5 minutes
 
 describe("summarize gold price data from given context", async () => {
   let goldPriceDataSummarization: GoldPriceDataSummarization;
-  const context = `ราคาทองคำเมื่อวานนี้ (${getCurrentDate('th-TH')}) ปรับตัวขึ้น +23.1 ดอลลาร์ คิดเป็น +0.97% ปิดตลาดที่ระดับ 2,387 ดอลลาร์ ราคาทองคำแท่งสูงสุด - 40,650 บาทต่ำสุด 40,650 บาท  แนวโน้มราคาทองคำคาดว่าจะฟื้นตัวอย่างจำกัด โดยสัญญาณทางเทคนิคของราคาทองคำใน Timeframe 240 นาที จาก MACD และ Modified Stochastic ยังเห็นสัญญาณการปรับตัวขึ้นระยะสั้น จับตาบริเวณแนวต้าน 2,390-2,400 ดอลลาร์ คาดว่าอาจมีแรงขายออกมา`;
+  const context = `** The current gold price from huasengheng.com is Buy: 40,670, Sell: 40,720 \n ราคาทองคำเมื่อวานนี้ (${getCurrentDate('th-TH')}) ปรับตัวขึ้น +23.1 ดอลลาร์ คิดเป็น +0.97% ปิดตลาดที่ระดับ 2,387 ดอลลาร์ ราคาทองคำแท่งสูงสุด - 40,650 บาทต่ำสุด 40,650 บาท  แนวโน้มราคาทองคำคาดว่าจะฟื้นตัวอย่างจำกัด โดยสัญญาณทางเทคนิคของราคาทองคำใน Timeframe 240 นาที จาก MACD และ Modified Stochastic ยังเห็นสัญญาณการปรับตัวขึ้นระยะสั้น จับตาบริเวณแนวต้าน 2,390-2,400 ดอลลาร์ คาดว่าอาจมีแรงขายออกมา`;
   
   beforeAll(() => {
     goldPriceDataSummarization = new GoldPriceDataSummarization();

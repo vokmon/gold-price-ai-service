@@ -10,31 +10,39 @@ export default class LineNotifyOutput implements OutputInterface {
     : null;
 
   async output(summary: GoldPriceSummary) {
+    console.log("\n");
     if (!this._lineNotifyTokens) {
       console.log(
         "Line notify is not setup - skip sending message via Line Notify"
       );
       return;
     }
+
     const message = convertSummaryDataToString(summary);
-    const lineNotifyTokenPromises = this._lineNotifyTokens.map(async (lineNotifyToken) => {
-      console.log(`Sending summary message to ${lineNotifyToken.description}`);
-      const result = await fetch("https://notify-api.line.me/api/notify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Bearer ${lineNotifyToken.token}`,
-        },
-        body: new URLSearchParams({
-          message,
-          stickerPackageId: "789",
-          stickerId: "10855",
-        }),
-      });
-      console.log(`Successfully sent summary message to ${lineNotifyToken.description}`);
-      return result;
-    });
-    
+    const lineNotifyTokenPromises = this._lineNotifyTokens.map(
+      async (lineNotifyToken) => {
+        console.log(
+          `Sending summary message to ${lineNotifyToken.description}`
+        );
+        const result = await fetch("https://notify-api.line.me/api/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${lineNotifyToken.token}`,
+          },
+          body: new URLSearchParams({
+            message,
+            stickerPackageId: "789",
+            stickerId: "10855",
+          }),
+        });
+        console.log(
+          `Successfully sent summary message to ${lineNotifyToken.description}`
+        );
+        return result;
+      }
+    );
+
     const result = await Promise.allSettled(lineNotifyTokenPromises);
     console.log("Line notify result", result);
   }
