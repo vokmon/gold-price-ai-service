@@ -2,8 +2,11 @@
 
 This service leverages the power of artificial intelligence (AI), specifically utilizing the Langchain library, to predict gold prices in Thailand, focusing on the 96.5% gold bar. By combining web scraping and AI analysis, it empowers traders and investors with valuable insights.
 
+* **Example:**
+
 ![alt text](./images/goldprice-log.png)
-![alt text](./images/gold-price-line-notification.jpg)
+
+<img src="./images/gold-price-line-notification.jpg" alt="gold price Line Notify" width="400"/>
 
 **Features:**
 
