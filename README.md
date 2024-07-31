@@ -34,10 +34,18 @@ To utilize this service, you'll need to acquire API keys from the following prov
 
 **Usage:**
 
+### Single run
 1. Run the `npm start` script (or equivalent script in your project).
 2. The service will automatically scrape data (if using Serp API), analyze it using AI, and present the predicted gold price along with supporting summaries.
-3. Setup a cron job to run the scrip periodically.
 
+### Start with cron
+1. Setup the variable name as shown in config/env.example
+For example
+```
+  export GOOGLE_API_KEY="get the key from https://aistudio.google.com/app/apikey"
+  export GOOGLE_AI_MODEL="gemini-1.5-flash"
+```
+2. Run the `npm run start-cron` to start the service as a cron job
 
 **Usage in Docker:**
 1. Build the image
@@ -52,18 +60,10 @@ Please find the variable name in config/env.example
 ```
 
 **Setup cronjob:**
-1. Edit Crontab:
-```
-crontab -e
-```
+1. Update the environment variable CRON_SCHEDULE
 
-2. Add Cron Job Entry: run script /opt/app/runscript.sh on Mon to Sat at 9am and 5pm
+2. By default it runs on Mon to Sat at 9am and 5pm
 
 ```
 0 9,17 * * 1-6 /opt/app/runscript.sh
-```
-
-3. Testing Your Cron Job (Optional):
-```
-crontab -l | crontab -
 ```

@@ -15,7 +15,7 @@ export default class Huasengheng {
     }
 
     const h = result.find((r) => r.GoldType === HGoldType.HSH);
-    const message = `** The current gold price from huasengheng.com is Buy: ${h?.Buy}, Sell: ${h?.Sell}`;
+    const message = `** The current gold price from huasengheng.com is Buy: ${h?.Buy}, Sell: ${h?.Sell}.`;
     console.log(`Huasengheng: ${message}`)
     return message;
   }

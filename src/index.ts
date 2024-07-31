@@ -74,5 +74,3 @@ export async function runProcess(numberOfRun: number = 1) {
   console.timeEnd(label);
   console.timeLog(`Process ${label} finished.`);
 }
-
-await runProcess();

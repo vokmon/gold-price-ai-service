@@ -24,11 +24,12 @@ export const summaryPageTemplate = `
     You will be interested in gold 96.5%
     Your goal is to study the information in the given context to analyze the gold price as best as you can.
     The data for the gold price not in this week should be exluded.
+    Use the gold price from huasengheng.com to find out the current gold price.
     Below you find the information about the gold price:
     --------
     {context}
     --------
-
+    
     The main focus is to know and predict what's the gold price will be for today ({currentDate}) or yesterday
     The summarize should be short and concise and only related to gold.
     The summarize should include the price, prediction, and other information that can relate to the gold price including suggestion.
@@ -39,8 +40,6 @@ export const summaryPageTemplate = `
     2. prediction of the gold price today
     3. addtional breif information to inform the user why the price will go up or down
 
-  The current information about the price should be from huasengheng.com or สมาคมทองคำ if possible.
-    
     Add some emoji to make the message is friendly to read.
     return the result in json format
       hasEnoughData: boolean
