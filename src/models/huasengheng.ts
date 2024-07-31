@@ -25,3 +25,8 @@ export enum HGoldType {
   REF = 'REF',
   JEWEL = 'JEWEL',
 }
+
+export type GoldPrice = {
+  buy: number;
+  sell: number;
+}

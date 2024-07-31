@@ -36,7 +36,7 @@ export const summaryPageTemplate = `
     Mainly, I want to know what the gold price for buy and sell is going to be.
     The languague is Thai.
     The summary format should be in this order
-    1. current information gold bar price of 96.5% (buy and sell)
+    1. current information gold bar price of 96.5% (buy and sell).
     2. prediction of the gold price today
     3. addtional breif information to inform the user why the price will go up or down
 

@@ -8,15 +8,13 @@ export default class Huasengheng {
     return (await result.json()) as HuasenghengDataType[];
   }
 
-  async getCurrentPriceString(): Promise<string> {
+  async getCurrentHuasenghengPrice(): Promise<HuasenghengDataType | undefined> {
     const result = await this.getCurrentPrice();
     if (!result) {
-      return "";
+      return undefined;
     }
 
     const h = result.find((r) => r.GoldType === HGoldType.HSH);
-    const message = `** The current gold price from huasengheng.com is Buy: ${h?.Buy}, Sell: ${h?.Sell}.`;
-    console.log(`Huasengheng: ${message}`)
-    return message;
+    return h;
   }
 }

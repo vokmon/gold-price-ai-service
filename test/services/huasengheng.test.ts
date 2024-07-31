@@ -9,7 +9,7 @@ describe("fetch data from huasengheng", async () => {
   });
 
   it("should get current gold price from Huasengheng API", async () => {
-    const result = await huasengheng.getCurrentPriceString();
+    const result = await huasengheng.getCurrentHuasenghengPrice();
     expect(result).toBeDefined();
   });
 });

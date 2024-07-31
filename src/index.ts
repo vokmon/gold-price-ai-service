@@ -2,6 +2,7 @@ import GoldPriceDataExtractor from "./controllers/gold-price-data-extractor.ts";
 import GoldPriceDataSummarization from "./controllers/gold-price-data-summarization.ts";
 import GoldPriceRelatedWebLinksRetreiver from "./controllers/gold-price-related-web-links-retreiver.ts";
 import OutputChannels from "./controllers/output-channels.ts";
+import { GoldPrice } from "./models/huasengheng.ts";
 import Huasengheng from "./services/huasengheng/huasengheng-service.ts";
 import LineNotifyOutput from "./services/outputs/impl/line-output.ts";
 import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
@@ -27,7 +28,7 @@ const getGoldPriceSummary = async () => {
   const huasengheng = new Huasengheng();
 
   const promises = await Promise.all([
-    huasengheng.getCurrentPriceString(),
+    huasengheng.getCurrentHuasenghengPrice(),
     goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(links),
   ]);
 
@@ -38,10 +39,12 @@ const getGoldPriceSummary = async () => {
     .map((info) => info.result)
     .join("\n");
   const goldPriceDataSummarization = new GoldPriceDataSummarization();
+  const goldPriceHsh: GoldPrice = {
+    buy: Number(huasenghengInformation?.Buy.replaceAll(",", "")),
+    sell: Number(huasenghengInformation?.Sell.replaceAll(",", "")),
+  }
   const result =
-    await goldPriceDataSummarization.summarizeGoldPriceDataByContext(
-      `${huasenghengInformation}\n${information}`
-    );
+    await goldPriceDataSummarization.summarizeGoldPriceDataByContext(information, goldPriceHsh);
   return result;
 };
 
