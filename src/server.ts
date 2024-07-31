@@ -1,6 +1,6 @@
 import express from 'express';
 
-
+// Set up express to keep the app running in the background in docker container
 const app = express();
 const port = process.env.PORT || 8888;
 
