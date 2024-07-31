@@ -14,7 +14,7 @@ export const extractInformationPageTemplate = `
     Try to include the price of 96.5% gold if possible.
     The main focus is to extract the information that can affect the gold price ({currentDate}) or yesterday
     The data for the gold price not in this week should be exluded.
-    Summarize should be short and concise and only related to gold.
+    Summarize should be short and concise and only related to gold and include news and information related to the gold price
     Also include the source in the result as well.
     The languague is Thai.
 `;
@@ -38,7 +38,7 @@ export const summaryPageTemplate = `
     The summary format should be in this order
     1. current information gold bar price of 96.5% (buy and sell).
     2. prediction of the gold price today
-    3. addtional breif information to inform the user why the price will go up or down
+    3. news and information related to the gold price and addtional breif information to inform the user why the price will go up or down
 
     Add some emoji to make the message is friendly to read.
     return the result in json format
