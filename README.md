@@ -67,3 +67,10 @@ Please find the variable name in config/env.example
 ```
 0 9,17 * * 1-6 /opt/app/runscript.sh
 ```
+
+**Tests with Vitest:**
+Test with Vitest framework
+
+<img src="./images/tests.png" alt="Tests" width="500"/>
+
+<img src="./images/test-coverage.png" alt="Test coverage" width="500"/>
