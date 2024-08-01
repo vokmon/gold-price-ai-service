@@ -16,9 +16,13 @@ export function getTimeOfDay() {
 
   if (hours < 12) {
     return 'เช้า';
-  } else if (hours < 18) {
+  } else if (hours < 15) {
     return 'บ่าย';
-  } else {
+  } else if (hours < 18) {
     return 'เย็น';
+  } else if (hours < 21) {
+    return 'ค่ำ';
+  } else {
+    return 'ดึก';
   }
 }

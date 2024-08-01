@@ -1,6 +1,7 @@
-import { describe, it } from "vitest";
+import { describe, it, vi } from "vitest";
 import GoldPriceDataExtractor from "../../src/controllers/gold-price-data-extractor";
 import { getAdditionalLinks } from "../../src/utils/url";
+import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 
 const timeout = 1000 * 60 * 5; // 5 minutes
 describe("extract gold price data from website link", async () => {
@@ -20,5 +21,17 @@ describe("extract gold price data from website link", async () => {
     const information = goldPriceInformation.map((info) => info.result).join("\n");
     expect(information).toBeDefined();
     
-  }, timeout); // increate timeout
+  }, timeout); // increase timeout
+
+  it("should return empty result", async () => {
+    const runProcessSpy = vi.spyOn(CheerioWebBaseLoader.prototype, "load").mockReturnValueOnce(Promise.resolve([]));
+    const goldPriceInformation =
+      await goldPriceDataExtractor.extractGoldPriceInformationFromWebLink(
+        ""
+      );
+    expect(goldPriceInformation).toBeDefined();
+    expect(goldPriceInformation.result).toBe("");
+    expect(runProcessSpy).toHaveBeenCalled();
+    
+  }, timeout); 
 });

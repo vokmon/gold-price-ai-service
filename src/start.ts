@@ -1,3 +1,3 @@
-import { runProcess } from "./index.ts";
-
-await runProcess();
+import MainApplication from "./main-application.ts";
+const mainApp = new MainApplication();
+await mainApp.runProcess();

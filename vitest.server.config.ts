@@ -9,12 +9,13 @@ loadEnvFile(path.resolve(__dirname, "config/.env.test"));
 export default defineConfig({
   test: {
     include: ["**/test/**/*.test.ts"],
-    exclude: ["**/index.ts"],
+    exclude: [],
     env: loadEnv("test", "config/.env.test", ""),
     environment: "node",
     coverage: {
       reportsDirectory: "./coverage/server",
       include: ["**/src/**"],
+      exclude: ["**/src/cron.ts", "**/src/start.ts", "**/src/**/*-interface.ts"],
     },
     globals: true,
   },

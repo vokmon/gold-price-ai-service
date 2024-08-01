@@ -1,7 +1,10 @@
-import { describe, it } from "vitest";
+import { describe, it, vi } from "vitest";
 import GoldPriceDataSummarization from "../../src/controllers/gold-price-data-summarization";
-import { getAdditionalLinks } from "../../src/utils/url";
 import { getCurrentDate } from "../../src/utils/date-utils";
+import GoldPriceRelatedWebLinksRetreiver from "../../src/controllers/gold-price-related-web-links-retreiver";
+import GoldPriceDataExtractor from "../../src/controllers/gold-price-data-extractor";
+import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
+import { HuasenghengDataType } from "../../src/models/huasengheng";
 
 const timeout = 1000 * 60 * 5; // 5 minutes
 
@@ -13,14 +16,14 @@ describe("summarize gold price data from given context", async () => {
     goldPriceDataSummarization = new GoldPriceDataSummarization();
   });
 
-  it("should successfully provide summary answer", async () => {
+  it("should successfully provide summary message answer from the given context ", async () => {
     const result =
       await goldPriceDataSummarization.summarizeGoldPriceDataByContext(context);
     expect(result).toBeDefined();
     expect(result.hasEnoughData).toBeTruthy();
     expect(result.createdDate).toBeDefined();
 
-  }, timeout); // increate timeout
+  }, timeout); // increase timeout
 
   it("should not be able to provide an answer", async () => {
     const result =
@@ -28,6 +31,22 @@ describe("summarize gold price data from given context", async () => {
     expect(result).toBeDefined();
     expect(result.hasEnoughData).toBeFalsy();
     
-  }, timeout); // increate timeout
+  }, timeout); // increase timeout
+
+  it("should get summary information from web links", async () => {
+    const getGoldPriceLinksSpy = vi.spyOn(GoldPriceRelatedWebLinksRetreiver.prototype, "getGoldPriceLinks").mockReturnValueOnce(Promise.resolve(["http://www.test.com"]));
+    const extractGoldPriceInformationFromWebLinksSpy = vi.spyOn(GoldPriceDataExtractor.prototype, "extractGoldPriceInformationFromWebLinks").mockReturnValueOnce(Promise.resolve([]));
+    const getCurrentHuasenghengPriceSpy = vi.spyOn(Huasengheng.prototype, "getCurrentHuasenghengPrice").mockReturnValueOnce(Promise.resolve({
+      Buy: '41,000',
+      Sell: '40,000'
+    } as HuasenghengDataType));
+
+    const result = await goldPriceDataSummarization.getGoldPriceSummary();
+
+    expect(getGoldPriceLinksSpy).toHaveBeenCalledTimes(1);
+    expect(extractGoldPriceInformationFromWebLinksSpy).toHaveBeenCalledTimes(1);
+    expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(1);
+    expect(result).toBeDefined();
+  }, timeout); 
 
 });

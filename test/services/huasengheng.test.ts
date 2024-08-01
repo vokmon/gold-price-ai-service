@@ -12,4 +12,12 @@ describe("fetch data from huasengheng", async () => {
     const result = await huasengheng.getCurrentHuasenghengPrice();
     expect(result).toBeDefined();
   });
+
+  it("should not be able to get current gold price from Huasengheng API", async () => {
+    const getCurrentPriceSpy = vi.spyOn(Huasengheng.prototype, "getCurrentPrice").mockResolvedValueOnce(undefined!);
+    const result = await huasengheng.getCurrentHuasenghengPrice();
+    expect(result).toBeUndefined();
+    getCurrentPriceSpy.mockRestore();
+  });
+
 });

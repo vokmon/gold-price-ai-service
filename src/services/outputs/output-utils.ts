@@ -5,7 +5,7 @@ export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDate("th-TH");
   const timeOfDay = getTimeOfDay();
   const message = `
-ข้อมูลราคาทองคำวันนี้ ${currentDate} รอบ ${timeOfDay}
+ข้อมูลราคาทองคำวันนี้ ${currentDate} รอบ${timeOfDay}
 
 💰 ราคาทองคำแท่ง 96.5% 
   ซื้อ: ${summary.currentPrice.buy ? summary.currentPrice.buy.toLocaleString() : '-'} บาท

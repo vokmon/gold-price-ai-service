@@ -37,7 +37,7 @@ export const summaryPageTemplate = `
     The languague is Thai.
     The summary format should be in this order
     1. current information gold bar price of 96.5% (buy and sell).
-    2. prediction of the gold price today
+    2. prediction of the gold price today including the price prediction
     3. news and information related to the gold price and addtional breif information to inform the user why the price will go up or down
 
     Add some emoji to make the message is friendly to read.
