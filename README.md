@@ -6,7 +6,7 @@ This service leverages the power of artificial intelligence (AI), specifically u
 
 ![alt text](./images/goldprice-log.png)
 
-<img src="./images/gold-price-line-notification.jpg" alt="gold price Line Notify" width="400"/>
+<img src="./images/gold-price-line-notification-alert.jpg" alt="gold price Line Notify" width="400"/>
 
 **Features:**
 
