@@ -31,7 +31,7 @@ export default class MainApplication {
 
   async runProcess(numberOfRun: number = 1) {
     console.log(`Base timeout: ${this.baseTimeoutTime}`);
-    const label = `Gold Price AI Service ${getCurrentDate("en-UK")}, number of run: ${numberOfRun}`;
+    const label = `Gold Price AI Service ${new Date()}, number of run: ${numberOfRun}`;
     console.log(label);
     console.time(label);
   
