@@ -21,4 +21,14 @@ export default class OutputChannels {
     const results = await Promise.allSettled(promises);
     console.log("Output result: ", results)
   }
+
+  async outputMessage(message: string) {
+    console.log(`Start sending the summary to ${this._channels.length} channels.`);
+    const promises = this._channels.map(async (channel) => {
+      await channel.outputMessage(message);
+      return channel;
+    })
+    const results = await Promise.allSettled(promises);
+    console.log("Output result: ", results)
+  }
 }

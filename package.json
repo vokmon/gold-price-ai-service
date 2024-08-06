@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/start.ts",
+    "start-cron-dev": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/cron.ts",
     "start-prod": "node --no-warnings --loader ts-node/esm src/start.ts",
     "start-cron": "node --no-warnings --loader ts-node/esm src/cron.ts",
     "test": "vitest run -c ./vitest.server.config.ts"

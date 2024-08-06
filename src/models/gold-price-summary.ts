@@ -1,3 +1,5 @@
+import { HuasenghengDataType } from "./huasengheng.ts";
+
 export type GoldPriceSummary = {
   hasEnoughData: boolean;
   currentPrice: { buy: number; sell: number };
@@ -6,3 +8,8 @@ export type GoldPriceSummary = {
   suggestions: string[];
   createdDate: Date;
 };
+
+export type GoldPriceAlert = {
+  priceAlert: boolean,
+  currentPrice: HuasenghengDataType,
+}

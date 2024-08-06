@@ -6,6 +6,10 @@ export default class TerminalOutput implements OutputInterface {
   async output(summary: GoldPriceSummary) {
     console.log("Display message to the terminal");
     const message = convertSummaryDataToString(summary);
+    await this.outputMessage(message);
+  }
+
+  async outputMessage (message: string) {
     console.log(message);
   }
 }

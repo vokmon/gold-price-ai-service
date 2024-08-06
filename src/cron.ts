@@ -1,17 +1,19 @@
 import cron from "node-cron";
 import MainApplication from "./main-application.ts";
 
-const cronSchedule = process.env.CRON_SCHEDULE || "0 9,17 * * 1-6";
+const cronSummarySchedule = process.env.CRON_SUMMARY_SCHEDULE || "0 9,17 * * 1-6";
+const cronPriceDiffSchedule = process.env.CRON_MONITOR_PRICE || "*/15 * * * *"
 const timezone = process.env.TIME_ZONE || "Asia/Bangkok";
-const name = "Gold price service cron job";
+const summaryCronName = "Gold price summary service cron job";
+const priceMonitoringCronName = "Gold price price monitoring service cron job";
 
 const mainApp = new MainApplication();
 
 console.log("\n");
-console.log(`Start cron job with the setup\nschedule: ${cronSchedule}, timezone: ${timezone}`);
+console.log(`Start summary cron job with the setup\nschedule: ${cronSummarySchedule}, timezone: ${timezone}`);
 console.log("\n");
 
-cron.schedule(cronSchedule, async () => {
+cron.schedule(cronSummarySchedule, async () => {
   try {
     await mainApp.runProcess();
   } catch (e) {
@@ -20,5 +22,24 @@ cron.schedule(cronSchedule, async () => {
   }
 }, {
   timezone,
-  name,
+  name: summaryCronName,
 });
+
+
+console.log("\n");
+console.log(`Start price monitoring cron job with the setup\nschedule: ${cronPriceDiffSchedule}, timezone: ${timezone}`);
+console.log("\n");
+
+cron.schedule(cronPriceDiffSchedule, async () => {
+  try {
+    await mainApp.monitorPrice();
+  } catch (e) {
+    console.log("An error occurs");
+    console.log(e);
+  }
+}, {
+  timezone,
+  name: priceMonitoringCronName,
+  runOnInit: true,
+});
+

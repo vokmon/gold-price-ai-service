@@ -2,6 +2,8 @@
 
 This service leverages the power of artificial intelligence (AI), specifically utilizing the Langchain library, to predict gold prices in Thailand, focusing on the 96.5% gold bar. By combining web scraping and AI analysis, it empowers traders and investors with valuable insights.
 
+Additionally, the system offers real-time price monitoring, providing instant notifications when gold prices fluctuate beyond user-defined thresholds. This feature enables users to make informed decisions and seize opportunities effectively.
+
 * **Example:**
 
 ![alt text](./images/goldprice-log.png)
@@ -13,6 +15,9 @@ This service leverages the power of artificial intelligence (AI), specifically u
 * **AI-Powered Gold Price Prediction:** Employing advanced AI algorithms, the service analyzes historical data and market trends to predict the most likely future prices for 96.5% gold bars in Thailand.
 * **Data-Driven Insights:** The service meticulously scrapes gold price information from reliable web sources, ensuring AI models are trained on comprehensive and up-to-date data.
 * **AI-Generated Market Summaries:** Beyond prediction, the service employs AI to intelligently summarize market movements and key factors influencing gold prices, offering valuable context to your investment decisions.
+
+* **Price Monitoring:** The system provides real-time alerts when gold prices change significantly, helping users make timely decisions.
+
 * **Line Notify Integration:** Receive timely notifications about significant price changes, market summaries, and predictions directly to your Line app for quick decision-making.
 
 **Setup:**
@@ -60,9 +65,11 @@ Please find the variable name in config/env.example
 ```
 
 **Setup cronjob:**
-1. Update the environment variable CRON_SCHEDULE
+1. Update the environment variable CRON_SUMMARY_SCHEDULE and CRON_MONITOR_PRICE
 
 2. By default it runs on Mon to Sat at 9am and 5pm
+
+3. Setup the price threshold
 
 ```
 0 9,17 * * 1-6 /opt/app/runscript.sh

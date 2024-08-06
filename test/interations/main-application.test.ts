@@ -3,8 +3,10 @@ import MainApplication from "../../src/main-application";
 import GoldPriceDataSummarization from "../../src/controllers/gold-price-data-summarization";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import OutputChannels from "../../src/controllers/output-channels";
+import GoldPriceMonitoring from "../../src/controllers/gold-price-monitoring";
+import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 
-describe("main application", async () => {
+describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
 
   beforeAll(() => {
@@ -111,5 +113,48 @@ describe("main application with TEST flag flase", async () => {
 
   afterAll(() => {
     process.env = envCache;
+  });
+});
+
+
+describe("main application: Price monitoring service", async () => {
+  let mainApplication: MainApplication;
+
+  beforeAll(() => {
+    mainApplication = new MainApplication();
+  });
+
+  it("should output message to the specific channels", async () => {
+    const monitorPriceSpy = vi
+      .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
+      .mockReturnValueOnce(Promise.resolve({
+        priceAlert: true,
+        currentPrice: huasengsengPriceData2
+      }));
+
+    const outputMessageSpy = vi
+      .spyOn(OutputChannels.prototype, "outputMessage")
+      .mockImplementationOnce(vi.fn());
+
+    await mainApplication.monitorPrice();
+    expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
+    expect(outputMessageSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should not output message", async () => {
+    const monitorPriceSpy = vi
+      .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
+      .mockReturnValueOnce(Promise.resolve({
+        priceAlert: false,
+        currentPrice: huasengsengPriceData2
+      }));
+
+    const outputMessageSpy = vi
+      .spyOn(OutputChannels.prototype, "outputMessage")
+      .mockImplementationOnce(vi.fn());
+
+    await mainApplication.monitorPrice();
+    expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
+    expect(outputMessageSpy).toHaveBeenCalledTimes(0);
   });
 });

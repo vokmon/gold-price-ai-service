@@ -19,7 +19,11 @@ export default class LineNotifyOutput implements OutputInterface {
     }
 
     const message = convertSummaryDataToString(summary);
-    const lineNotifyTokenPromises = this._lineNotifyTokens.map(
+    await this.outputMessage(message);
+  }
+
+  async outputMessage (message: string) {
+    const lineNotifyTokenPromises = this._lineNotifyTokens!.map(
       async (lineNotifyToken) => {
         console.log(
           `Sending summary message to ${lineNotifyToken.description}`

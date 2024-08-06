@@ -1,6 +1,7 @@
-import { describe, it, vi } from "vitest";
-import { convertSummaryDataToString } from "../../src/services/outputs/output-utils";
+import { describe, it } from "vitest";
+import { convertHuasenghengDataToString, convertSummaryDataToString } from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
+import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 
 describe("get output string from GoldPriceSummary", async () => {
   
@@ -17,4 +18,9 @@ describe("get output string from GoldPriceSummary", async () => {
     expect(result).toBeDefined();
   });
 
+  it("should get price monitoring message", async() => {
+    const result = convertHuasenghengDataToString(huasengsengPriceData1);
+    console.log(result);
+    expect(result).toBeDefined();
+  });
 });
