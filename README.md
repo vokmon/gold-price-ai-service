@@ -9,6 +9,17 @@ Additionally, the system offers real-time price monitoring, providing instant no
 ![alt text](./images/goldprice-log.png)
 
 <img src="./images/gold-price-line-notification-alert.jpg" alt="gold price Line Notify" width="400"/>
+Summary
+<br/>
+<br/>
+
+
+<img src="./images/line-price-monitoring.jpg" alt="gold price Line Notify" width="400"/>
+Price monitoring
+
+<br/>
+<br/>
+<br/>
 
 **Features:**
 
