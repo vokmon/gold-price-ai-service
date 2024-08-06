@@ -2,8 +2,8 @@ import Huasengheng from "../services/huasengheng/huasengheng-service.ts";
 import {
   GoldPriceAlert,
 } from "../models/gold-price-summary.ts";
-import { HuasenghengDataType } from "~/models/huasengheng.ts";
-import { getCurrentDateTime } from "~/utils/date-utils.ts";
+import { HuasenghengDataType } from "../models/huasengheng.ts";
+import { getCurrentDateTime } from "../utils/date-utils.ts";
 
 export default class GoldPriceMonitoring {
   private priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
