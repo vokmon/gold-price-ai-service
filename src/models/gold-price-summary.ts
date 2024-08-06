@@ -13,4 +13,5 @@ export type GoldPriceAlert = {
   priceAlert: boolean,
   currentPrice: HuasenghengDataType,
   priceDiff: number,
+  lastCheckTime?: string,
 }

@@ -5,6 +5,7 @@ import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import OutputChannels from "../../src/controllers/output-channels";
 import GoldPriceMonitoring from "../../src/controllers/gold-price-monitoring";
 import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
+import { getCurrentDateTime } from "../../src/utils/date-utils";
 
 describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
@@ -131,6 +132,7 @@ describe("main application: Price monitoring service", async () => {
         priceAlert: true,
         currentPrice: huasengsengPriceData2,
         priceDiff: 200,
+        lastCheckTime: getCurrentDateTime('th-TH')
       }));
 
     const outputMessageSpy = vi

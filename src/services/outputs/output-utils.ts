@@ -25,10 +25,11 @@ ${summary.suggestions.map((st) => `  ❗ ${st}`).join("\n")}
   return message;
 };
 
-export const convertHuasenghengDataToString = (data: HuasenghengDataType, priceDiff: number) => {
+export const convertHuasenghengDataToString = (data: HuasenghengDataType, priceDiff: number, diffTime?: string) => {
   const message = `
   ${getCurrentDateTime("th-TH")}
   ราคาทองคำมีการเปลี่ยนแปลงสูง
+  จากเวลา: ${diffTime}
   ราคา${priceDiff > 0 ? 'ขึ้น 📈' : 'ลง 📉' }: ${priceDiff.toLocaleString()}
 
   💰 ราคาปัจจุบัน

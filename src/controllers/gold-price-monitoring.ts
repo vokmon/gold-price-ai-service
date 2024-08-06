@@ -3,11 +3,13 @@ import {
   GoldPriceAlert,
 } from "../models/gold-price-summary.ts";
 import { HuasenghengDataType } from "~/models/huasengheng.ts";
+import { getCurrentDateTime } from "~/utils/date-utils.ts";
 
 export default class GoldPriceMonitoring {
   private priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
   private _huasengheng;
   private lastCheckPrice: HuasenghengDataType | null;
+  private lastCheckTime: string | undefined;
 
   constructor() {
     this._huasengheng = new Huasengheng();
@@ -26,6 +28,7 @@ export default class GoldPriceMonitoring {
     if (!this.lastCheckPrice) {
       console.log("No price to compare yet.");
       this.lastCheckPrice = currentPrice;
+      this.lastCheckTime = getCurrentDateTime('th-TH');
       return {
         priceAlert: false,
       } as GoldPriceAlert;
@@ -33,6 +36,7 @@ export default class GoldPriceMonitoring {
 
     if (this.lastCheckPrice.StrTimeUpdate === currentPrice.StrTimeUpdate) {
       console.log("No price update.", this.lastCheckPrice.StrTimeUpdate);
+      this.lastCheckTime = getCurrentDateTime('th-TH');
       return {
         priceAlert: false,
       } as GoldPriceAlert;
@@ -44,10 +48,12 @@ export default class GoldPriceMonitoring {
     const result: GoldPriceAlert = {
       priceAlert: Math.abs(priceDiff) >= this.priceTreshold,
       currentPrice: currentPrice,
-      priceDiff
+      priceDiff,
+      lastCheckTime: this.lastCheckTime,
     };
     console.log(`Monitoring result: `, result)
     this.lastCheckPrice = currentPrice;
+    this.lastCheckTime = getCurrentDateTime('th-TH');
 
     return result;
   }

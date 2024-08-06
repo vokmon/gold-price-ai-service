@@ -2,6 +2,7 @@ import { describe, it } from "vitest";
 import { convertHuasenghengDataToString, convertSummaryDataToString } from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
+import { getCurrentDateTime } from "../../src/utils/date-utils";
 
 describe("get output string from GoldPriceSummary", async () => {
   
@@ -19,13 +20,13 @@ describe("get output string from GoldPriceSummary", async () => {
   });
 
   it("should get price monitoring message, price goes up", async() => {
-    const result = convertHuasenghengDataToString(huasengsengPriceData1, 100);
+    const result = convertHuasenghengDataToString(huasengsengPriceData1, 100, getCurrentDateTime('th-TH'));
     console.log(result);
     expect(result).toBeDefined();
   });
 
   it("should get price monitoring message, price goes down", async() => {
-    const result = convertHuasenghengDataToString(huasengsengPriceData1, -100);
+    const result = convertHuasenghengDataToString(huasengsengPriceData1, -100, getCurrentDateTime('th-TH'));
     console.log(result);
     expect(result).toBeDefined();
   });
