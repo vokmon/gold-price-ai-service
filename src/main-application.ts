@@ -71,7 +71,7 @@ export default class MainApplication {
 
     const result = await this._goldPriceMonitoring.monitorPrice();
     if (result.priceAlert) {
-      const message = convertHuasenghengDataToString(result.currentPrice);
+      const message = convertHuasenghengDataToString(result.currentPrice, result.priceDiff);
       await this._outputChannels.outputMessage(message);
     } else {
       console.log(`Does not need to alert as the price change does not hit the threshold`);

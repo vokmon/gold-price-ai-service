@@ -12,4 +12,5 @@ export type GoldPriceSummary = {
 export type GoldPriceAlert = {
   priceAlert: boolean,
   currentPrice: HuasenghengDataType,
+  priceDiff: number,
 }

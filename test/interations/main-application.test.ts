@@ -129,7 +129,8 @@ describe("main application: Price monitoring service", async () => {
       .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
       .mockReturnValueOnce(Promise.resolve({
         priceAlert: true,
-        currentPrice: huasengsengPriceData2
+        currentPrice: huasengsengPriceData2,
+        priceDiff: 200,
       }));
 
     const outputMessageSpy = vi
@@ -146,7 +147,8 @@ describe("main application: Price monitoring service", async () => {
       .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
       .mockReturnValueOnce(Promise.resolve({
         priceAlert: false,
-        currentPrice: huasengsengPriceData2
+        currentPrice: huasengsengPriceData2,
+        priceDiff: 10,
       }));
 
     const outputMessageSpy = vi

@@ -18,8 +18,14 @@ describe("get output string from GoldPriceSummary", async () => {
     expect(result).toBeDefined();
   });
 
-  it("should get price monitoring message", async() => {
-    const result = convertHuasenghengDataToString(huasengsengPriceData1);
+  it("should get price monitoring message, price goes up", async() => {
+    const result = convertHuasenghengDataToString(huasengsengPriceData1, 100);
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get price monitoring message, price goes down", async() => {
+    const result = convertHuasenghengDataToString(huasengsengPriceData1, -100);
     console.log(result);
     expect(result).toBeDefined();
   });
