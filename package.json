@@ -2,12 +2,12 @@
   "name": "gold-price-ai-service",
   "version": "1.0.0",
   "type": "module",
-  "description": "Llama Download and install https://github.com/ollama/ollama https://hub.docker.com/r/ollama/ollama",
+  "description": "Gold price service",
   "main": "index.js",
   "scripts": {
     "start": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/start.ts",
     "start-cron-dev": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/cron.ts",
-    "start-prod": "node --no-warnings --loader ts-node/esm src/start.ts",
+    "start-prod": "node --no-warnings --env-file=config/.env.prod --loader ts-node/esm src/start.ts",
     "start-cron": "node --no-warnings --env-file=config/.env.prod --loader ts-node/esm src/cron.ts",
     "test": "vitest run -c ./vitest.server.config.ts"
   },
