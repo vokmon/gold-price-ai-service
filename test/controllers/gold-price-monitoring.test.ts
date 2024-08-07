@@ -5,9 +5,11 @@ import { huasengsengPriceData1, huasengsengPriceData2, huasengsengPriceData3, hu
 
 describe("retreive gold price and compare with the last seen price with env", async () => {
   let goldPriceMonitoring: GoldPriceMonitoring;
+  let priceThreshold: number;
 
   beforeEach(() => {
     goldPriceMonitoring = new GoldPriceMonitoring();
+    priceThreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 0);
   });
 
   afterEach(() => {    
@@ -20,7 +22,7 @@ describe("retreive gold price and compare with the last seen price with env", as
       .mockReturnValueOnce(
         Promise.resolve(huasengsengPriceData1)
       )
-    const result = await goldPriceMonitoring.monitorPrice();
+    const result = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(result.priceAlert).toBeFalsy();
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(1);
   });
@@ -31,7 +33,7 @@ describe("retreive gold price and compare with the last seen price with env", as
       .mockReturnValueOnce(
         Promise.resolve(undefined)
       )
-    const result = await goldPriceMonitoring.monitorPrice();
+    const result = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(result.priceAlert).toBeFalsy();
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(1);
   });
@@ -46,10 +48,10 @@ describe("retreive gold price and compare with the last seen price with env", as
         Promise.resolve(huasengsengPriceData4)
       )
     
-    const resultOne = await goldPriceMonitoring.monitorPrice();
+    const resultOne = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultOne.priceAlert).toBeFalsy();
 
-    const resultTwo = await goldPriceMonitoring.monitorPrice();
+    const resultTwo = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultTwo.priceAlert).toBeFalsy();
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(2);
   });
@@ -63,10 +65,10 @@ describe("retreive gold price and compare with the last seen price with env", as
       .mockReturnValueOnce(
         Promise.resolve(huasengsengPriceData1)
       )
-    const resultOne = await goldPriceMonitoring.monitorPrice();
+    const resultOne = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultOne.priceAlert).toBeFalsy();
 
-    const resultTwo = await goldPriceMonitoring.monitorPrice();
+    const resultTwo = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultTwo.priceAlert).toBeFalsy();
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(2);
   });
@@ -80,10 +82,10 @@ describe("retreive gold price and compare with the last seen price with env", as
       .mockReturnValueOnce(
         Promise.resolve(huasengsengPriceData2)
       )
-    const resultOne = await goldPriceMonitoring.monitorPrice();
+    const resultOne = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultOne.priceAlert).toBeFalsy()
 
-    const resultTwo = await goldPriceMonitoring.monitorPrice();
+    const resultTwo = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultTwo.priceAlert).toBeTruthy()
 
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(2);
@@ -98,43 +100,11 @@ describe("retreive gold price and compare with the last seen price with env", as
       .mockReturnValueOnce(
         Promise.resolve(huasengsengPriceData3)
       )
-    const resultOne = await goldPriceMonitoring.monitorPrice();
+    const resultOne = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultOne.priceAlert).toBeFalsy()
 
-    const resultTwo = await goldPriceMonitoring.monitorPrice();
+    const resultTwo = await goldPriceMonitoring.monitorPrice(priceThreshold);
     expect(resultTwo.priceAlert).toBeTruthy()
     expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe("retreive gold price and compare with the last seen price without env", async () => {
-  let goldPriceMonitoring: GoldPriceMonitoring;
-  let envCache;
-
-  beforeAll(() => {
-    envCache = process.env;
-    process.env.PRICE_DIFF_TRESHOLD = "";
-    goldPriceMonitoring = new GoldPriceMonitoring();
-  });
-
-  it("should get list of urls", async () => {
-    const getCurrentHuasenghengPriceSpy = vi
-      .spyOn(Huasengheng.prototype, "getCurrentHuasenghengPrice")
-      .mockReturnValueOnce(
-        Promise.resolve(huasengsengPriceData1)
-      )
-      .mockReturnValueOnce(
-        Promise.resolve(huasengsengPriceData2)
-      )
-    const resultOne = await goldPriceMonitoring.monitorPrice();
-    expect(resultOne.priceAlert).toBeFalsy()
-
-    const resultTwo = await goldPriceMonitoring.monitorPrice();
-    expect(resultTwo.priceAlert).toBeTruthy()
-    expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalledTimes(2);
-  });
-
-  afterAll(() => {
-    process.env = envCache;
   });
 });

@@ -6,7 +6,6 @@ import { HuasenghengDataType } from "../models/huasengheng.ts";
 import { getCurrentDateTime } from "../utils/date-utils.ts";
 
 export default class GoldPriceMonitoring {
-  private priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
   private _huasengheng;
   private lastCheckPrice: HuasenghengDataType | null;
   private lastCheckTime: string | undefined;
@@ -16,7 +15,7 @@ export default class GoldPriceMonitoring {
     this.lastCheckPrice = null;
   }
 
-  async monitorPrice(): Promise<GoldPriceAlert> {
+  async monitorPrice(priceThreshold: number): Promise<GoldPriceAlert> {
     const currentPrice = await this._huasengheng.getCurrentHuasenghengPrice();
     if (!currentPrice) {
       console.log("Unable to get current gold price from huasengheng.");
@@ -42,11 +41,11 @@ export default class GoldPriceMonitoring {
       } as GoldPriceAlert;
     }
 
-    console.log(`Start checking the price with the threshold ${this.priceTreshold}. Current price: ${currentPrice.Buy}, Previous price: ${this.lastCheckPrice.Buy}`,);
+    console.log(`Start checking the price with the threshold ${priceThreshold}. Current price: ${currentPrice.Buy}, Previous price: ${this.lastCheckPrice.Buy}`,);
     const priceDiff = Number(currentPrice.Buy.replaceAll(",", "")) - Number(this.lastCheckPrice.Buy.replaceAll(",", ""));
 
     const result: GoldPriceAlert = {
-      priceAlert: Math.abs(priceDiff) >= this.priceTreshold,
+      priceAlert: Math.abs(priceDiff) >= priceThreshold,
       currentPrice: currentPrice,
       priceDiff,
       lastCheckTime: this.lastCheckTime,

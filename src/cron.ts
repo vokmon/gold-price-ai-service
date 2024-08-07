@@ -30,9 +30,11 @@ console.log("\n");
 console.log(`Start price monitoring cron job with the setup\nschedule: ${cronPriceDiffSchedule}, timezone: ${timezone}`);
 console.log("\n");
 
+const priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
+
 cron.schedule(cronPriceDiffSchedule, async () => {
   try {
-    await mainApp.monitorPrice();
+    await mainApp.monitorPrice(priceTreshold);
   } catch (e) {
     console.log("An error occurs");
     console.log(e);

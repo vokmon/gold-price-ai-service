@@ -63,13 +63,13 @@ export default class MainApplication {
     console.log("\n");
   }
 
-  async monitorPrice() {
+  async monitorPrice(priceTreshold: number) {
     console.log("\n");
-    const label = `Gold Price Monitoring Service: ${new Date()}`;
+    const label = `Gold Price Monitoring Service: ${new Date()} with threshold of ${priceTreshold}`;
     console.log(label);
     console.time(label);
 
-    const result = await this._goldPriceMonitoring.monitorPrice();
+    const result = await this._goldPriceMonitoring.monitorPrice(priceTreshold);
     if (result.priceAlert) {
       const message = convertHuasenghengDataToString(result.currentPrice, result.priceDiff, result.lastCheckTime);
       await this._outputChannels.outputMessage(message);
