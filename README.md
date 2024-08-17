@@ -45,13 +45,13 @@ To utilize this service, you'll need to acquire API keys from the following prov
 **Installation:**
 
 1. Clone this repository.
-2. Install required dependencies: `npm install`
+2. Install required dependencies: `bun install`
 3. Configure your API keys in the appropriate environment variables in /config folder.
 
 **Usage:**
 
 ### Single run
-1. Run the `npm start` script (or equivalent script in your project).
+1. Run the `bun start` script (or equivalent script in your project).
 2. The service will automatically scrape data (if using Serp API), analyze it using AI, and present the predicted gold price along with supporting summaries.
 
 ### Start with cron
@@ -61,7 +61,7 @@ For example
   export GOOGLE_API_KEY="get the key from https://aistudio.google.com/app/apikey"
   export GOOGLE_AI_MODEL="gemini-1.5-flash"
 ```
-2. Run the `npm run start-cron` to start the service as a cron job
+2. Run the `bun run start-cron` to start the service as a cron job
 
 **Usage in Docker:**
 1. Build the image

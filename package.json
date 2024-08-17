@@ -5,10 +5,10 @@
   "description": "Gold price service",
   "main": "index.js",
   "scripts": {
-    "start": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/start.ts",
-    "start-cron-dev": "node --no-warnings --env-file=config/.env --loader ts-node/esm src/cron.ts",
-    "start-prod": "node --no-warnings --env-file=config/.env.prod --loader ts-node/esm src/start.ts",
-    "start-cron": "node --no-warnings --env-file=config/.env.prod --loader ts-node/esm src/cron.ts",
+    "start": "bun --env-file=config/.env src/start.ts",
+    "start-cron-dev": "bun --env-file=config/.env src/cron.ts",
+    "start-prod": "bun --env-file=config/.env.prod src/start.ts",
+    "start-cron": "bun --env-file=config/.env.prod src/cron.ts",
     "test": "vitest run -c ./vitest.server.config.ts"
   },
   "author": "",
@@ -31,6 +31,6 @@
     "eslint": "^9.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.4"
+    "vitest": "^2.0.5"
   }
 }

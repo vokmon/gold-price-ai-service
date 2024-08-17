@@ -1,4 +1,4 @@
-import { describe, it, vi } from "vitest";
+import { describe, it, vi, beforeAll, expect } from "vitest";
 import GoldPriceDataExtractor from "../../src/controllers/gold-price-data-extractor";
 import { getAdditionalLinks } from "../../src/utils/url";
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";

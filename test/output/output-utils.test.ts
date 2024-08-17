@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { describe, it, expect } from "vitest";
 import { convertHuasenghengDataToString, convertSummaryDataToString } from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";

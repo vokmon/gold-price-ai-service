@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, beforeAll, describe, expect, it } from "vitest";
 import { test_data } from "../mock-data/gold-price-test-data";
 import { isValidUrl } from "../../src/utils/url";
 import { mockSerpApi } from "../test-utils/mock-serpapi";

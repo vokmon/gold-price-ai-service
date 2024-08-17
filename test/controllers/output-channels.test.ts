@@ -1,8 +1,7 @@
-import { describe, it, vi } from "vitest";
+import { describe, it, vi, beforeAll, expect } from "vitest";
 import OutputChannels from "../../src/controllers/output-channels";
 import TerminalOutput from "../../src/services/outputs/impl/terminal-output";
 import { GoldPriceSummary } from "../../src/models/gold-price-summary";
-import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 
 describe("send the summary information to the defined channels", async () => {
   let outputChannels: OutputChannels;

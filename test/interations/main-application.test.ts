@@ -1,4 +1,4 @@
-import { describe, it, vi } from "vitest";
+import { describe, it, vi, beforeAll, afterAll, expect } from "vitest";
 import MainApplication from "../../src/main-application";
 import GoldPriceDataSummarization from "../../src/controllers/gold-price-data-summarization";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
@@ -139,7 +139,7 @@ describe("main application: Price monitoring service", async () => {
       .spyOn(OutputChannels.prototype, "outputMessage")
       .mockImplementationOnce(vi.fn());
 
-    await mainApplication.monitorPrice();
+    await mainApplication.monitorPrice(100);
     expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
     expect(outputMessageSpy).toHaveBeenCalledTimes(1);
   });
@@ -157,7 +157,7 @@ describe("main application: Price monitoring service", async () => {
       .spyOn(OutputChannels.prototype, "outputMessage")
       .mockImplementationOnce(vi.fn());
 
-    await mainApplication.monitorPrice();
+    await mainApplication.monitorPrice(100);
     expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
     expect(outputMessageSpy).toHaveBeenCalledTimes(0);
   });

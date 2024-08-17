@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { describe, it, beforeAll } from "vitest";
 import TerminalOutput from "../../src/services/outputs/impl/terminal-output";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 
