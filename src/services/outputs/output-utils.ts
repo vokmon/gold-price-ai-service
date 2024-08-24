@@ -5,13 +5,16 @@ import { HuasenghengDataType } from "../../models/huasengheng.ts";
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDate("th-TH");
   const timeOfDay = getTimeOfDay();
-  const message = `
+  let message = `
 ข้อมูลราคาทองคำ ${currentDate} รอบ${timeOfDay}
 
 💰 ราคาทองคำแท่ง 96.5% 
   ซื้อ: ${summary.currentPrice.buy ? summary.currentPrice.buy.toLocaleString() : '-'} บาท
   ขาย: ${summary.currentPrice.sell ? summary.currentPrice.sell.toLocaleString() : '-'} บาท
+`;
 
+if (summary.hasEnoughData) {
+  message = `${message}
 🔍 คาดการณ์ราคาทองคำวันนี้
 ${summary.predictions.map((st) => `  ✅ ${st}`).join("\n")} 
 
@@ -20,7 +23,8 @@ ${summary.information.map((st) => `  🔸 ${st}`).join("\n")}
 
 ***** คำแนะนำ *****
 ${summary.suggestions.map((st) => `  ❗ ${st}`).join("\n")}
-`;
+  `
+}
 
   return message;
 };

@@ -29,61 +29,6 @@ describe("main application: summary service", async () => {
     expect(runProcessSpy).toHaveBeenCalledTimes(1);
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
   });
-
-  it("should retry once", async () => {
-    vi.spyOn(globalThis, "setTimeout").mockImplementation((fn: () => any) => {
-      return fn();
-    });
-
-    const getGoldPriceSummarySpy = vi
-      .spyOn(GoldPriceDataSummarization.prototype, "getGoldPriceSummary")
-      .mockReturnValueOnce(
-        Promise.resolve({ ...goldPriceSummary, hasEnoughData: false })
-      )
-      .mockReturnValueOnce(
-        Promise.resolve({ ...goldPriceSummary, hasEnoughData: true })
-      );
-
-    const runProcessSpy = vi.spyOn(MainApplication.prototype, "runProcess");
-    const outputDataSpy = vi
-      .spyOn(OutputChannels.prototype, "outputData")
-      .mockImplementationOnce(vi.fn());
-
-    await mainApplication.runProcess();
-
-    expect(getGoldPriceSummarySpy).toHaveBeenCalledTimes(2);
-    expect(runProcessSpy).toHaveBeenCalledTimes(2);
-    expect(outputDataSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("should not be able to generate summary message after max retry", async () => {
-    vi.spyOn(globalThis, "setTimeout").mockImplementation((fn: () => any) => {
-      return fn();
-    });
-
-    const getGoldPriceSummarySpy = vi
-      .spyOn(GoldPriceDataSummarization.prototype, "getGoldPriceSummary")
-      .mockReturnValueOnce(
-        Promise.resolve({ ...goldPriceSummary, hasEnoughData: false })
-      )
-      .mockReturnValueOnce(
-        Promise.resolve({ ...goldPriceSummary, hasEnoughData: false })
-      )
-      .mockReturnValueOnce(
-        Promise.resolve({ ...goldPriceSummary, hasEnoughData: false })
-      );
-
-    const runProcessSpy = vi.spyOn(MainApplication.prototype, "runProcess");
-    const outputDataSpy = vi
-      .spyOn(OutputChannels.prototype, "outputData")
-      .mockImplementationOnce(vi.fn());
-
-    await mainApplication.runProcess();
-
-    expect(getGoldPriceSummarySpy).toHaveBeenCalledTimes(3);
-    expect(runProcessSpy).toHaveBeenCalledTimes(3);
-    expect(outputDataSpy).toHaveBeenCalledTimes(0);
-  });
 });
 
 describe("main application with TEST flag flase", async () => {

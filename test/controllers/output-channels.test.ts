@@ -38,22 +38,6 @@ describe("send the summary information to the defined channels", async () => {
     expect(outputSpy).toHaveBeenCalled();
   });
 
-  it("should not send output summary", async () => {
-    const outputSpy = vi.spyOn(terminalOutput, "output");
-
-    const summary: GoldPriceSummary = {
-      currentPrice: { buy: 0, sell: 0 },
-      predictions: [],
-      information: [],
-      suggestions: [],
-      hasEnoughData: false,
-      createdDate: new Date(),
-    };
-
-    await outputChannels.outputData(summary);
-    expect(outputSpy).toHaveBeenCalledTimes(0);
-  });
-
   it("should output message string", async() => {
     const outputMessageSpy = vi.spyOn(terminalOutput, "outputMessage");
     await outputChannels.outputMessage("Test output");

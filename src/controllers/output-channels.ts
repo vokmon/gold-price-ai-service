@@ -8,11 +8,6 @@ export default class OutputChannels {
   }
 
   async outputData(summary: GoldPriceSummary) {
-    if (!summary.hasEnoughData) {
-      console.log("No information about the gold price to be outputed.", summary);
-      return;
-    }
-
     console.log(`Start sending the summary to ${this._channels.length} channels.`);
     const promises = this._channels.map(async (channel) => {
       await channel.output(summary);

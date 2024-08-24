@@ -9,6 +9,7 @@ describe("get output string from GoldPriceSummary", async () => {
   it("should get summary message with current price", async () => {
     const result = convertSummaryDataToString(goldPriceSummary);
     expect(result).toBeDefined();
+    expect(result).toContain("คาดการณ์ราคาทองคำวันนี้");
   });
 
   it("should get summary message without current price", async () => {
@@ -17,6 +18,16 @@ describe("get output string from GoldPriceSummary", async () => {
       currentPrice: {buy: 0, sell: 0}
     });
     expect(result).toBeDefined();
+    expect(result).toContain("คาดการณ์ราคาทองคำวันนี้");
+  });
+
+  it("should get summary message only display the current price", async () => {
+    const result = convertSummaryDataToString({
+      ...goldPriceSummary,
+      hasEnoughData: false,
+    });
+    expect(result).toBeDefined();
+    expect(result).not.toContain("คาดการณ์ราคาทองคำวันนี้");
   });
 
   it("should get price monitoring message, price goes up", async() => {

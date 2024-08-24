@@ -33,30 +33,14 @@ export default class MainApplication {
       ]);
   }
 
-  async runProcess(numberOfRun: number = 1) {
+  async runProcess() {
     console.log("\n");
     console.log(`Base timeout: ${this.baseTimeoutTime}`);
-    const label = `Gold Price AI Service ${new Date()}, number of run: ${numberOfRun}`;
+    const label = `Gold Price AI Service ${new Date()}`;
     console.log(label);
     console.time(label);
   
     const summary = await this._goldPriceDataSummarization.getGoldPriceSummary();
-    if (!summary.hasEnoughData) {
-      console.log("No information about the gold price to be outputed.", summary);
-      if (numberOfRun > this.MAX_RETRY) {
-        console.log("Reach maximum retry");
-        return;
-      }
-      
-      const timeout = this.baseTimeoutTime * numberOfRun;
-      console.log(`Try again in ${timeout / 1000} seconds`)
-      setTimeout(async () => {
-        await this.runProcess(numberOfRun + 1);
-      }, timeout);
-  
-      return;
-    }
-    
     await this._outputChannels.outputData(summary);
     console.timeEnd(label);
     console.timeLog(`Process ${label} finished.`);
