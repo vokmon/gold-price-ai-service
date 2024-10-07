@@ -2,6 +2,7 @@ import GoldPriceDataSummarization from "./controllers/gold-price-data-summarizat
 import GoldPriceMonitoring from "./controllers/gold-price-monitoring.ts";
 import OutputChannels from "./controllers/output-channels.ts";
 import LineNotifyOutput from "./services/outputs/impl/line-output.ts";
+import TelegramOutput from "./services/outputs/impl/telegram-output.ts";
 import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
 import { OutputInterface } from "./services/outputs/output-interface.ts";
 import { convertHuasenghengDataToString } from "./services/outputs/output-utils.ts";
@@ -30,6 +31,7 @@ export default class MainApplication {
     this._outputChannels = new OutputChannels(outputChannels || [
         new TerminalOutput(),
         new LineNotifyOutput(),
+        new TelegramOutput(),
       ]);
   }
 
