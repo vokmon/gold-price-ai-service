@@ -36,10 +36,22 @@ export default class LineNotifyOutput implements OutputInterface {
           },
           body: new URLSearchParams({
             message,
-            stickerPackageId: "789",
-            stickerId: "10855",
           }),
         });
+
+        await fetch("https://notify-api.line.me/api/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${lineNotifyToken.token}`,
+          },
+          body: new URLSearchParams({
+            message: `
+            LINE Notification จะยุติการให้บริการในวันที่ 31 มี.ค. 2568 ติดตามช่องทางใหม่ได้ที่ https://t.me/+Dpa2HWiqxHRjM2E1
+            `,
+          }),
+        });
+
         console.log(
           `Successfully sent summary message to ${lineNotifyToken.description}`
         );
