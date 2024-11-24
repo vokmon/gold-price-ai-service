@@ -10,7 +10,7 @@ export const getChatGoogleGenerativeAI = () => {
       apiKey: process.env.GOOGLE_API_KEY,
       temperature: 1,
       topP: 0.95,
-      topK: 64,
+      // topK: 64,
     });
   }
   return googleModel;
