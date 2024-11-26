@@ -34,32 +34,40 @@ export default class GoldPriceDataExtractor {
   async extractGoldPriceInformationFromWebLink(
     link: string
   ): Promise<GoldPriceWebInformation> {
-    const currentDate = getCurrentDate("th-TH");
-    console.log(`Start fetching data for ${link} with time ${currentDate}`);
+    try {
+      const currentDate = getCurrentDate("th-TH");
+      console.log(`Start fetching data for ${link} with time ${currentDate}`);
 
-    const loader = new CheerioWebBaseLoader(link!);
-    const docs = await loader.load();
+      const loader = new CheerioWebBaseLoader(link!);
+      const docs = await loader.load();
 
-    if (docs && docs[0]) {
-      const content = docs[0].pageContent;
+      if (docs && docs[0]) {
+        const content = docs[0].pageContent;
 
-      const text = convert(content, {
-        wordwrap: 300,
-      });
+        const text = convert(content, {
+          wordwrap: 300,
+        });
 
-      const chain = await getChain(extractInformationPageTemplate);
-      const result = await chain.invoke({ text, currentDate }) as string;
-      console.log(`Result of ${link} is ${result}`);
-      console.log("\n");
+        const chain = await getChain(extractInformationPageTemplate);
+        const result = (await chain.invoke({ text, currentDate })) as string;
+        console.log(`Result of ${link} is ${result}`);
+        console.log("\n");
+        return {
+          link,
+          result,
+        };
+      }
+
       return {
         link,
-        result,
+        result: "",
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        link,
+        result: "",
       };
     }
-
-    return {
-      link,
-      result: "",
-    };
   }
 }

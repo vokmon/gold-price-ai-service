@@ -8,13 +8,13 @@ Additionally, the system offers real-time price monitoring, providing instant no
 
 ![alt text](./images/goldprice-log.png)
 
-<img src="./images/gold-price-line-notification-alert.jpg" alt="gold price Line Notify" width="400"/>
+<img src="./images/gold-price-telegram-notification-alert.png" alt="gold price Telegram Notify" width="400"/>
 Summary
 <br/>
 <br/>
 
 
-<img src="./images/line-price-monitoring.jpg" alt="gold price Line Notify" width="400"/>
+<img src="./images/gold-price-telegram-monitoring.png" alt="gold price Telegram Notify" width="400"/>
 Price monitoring
 
 <br/>
@@ -30,6 +30,9 @@ Price monitoring
 * **Price Monitoring:** The system provides real-time alerts when gold prices change significantly, helping users make timely decisions.
 
 * **Line Notify Integration:** Receive timely notifications about significant price changes, market summaries, and predictions directly to your Line app for quick decision-making.
+Note: Line Notification service termination on 31 March 2025.
+
+* **Telegram Integration:** Receive timely notifications about significant price changes, market summaries, and predictions directly to your Telegram app for quick decision-making.
 
 **Setup:**
 
@@ -40,7 +43,8 @@ To utilize this service, you'll need to acquire API keys from the following prov
 
 **Output:**
  - Teminal
- - Line Notify
+ - Line Notify - Out of service by 31 March 2024
+ - Telegram
 
 **Installation:**
 

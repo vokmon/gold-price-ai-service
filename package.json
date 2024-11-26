@@ -21,6 +21,7 @@
     "html-to-text": "^9.0.5",
     "langchain": "^0.3.6",
     "node-cron": "^3.0.3",
+    "puppeteer": "^23.9.0",
     "serpapi": "^2.1.0"
   },
   "devDependencies": {
