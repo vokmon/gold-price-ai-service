@@ -2,7 +2,6 @@ import puppeteer from "puppeteer";
 
 // Declaration
 export default class WebLinkPuppeteerSearcher {
-  sertApiKey = process.env.SERP_API_KEY;
   excludedDomains: string[];
 
   constructor(excludedDomains: string[]) {
@@ -14,6 +13,7 @@ export default class WebLinkPuppeteerSearcher {
     additionalKeyword: string = ""
   ): Promise<string[]> {
     try {
+      console.log("Launch puppeteer");
       const browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -29,6 +29,7 @@ export default class WebLinkPuppeteerSearcher {
       });
 
       const searchPromises = keywords.map(async (keyword, index) => {
+        console.log(`Launch browser for ${keyword}`);
         const page = await browser.newPage();
         const searchKeyword = `${keyword} ${additionalKeyword}`;
         console.log(`Start Keyword: ${searchKeyword}`);
@@ -49,9 +50,6 @@ export default class WebLinkPuppeteerSearcher {
           /* v8 ignore next */
           anchors.map((anchor) => anchor.href)
         );
-
-        await browser.disconnect();
-        await browser.close();
 
         const result = links.filter((href: any) => {
           const isValidUrl =
@@ -77,6 +75,9 @@ export default class WebLinkPuppeteerSearcher {
 
       const searchResults = await Promise.allSettled(searchPromises);
 
+      await browser.disconnect();
+      await browser.close();
+      
       const resultLinks = searchResults
         .filter((result) => result.status === "fulfilled")
         .flatMap((result) => result.value);
