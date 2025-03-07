@@ -87,7 +87,7 @@ Please find the variable name in config/env.example
 3. Setup the price threshold
 
 ```
-0 9,17 * * 1-6 /opt/app/runscript.sh
+0 9,12,17,21 * * 1-6 /opt/app/runscript.sh
 ```
 
 **Tests with Vitest:**
