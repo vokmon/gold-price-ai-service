@@ -96,3 +96,11 @@ Test with Vitest framework
 <img src="./images/tests.png" alt="Tests" width="500"/>
 
 <img src="./images/test-coverage.png" alt="Test coverage" width="500"/>
+
+
+Deployment
+1. Push the image to docker hub
+```
+docker tag goldpriceaiservice vokmon/goldpriceaiservice:latest
+docker push vokmon/goldpriceaiservice:latest
+```
