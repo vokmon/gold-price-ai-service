@@ -26,21 +26,37 @@ export default class WebLinkPuppeteerSearcher {
           "--no-zygote",
           "--single-process",
           "--disable-gpu",
+          "--window-size=1920,1080",
+          "--disable-infobars",
+          "--disable-blink-features=AutomationControlled",
+          "--disable-extensions",
         ],
       });
 
       const searchPromises = keywords.map(async (keyword, index) => {
         console.log(`Launch browser for ${keyword}`);
         const page = await browser!.newPage();
+        await page.setUserAgent(
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        );
+
+        // Set default viewport
+        await page.setViewport({ width: 1920, height: 1080 });
+
         const searchKeyword = `${keyword} ${additionalKeyword}`;
         console.log(`Start Keyword: ${searchKeyword}`);
 
-        await page.goto(
+        const response = await page.goto(
           `https://www.google.com/search?q=${searchKeyword}&location=Thailand&lang=TH`
         );
 
-        await page.type("input[name='q']", searchKeyword);
-        await page.keyboard.press("Enter");
+        if (!response?.ok()) {
+          console.log("Failed to navigate to Google");
+          return [];
+        }
+
+        // await page.type("input[name='q']", searchKeyword);
+        // await page.keyboard.press("Enter");
 
         // Wait for results to load
         await page.waitForSelector("#search");

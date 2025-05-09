@@ -22,5 +22,5 @@ describe("retreive website links by given keywords by using Puppateer", async ()
     linksToSearch.forEach((url) => {
       expect(isValidUrl(url)).toBe(true);
     });
-  }, 30000);
+  }, 5000);
 });

@@ -24,13 +24,16 @@ export default class GoldPriceRelatedWebLinksRetreiver {
     // const webLinkSearcher = new WebLinkSearcher(this.excludedDomains);
     const webLinkSearcher = new WebLinkPuppeteerSearcher(this.excludedDomains);
 
-    let links:string[] = [];
+    let links: string[] = [];
     try {
-      links = await webLinkSearcher.searchByKeywords(this.keywordsList, 'today');
+      links = await webLinkSearcher.searchByKeywords(
+        this.keywordsList,
+        "today"
+      );
     } catch (e) {
       console.warn(e);
     }
-    
+
     const additionalLinks = getAdditionalLinks();
     const finalLinks = [...links, ...additionalLinks];
 
