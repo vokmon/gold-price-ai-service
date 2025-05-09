@@ -26,7 +26,7 @@ describe("retreive website links related to the gold price", async () => {
     linksToSearch.forEach((url) => {
       expect(isValidUrl(url)).toBe(true);
     });
-  });
+  }, 30000);
 });
 
 describe("retreive website links related to the gold price with env", async () => {
@@ -54,7 +54,7 @@ describe("retreive website links related to the gold price with env", async () =
     linksToSearch.forEach((url) => {
       expect(isValidUrl(url)).toBe(true);
     });
-  });
+  }, 30000);
 
   afterAll(() => {
     process.env = envCache;

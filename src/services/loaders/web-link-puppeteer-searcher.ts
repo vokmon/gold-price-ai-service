@@ -12,9 +12,10 @@ export default class WebLinkPuppeteerSearcher {
     keywords: string[],
     additionalKeyword: string = ""
   ): Promise<string[]> {
+    let browser: puppeteer.Browser | null = null;
     try {
       console.log("Launch puppeteer");
-      const browser = await puppeteer.launch({
+      browser = await puppeteer.launch({
         headless: true,
         args: [
           "--no-sandbox",
@@ -30,7 +31,7 @@ export default class WebLinkPuppeteerSearcher {
 
       const searchPromises = keywords.map(async (keyword, index) => {
         console.log(`Launch browser for ${keyword}`);
-        const page = await browser.newPage();
+        const page = await browser!.newPage();
         const searchKeyword = `${keyword} ${additionalKeyword}`;
         console.log(`Start Keyword: ${searchKeyword}`);
 
@@ -56,7 +57,6 @@ export default class WebLinkPuppeteerSearcher {
             href &&
             href.trim().length > 0 &&
             href.startsWith("http") &&
-            href.startsWith("http") &&
             !href.includes("google");
           if (!isValidUrl) {
             return false;
@@ -77,7 +77,7 @@ export default class WebLinkPuppeteerSearcher {
 
       await browser.disconnect();
       await browser.close();
-      
+
       const resultLinks = searchResults
         .filter((result) => result.status === "fulfilled")
         .flatMap((result) => result.value);
@@ -86,6 +86,10 @@ export default class WebLinkPuppeteerSearcher {
       return uniqueList;
     } catch (e) {
       console.log(e);
+      if (browser) {
+        await browser.disconnect();
+        await browser.close();
+      }
       return [];
     }
   }
