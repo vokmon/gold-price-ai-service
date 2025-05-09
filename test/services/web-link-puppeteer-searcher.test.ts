@@ -1,6 +1,7 @@
+import { Page } from "puppeteer";
 import WebLinkPuppeteerSearcher from "../../src/services/loaders/web-link-puppeteer-searcher";
 import { isValidUrl } from "../../src/utils/url";
-
+import { vi, beforeAll, it, expect } from "vitest";
 describe("retreive website links by given keywords by using Puppateer", async () => {
   let webLinkSearcher: WebLinkPuppeteerSearcher;
 
@@ -23,4 +24,16 @@ describe("retreive website links by given keywords by using Puppateer", async ()
       expect(isValidUrl(url)).toBe(true);
     });
   }, 5000);
+
+  it("should return empty list when exception is thrown", async () => {
+    const pageSpy = vi
+      .spyOn(Array.prototype, "filter")
+      .mockRejectedValueOnce(new Error("Test puppeteer error"));
+
+    const linksToSearch = await webLinkSearcher.searchByKeywords([
+      "คาดการณ์ราคาทองคำวันที่",
+    ]);
+    expect(linksToSearch.length).toBe(0);
+    expect(pageSpy).toHaveBeenCalled();
+  });
 });

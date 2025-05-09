@@ -2,6 +2,8 @@ import { describe, it, vi, beforeAll, expect } from "vitest";
 import OutputChannels from "../../src/controllers/output-channels";
 import TerminalOutput from "../../src/services/outputs/impl/terminal-output";
 import { GoldPriceSummary } from "../../src/models/gold-price-summary";
+import { getCurrentDateTime } from "../../src/utils/date-utils";
+import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 
 describe("send the summary information to the defined channels", async () => {
   let outputChannels: OutputChannels;
@@ -38,9 +40,14 @@ describe("send the summary information to the defined channels", async () => {
     expect(outputSpy).toHaveBeenCalled();
   });
 
-  it("should output message string", async() => {
+  it("should output message string", async () => {
     const outputMessageSpy = vi.spyOn(terminalOutput, "outputMessage");
-    await outputChannels.outputMessage("Test output");
+    await outputChannels.outputDataPriceAlert({
+      priceAlert: true,
+      currentPrice: huasengsengPriceData2,
+      priceDiff: 200,
+      lastCheckTime: getCurrentDateTime("th-TH"),
+    });
     expect(outputMessageSpy).toHaveBeenCalledTimes(1);
-  })
+  });
 });

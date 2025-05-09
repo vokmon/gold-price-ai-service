@@ -12,10 +12,9 @@ export default class WebLinkPuppeteerSearcher {
     keywords: string[],
     additionalKeyword: string = ""
   ): Promise<string[]> {
-    let browser: puppeteer.Browser | null = null;
     try {
       console.log("Launch puppeteer");
-      browser = await puppeteer.launch({
+      const browser = await puppeteer.launch({
         headless: true,
         args: [
           "--no-sandbox",
@@ -102,10 +101,6 @@ export default class WebLinkPuppeteerSearcher {
       return uniqueList;
     } catch (e) {
       console.log(e);
-      if (browser) {
-        await browser.disconnect();
-        await browser.close();
-      }
       return [];
     }
   }

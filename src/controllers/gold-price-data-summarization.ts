@@ -60,7 +60,7 @@ export default class GoldPriceDataSummarization {
     const marketStatus = await this._huasengheng.getMarketStatus();
     console.log("Market status: ", marketStatus);
 
-    if (marketStatus.MarketStatus === "OFF") {
+    if (marketStatus.MarketStatus !== "ON") {
       console.log("Market is off. No price summary.");
       return undefined;
     }

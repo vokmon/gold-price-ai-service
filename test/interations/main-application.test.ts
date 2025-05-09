@@ -62,7 +62,6 @@ describe("main application with TEST flag flase", async () => {
   });
 });
 
-
 describe("main application: Price monitoring service", async () => {
   let mainApplication: MainApplication;
 
@@ -73,15 +72,17 @@ describe("main application: Price monitoring service", async () => {
   it("should output message to the specific channels", async () => {
     const monitorPriceSpy = vi
       .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
-      .mockReturnValueOnce(Promise.resolve({
-        priceAlert: true,
-        currentPrice: huasengsengPriceData2,
-        priceDiff: 200,
-        lastCheckTime: getCurrentDateTime('th-TH')
-      }));
+      .mockReturnValueOnce(
+        Promise.resolve({
+          priceAlert: true,
+          currentPrice: huasengsengPriceData2,
+          priceDiff: 200,
+          lastCheckTime: getCurrentDateTime("th-TH"),
+        })
+      );
 
     const outputMessageSpy = vi
-      .spyOn(OutputChannels.prototype, "outputMessage")
+      .spyOn(OutputChannels.prototype, "outputDataPriceAlert")
       .mockImplementationOnce(vi.fn());
 
     await mainApplication.monitorPrice(100);
@@ -92,14 +93,16 @@ describe("main application: Price monitoring service", async () => {
   it("should not output message", async () => {
     const monitorPriceSpy = vi
       .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
-      .mockReturnValueOnce(Promise.resolve({
-        priceAlert: false,
-        currentPrice: huasengsengPriceData2,
-        priceDiff: 10,
-      }));
+      .mockReturnValueOnce(
+        Promise.resolve({
+          priceAlert: false,
+          currentPrice: huasengsengPriceData2,
+          priceDiff: 10,
+        })
+      );
 
     const outputMessageSpy = vi
-      .spyOn(OutputChannels.prototype, "outputMessage")
+      .spyOn(OutputChannels.prototype, "outputDataPriceAlert")
       .mockImplementationOnce(vi.fn());
 
     await mainApplication.monitorPrice(100);
