@@ -38,6 +38,9 @@ export default class GoldPriceMonitoring {
       this.lastCheckTime = getCurrentDateTime("th-TH");
       return {
         priceAlert: false,
+        currentPrice: currentPrice,
+        priceDiff: 0,
+        lastCheckTime: this.lastCheckTime,
       } as GoldPriceAlert;
     }
 

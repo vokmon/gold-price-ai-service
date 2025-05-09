@@ -6,6 +6,7 @@ import OutputChannels from "../../src/controllers/output-channels";
 import GoldPriceMonitoring from "../../src/controllers/gold-price-monitoring";
 import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
+import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 
 describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
@@ -90,7 +91,7 @@ describe("main application: Price monitoring service", async () => {
     expect(outputMessageSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("should not output message", async () => {
+  it("should not output message to the specific channels", async () => {
     const monitorPriceSpy = vi
       .spyOn(GoldPriceMonitoring.prototype, "monitorPrice")
       .mockReturnValueOnce(
@@ -101,12 +102,13 @@ describe("main application: Price monitoring service", async () => {
         })
       );
 
-    const outputMessageSpy = vi
-      .spyOn(OutputChannels.prototype, "outputDataPriceAlert")
+    const firestoreOutputSpy = vi
+      .spyOn(FirestoreOutput.prototype, "outputMessage")
       .mockImplementationOnce(vi.fn());
 
     await mainApplication.monitorPrice(100);
     expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
-    expect(outputMessageSpy).toHaveBeenCalledTimes(0);
+
+    expect(firestoreOutputSpy).toHaveBeenCalledTimes(1);
   });
 });

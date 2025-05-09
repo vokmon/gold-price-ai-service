@@ -4,6 +4,7 @@ import TerminalOutput from "../../src/services/outputs/impl/terminal-output";
 import { GoldPriceSummary } from "../../src/models/gold-price-summary";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
 import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
+import { convertSummaryDataToString } from "../../src/services/outputs/output-utils";
 
 describe("send the summary information to the defined channels", async () => {
   let outputChannels: OutputChannels;
@@ -15,7 +16,7 @@ describe("send the summary information to the defined channels", async () => {
   });
 
   it("should output the summary data to the given channel", async () => {
-    const outputSpy = vi.spyOn(terminalOutput, "output");
+    const outputSpy = vi.spyOn(terminalOutput, "outputMessage");
 
     const summary: GoldPriceSummary = {
       currentPrice: { buy: 40650, sell: 40650 },
@@ -36,6 +37,7 @@ describe("send the summary information to the defined channels", async () => {
       createdDate: new Date(),
     };
 
+    const message = convertSummaryDataToString(summary);
     await outputChannels.outputData(summary);
     expect(outputSpy).toHaveBeenCalled();
   });

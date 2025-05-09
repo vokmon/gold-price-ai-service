@@ -3,7 +3,10 @@ import {
   GoldPriceSummary,
 } from "~/models/gold-price-summary.ts";
 import { OutputInterface } from "../services/outputs/output-interface.ts";
-import { convertHuasenghengDataToString } from "~/services/outputs/output-utils.ts";
+import {
+  convertHuasenghengDataToString,
+  convertSummaryDataToString,
+} from "~/services/outputs/output-utils.ts";
 
 export default class OutputChannels {
   _channels;
@@ -15,8 +18,9 @@ export default class OutputChannels {
     console.log(
       `Start sending the summary to ${this._channels.length} channels.`
     );
+    const message = convertSummaryDataToString(summary);
     const promises = this._channels.map(async (channel) => {
-      await channel.output(summary);
+      await channel.outputMessage(message, summary);
       return channel;
     });
     const results = await Promise.allSettled(promises);
@@ -33,7 +37,7 @@ export default class OutputChannels {
       priceAlert.lastCheckTime
     );
     const promises = this._channels.map(async (channel) => {
-      await channel.outputMessage(message);
+      await channel.outputMessage(message, priceAlert);
       return channel;
     });
     const results = await Promise.allSettled(promises);

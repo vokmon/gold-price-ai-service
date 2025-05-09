@@ -15,7 +15,12 @@ export default defineConfig({
     coverage: {
       reportsDirectory: "./coverage/server",
       include: ["**/src/**"],
-      exclude: ["**/src/cron.ts", "**/src/start.ts", "**/src/**/*-interface.ts"],
+      exclude: [
+        "**/src/cron.ts",
+        "**/src/start.ts",
+        "**/src/**/*-interface.ts",
+        "**/src/**/**.config.ts",
+      ],
     },
     globals: true,
   },
