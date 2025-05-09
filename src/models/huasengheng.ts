@@ -21,12 +21,14 @@ export type HuasenghengDataType = {
 };
 
 export enum HGoldType {
-  HSH = 'HSH',
-  REF = 'REF',
-  JEWEL = 'JEWEL',
+  HSH = "HSH",
+  REF = "REF",
+  JEWEL = "JEWEL",
 }
 
 export type GoldPrice = {
   buy: number;
   sell: number;
-}
+};
+
+export type MarketStatus = { MarketStatus: "ON" | "OFF" };

@@ -14,7 +14,8 @@ export default class GoldPriceDataSummarization {
   private _huasengheng;
 
   constructor() {
-    this._goldPriceRelatedWebLinksRetreiver = new GoldPriceRelatedWebLinksRetreiver();
+    this._goldPriceRelatedWebLinksRetreiver =
+      new GoldPriceRelatedWebLinksRetreiver();
     this._goldPriceDataExtractor = new GoldPriceDataExtractor();
     this._huasengheng = new Huasengheng();
   }
@@ -49,17 +50,28 @@ export default class GoldPriceDataSummarization {
         ...summary,
         currentPrice: {
           ...currentGoldPrice,
-        }
+        },
       };
     }
     return summary;
   }
 
-  async getGoldPriceSummary(): Promise<GoldPriceSummary> {
-    const links = await this._goldPriceRelatedWebLinksRetreiver.getGoldPriceLinks();
+  async getGoldPriceSummary(): Promise<GoldPriceSummary | undefined> {
+    const marketStatus = await this._huasengheng.getMarketStatus();
+    console.log("Market status: ", marketStatus);
+
+    if (marketStatus.MarketStatus === "OFF") {
+      console.log("Market is off. No price summary.");
+      return undefined;
+    }
+
+    const links =
+      await this._goldPriceRelatedWebLinksRetreiver.getGoldPriceLinks();
     const promises = await Promise.all([
       this._huasengheng.getCurrentHuasenghengPrice(),
-      this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(links),
+      this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
+        links
+      ),
     ]);
 
     const huasenghengInformation = promises[0];
@@ -72,11 +84,10 @@ export default class GoldPriceDataSummarization {
       buy: Number(huasenghengInformation?.Buy.replaceAll(",", "")),
       sell: Number(huasenghengInformation?.Sell.replaceAll(",", "")),
     };
-    const result =
-      await this.summarizeGoldPriceDataByContext(
-        information,
-        goldPriceHsh
-      );
+    const result = await this.summarizeGoldPriceDataByContext(
+      information,
+      goldPriceHsh
+    );
     return result;
   }
 }

@@ -3,6 +3,10 @@ import { GoldPriceSummary } from "../../../models/gold-price-summary.ts";
 import { OutputInterface } from "../output-interface.ts";
 import { convertSummaryDataToString } from "../output-utils.ts";
 
+/* @deprecated
+Obsolete. Line Notify is not available anymore.
+Use TelegramOutput instead.
+ */
 export default class LineNotifyOutput implements OutputInterface {
   private _lineNotifyTokens: LineNotifyToken[] | null = process.env
     .LINE_NOTIFY_TOKENS
@@ -22,7 +26,7 @@ export default class LineNotifyOutput implements OutputInterface {
     await this.outputMessage(message);
   }
 
-  async outputMessage (message: string) {
+  async outputMessage(message: string) {
     const lineNotifyTokenPromises = this._lineNotifyTokens!.map(
       async (lineNotifyToken) => {
         console.log(
