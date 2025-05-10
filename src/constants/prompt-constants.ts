@@ -12,7 +12,7 @@ export const extractInformationPageTemplate = `
     --------
 
     Try to include the price of 96.5% gold if possible.
-    The main focus is to extract the information that can affect the gold price ({currentDate}) or yesterday
+    The main focus is to extract the information that can affect the gold price ({dateRange}) or yesterday
     The data for the gold price not in this week should be exluded.
     Summarize should be short and concise and only related to gold and include news and information related to the gold price
     Also include the source in the result as well.

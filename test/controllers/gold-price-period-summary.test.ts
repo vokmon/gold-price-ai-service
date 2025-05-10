@@ -143,7 +143,7 @@ describe("GoldPricePeriodSummary", () => {
 
     expect(
       mockGoldPriceDataExtractor.extractGoldPriceInformationFromWebLinks
-    ).toHaveBeenCalledWith(["https://example.com"]);
+    ).toHaveBeenCalledWith(["https://example.com"], mockStartDate, mockEndDate);
 
     expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
 

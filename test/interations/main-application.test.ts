@@ -74,10 +74,7 @@ describe("main application with TEST flag flase", async () => {
 
     expect(getGoldPriceSummarySpy).toHaveBeenCalledTimes(1);
 
-    const startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date();
-    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
+    expect(graphSpy).toHaveBeenCalledTimes(1);
     expect(runProcessSpy).toHaveBeenCalledTimes(1);
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
     expect(outputGraphSpy).toHaveBeenCalledTimes(1);

@@ -2,7 +2,7 @@ import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/
 import { convert } from "html-to-text";
 import { extractInformationPageTemplate } from "../constants/prompt-constants.ts";
 import { GoldPriceWebInformation } from "../models/gold-price-information.ts";
-import { getCurrentDate } from "../utils/date-utils.ts";
+import { getCurrentDate, getFormattedDate } from "../utils/date-utils.ts";
 import { getChain } from "../utils/chain.ts";
 
 /**
@@ -10,13 +10,19 @@ import { getChain } from "../utils/chain.ts";
  */
 export default class GoldPriceDataExtractor {
   async extractGoldPriceInformationFromWebLinks(
-    resultLinks: string[]
+    resultLinks: string[],
+    startDate?: Date,
+    endDate?: Date
   ): Promise<GoldPriceWebInformation[]> {
     console.group("Fetch web content");
     console.log(`Start fetching data for ${resultLinks.length} links`);
 
     const webContentResultPromiseList = resultLinks.map(async (link) => {
-      return await this.extractGoldPriceInformationFromWebLink(link);
+      return await this.extractGoldPriceInformationFromWebLink(
+        link,
+        startDate,
+        endDate
+      );
     });
 
     const webContentResultResultList = await Promise.allSettled(
@@ -32,11 +38,18 @@ export default class GoldPriceDataExtractor {
   }
 
   async extractGoldPriceInformationFromWebLink(
-    link: string
+    link: string,
+    startDate?: Date,
+    endDate?: Date
   ): Promise<GoldPriceWebInformation> {
     try {
-      const currentDate = getCurrentDate("th-TH");
-      console.log(`Start fetching data for ${link} with time ${currentDate}`);
+      let dateRange = getCurrentDate("th-TH");
+      if (startDate && endDate) {
+        dateRange = `${getFormattedDate(startDate)} - ${getFormattedDate(
+          endDate
+        )}`;
+      }
+      console.log(`Start fetching data for ${link} with time ${dateRange}`);
 
       const loader = new CheerioWebBaseLoader(link!);
       const docs = await loader.load();
@@ -49,7 +62,10 @@ export default class GoldPriceDataExtractor {
         });
 
         const chain = await getChain(extractInformationPageTemplate);
-        const result = (await chain.invoke({ text, currentDate })) as string;
+        const result = (await chain.invoke({
+          text,
+          dateRange: dateRange,
+        })) as string;
         console.log(`Result of ${link} is ${result}`);
         console.log("\n");
         return {

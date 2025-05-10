@@ -52,7 +52,9 @@ export default class GoldPricePeriodSummary {
           endDate
         ),
         this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
-          getArticleLinks(startDate, endDate)
+          getArticleLinks(startDate, endDate),
+          startDate,
+          endDate
         ),
         this._huasengheng.getCurrentHuasenghengPrice(),
       ]);
