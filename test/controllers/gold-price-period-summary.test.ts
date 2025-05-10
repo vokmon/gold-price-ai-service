@@ -104,7 +104,7 @@ describe("GoldPricePeriodSummary", () => {
       mockCurrentPrice
     );
 
-    vi.spyOn(urlUtils, "getAdditionalLinks").mockReturnValue([
+    vi.spyOn(urlUtils, "getArticleLinks").mockReturnValue([
       "https://example.com",
     ]);
 

@@ -4,7 +4,7 @@ import {
 } from "~/models/gold-price-summary.ts";
 import { FirestoreRepo } from "~/repositories/firestore/firestore.ts";
 import GoldPriceDataExtractor from "./gold-price-data-extractor.ts";
-import { getAdditionalLinks } from "~/utils/url.ts";
+import { getArticleLinks } from "~/utils/url.ts";
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
 import { getChain } from "~/utils/chain.ts";
 import { goldPriceInformationTemplate } from "~/constants/prompt-constants.ts";
@@ -52,7 +52,7 @@ export default class GoldPricePeriodSummary {
           endDate
         ),
         this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
-          getAdditionalLinks()
+          getArticleLinks(startDate, endDate)
         ),
         this._huasengheng.getCurrentHuasenghengPrice(),
       ]);
