@@ -13,7 +13,7 @@ Summary<br/>
 <br/>
 <br/>
 
-Price monitoring
+Price monitoring<br/>
 <img src="./images/gold-price-telegram-monitoring.png" alt="gold price monitoring Telegram Notify" width="400"/>
 <br/>
 <br/>
