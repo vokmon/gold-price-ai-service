@@ -36,6 +36,12 @@ describe("Output summary data to channels with ENV", async () => {
     telegramOutput.outputMessage(message);
     expect(fetchSpy).toHaveBeenCalled();
   });
+
+  it("should output toString", async () => {
+    const result = telegramOutput.toString();
+    expect(result).toBeDefined();
+  });
+
   afterAll(() => {
     process.env = envCache;
   });

@@ -49,4 +49,24 @@ describe("FirestoreRepo - when config is not available", () => {
     expect(setDoc).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith("Firestore is not initialized");
   });
+
+  it("should not attempt to get documents by datetime when not initialized", async () => {
+    // Arrange
+    const uninitializedRepo = new FirestoreRepo();
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 1);
+
+    // Act
+    const result = await uninitializedRepo.getDocumentsByDatetime(
+      "test-collection",
+      startDate,
+      endDate
+    );
+
+    // Assert
+    expect(result).toEqual([]);
+  });
 });

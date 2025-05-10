@@ -2,10 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   convertHuasenghengDataToString,
   convertSummaryDataToString,
+  convertGoldPricePeriodSummaryToString,
 } from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
+import { goldPricePeriodSummary } from "../mock-data/gold-price-period-summary-mocked-data";
 
 describe("get output string from GoldPriceSummary", async () => {
   it("should get summary message with current price", async () => {
@@ -48,6 +50,23 @@ describe("get output string from GoldPriceSummary", async () => {
       -100,
       getCurrentDateTime("th-TH")
     );
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get gold price period summary message", async () => {
+    const result = convertGoldPricePeriodSummaryToString(
+      goldPricePeriodSummary
+    );
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get gold price period summary message without current price", async () => {
+    const result = convertGoldPricePeriodSummaryToString({
+      ...goldPricePeriodSummary,
+      currentPrice: undefined,
+    });
     console.log(result);
     expect(result).toBeDefined();
   });

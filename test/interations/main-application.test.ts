@@ -7,6 +7,7 @@ import GoldPriceMonitoring from "../../src/controllers/gold-price-monitoring";
 import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
+import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
 
 describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
@@ -110,5 +111,30 @@ describe("main application: Price monitoring service", async () => {
     expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
 
     expect(firestoreOutputSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("main application: Gold price period summary service", async () => {
+  let mainApplication: MainApplication;
+
+  beforeAll(() => {
+    mainApplication = new MainApplication();
+  });
+
+  it("should output summary message to the specific channels", async () => {
+    const summarizeGoldPricePeriodSpy = vi
+      .spyOn(GoldPricePeriodSummary.prototype, "summarizeGoldPricePeriod")
+      .mockReturnValueOnce(Promise.resolve(goldPriceSummary));
+    const outputDataSpy = vi
+      .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodSummary")
+      .mockImplementationOnce(vi.fn());
+
+    await mainApplication.summarizeGoldPricePeriod(
+      new Date("2023-01-01"),
+      new Date("2023-01-07")
+    );
+
+    expect(summarizeGoldPricePeriodSpy).toHaveBeenCalledTimes(1);
+    expect(outputDataSpy).toHaveBeenCalledTimes(1);
   });
 });

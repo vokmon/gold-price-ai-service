@@ -7,4 +7,8 @@ export default class TerminalOutput implements OutputInterface {
     console.log("Display message to the terminal");
     console.log(message);
   }
+
+  toString() {
+    return "TerminalOutput";
+  }
 }

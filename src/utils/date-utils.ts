@@ -1,5 +1,5 @@
 export function getCurrentDate(
-  format: string,
+  format: string = "th-TH",
   monthFormat: "2-digit" | "short" = "short"
 ) {
   const currentDate = new Date();
@@ -10,8 +10,20 @@ export function getCurrentDate(
   }).format(currentDate);
 }
 
+export function getFormattedDate(
+  date: Date,
+  format: string = "th-TH",
+  monthFormat: "2-digit" | "short" = "short"
+) {
+  return new Intl.DateTimeFormat(format, {
+    day: "2-digit",
+    month: monthFormat,
+    year: "numeric",
+  }).format(date);
+}
+
 export function getCurrentDateTime(
-  format: string,
+  format: string = "th-TH",
   monthFormat: "2-digit" | "short" = "short"
 ) {
   const currentDate = new Date();
@@ -20,9 +32,9 @@ export function getCurrentDateTime(
     month: monthFormat,
     year: "numeric",
     hour12: false, // Set to false for 24-hour format
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   }).format(currentDate);
 }
 
@@ -31,14 +43,14 @@ export function getTimeOfDay() {
   const hours = now.getHours();
 
   if (hours < 12) {
-    return 'เช้า';
+    return "เช้า";
   } else if (hours < 15) {
-    return 'บ่าย';
+    return "บ่าย";
   } else if (hours < 18) {
-    return 'เย็น';
+    return "เย็น";
   } else if (hours < 21) {
-    return 'ค่ำ';
+    return "ค่ำ";
   } else {
-    return 'ดึก';
+    return "ดึก";
   }
 }

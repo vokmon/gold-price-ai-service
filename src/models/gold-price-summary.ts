@@ -10,8 +10,18 @@ export type GoldPriceSummary = {
 };
 
 export type GoldPriceAlert = {
-  priceAlert: boolean,
-  currentPrice: HuasenghengDataType,
-  priceDiff: number,
-  lastCheckTime?: string,
-}
+  priceAlert: boolean;
+  currentPrice: HuasenghengDataType;
+  priceDiff: number;
+  lastCheckTime?: string;
+};
+
+export type GoldPriceSummaryPersisted = GoldPriceSummary & {
+  id: string;
+  createdDateTime: Date;
+};
+
+export type GoldPriceAlertPersisted = GoldPriceAlert & {
+  id: string;
+  createdDateTime: Date;
+};

@@ -5,7 +5,7 @@ import FirestoreOutput from "./services/outputs/impl/firestore-output.ts";
 import TelegramOutput from "./services/outputs/impl/telegram-output.ts";
 import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
 import { OutputInterface } from "./services/outputs/output-interface.ts";
-
+import GoldPricePeriodSummary from "./controllers/gold-price-period-summary.ts";
 export default class MainApplication {
   /**
    * Maximum number of retry
@@ -23,20 +23,19 @@ export default class MainApplication {
 
   _goldPriceDataSummarization: GoldPriceDataSummarization;
   _goldPriceMonitoring: GoldPriceMonitoring;
-  // _outputChannels: OutputChannels;
+  _goldPricePeriodSummary: GoldPricePeriodSummary;
 
   constructor(
     goldPriceDataSummarization?: GoldPriceDataSummarization,
     goldPriceMonitoring?: GoldPriceMonitoring,
-    outputChannels?: OutputInterface[]
+    goldPricePeriodSummary?: GoldPricePeriodSummary
   ) {
     this._goldPriceDataSummarization =
       goldPriceDataSummarization || new GoldPriceDataSummarization();
     this._goldPriceMonitoring =
       goldPriceMonitoring || new GoldPriceMonitoring();
-    // this._outputChannels = new OutputChannels(
-    //   outputChannels || [new TerminalOutput(), new TelegramOutput()]
-    // );
+    this._goldPricePeriodSummary =
+      goldPricePeriodSummary || new GoldPricePeriodSummary();
   }
 
   async runProcess() {
@@ -84,6 +83,30 @@ export default class MainApplication {
         `Does not need to alert as the price change does not hit the threshold`
       );
     }
+
+    console.timeEnd(label);
+    console.timeLog(`Process ${label} finished.`);
+    console.log("\n");
+  }
+
+  async summarizeGoldPricePeriod(startDate: Date, endDate: Date) {
+    console.log("\n");
+    const label = `Gold Price Period Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
+    console.log(label);
+    console.time(label);
+
+    const goldPricePeriodSummary = new GoldPricePeriodSummary();
+    const result = await goldPricePeriodSummary.summarizeGoldPricePeriod(
+      startDate,
+      endDate
+    );
+    console.log("Gold Price Period Summary: ", result);
+
+    const outputChannels = new OutputChannels([
+      new TerminalOutput(),
+      new TelegramOutput(),
+    ]);
+    await outputChannels.outputDataGoldPricePeriodSummary(result);
 
     console.timeEnd(label);
     console.timeLog(`Process ${label} finished.`);

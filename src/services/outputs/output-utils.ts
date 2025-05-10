@@ -1,10 +1,12 @@
 import {
   getCurrentDate,
   getCurrentDateTime,
+  getFormattedDate,
   getTimeOfDay,
 } from "../../utils/date-utils.ts";
 import { GoldPriceSummary } from "../../models/gold-price-summary.ts";
 import { HuasenghengDataType } from "../../models/huasengheng.ts";
+import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDate("th-TH");
@@ -54,4 +56,32 @@ export const convertHuasenghengDataToString = (
   `;
 
   return message;
+};
+
+export const convertGoldPricePeriodSummaryToString = (
+  data: GoldPricePeriodSummaryInfo
+) => {
+  const startDate = getFormattedDate(data.startDate);
+  const endDate = getFormattedDate(data.endDate);
+
+  return `
+  🔔 สรุปข้อมูล ${startDate} - ${endDate}
+  
+  ${
+    data.currentPrice
+      ? `💰 ราคาทองคำแท่ง 96.5%
+  ซื้อ: ${data.currentPrice.Buy.toLocaleString()} บาท
+  ขาย: ${data.currentPrice.Sell.toLocaleString()} บาท
+  `
+      : ""
+  }
+
+  ***** 📊 สรุป *****
+  ${data.summary.summaries.map((st) => `✅ ${st}`).join("\n")} 
+
+  ***** 🔍 คาดการณ์ *****
+  ${data.summary.predictions.map((st) => `🔸 ${st}`).join("\n")}
+  
+  ✨✨✨💰📈 📉📊✨✨✨
+  `;
 };

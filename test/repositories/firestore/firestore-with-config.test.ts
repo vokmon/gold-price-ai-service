@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
-import { doc, getFirestore, setDoc } from "firebase/firestore";
+import { doc, getDocs, getFirestore, setDoc } from "firebase/firestore";
 import { FirestoreRepo } from "../../../src/repositories/firestore/firestore";
 import { initializeApp } from "firebase/app";
 
@@ -8,6 +8,10 @@ vi.mock("firebase/firestore", () => ({
   doc: vi.fn(),
   getFirestore: vi.fn(),
   setDoc: vi.fn(),
+  getDocs: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  collection: vi.fn(),
 }));
 
 vi.mock("firebase/app", () => ({
@@ -46,6 +50,14 @@ describe("FirestoreRepo - when config is available", () => {
     (getFirestore as unknown as Mock).mockReturnValue(mockDb);
     (doc as unknown as Mock).mockReturnValue(mockDocRef);
     (setDoc as unknown as Mock).mockResolvedValue(undefined);
+    (getDocs as unknown as Mock).mockResolvedValue({
+      docs: [
+        {
+          id: mockDocRef,
+          data: () => ({ name: "Test Name", value: 123 }),
+        },
+      ],
+    });
 
     // Create repository instance for tests
     repo = new FirestoreRepo();
@@ -75,5 +87,32 @@ describe("FirestoreRepo - when config is available", () => {
       ...testData,
       createdDateTime: expect.any(Date),
     });
+  });
+
+  it("should get documents by datetime", async () => {
+    // Arrange
+    const testCollection = "test-collection";
+    const testData = { name: "Test Name", value: 123 };
+    const timestamp = new Date().getTime().toString();
+
+    // Act
+    await repo.saveDataToFireStore(testCollection, testData);
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 1);
+
+    // Assert
+    const result = await repo.getDocumentsByDatetime(
+      testCollection,
+      startDate,
+      endDate
+    );
+    expect(result).toEqual([
+      {
+        id: mockDocRef,
+        ...testData,
+      },
+    ]);
   });
 });

@@ -5,6 +5,7 @@ import { GoldPriceSummary } from "../../src/models/gold-price-summary";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
 import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 import { convertSummaryDataToString } from "../../src/services/outputs/output-utils";
+import { goldPricePeriodSummary } from "../mock-data/gold-price-period-summary-mocked-data";
 
 describe("send the summary information to the defined channels", async () => {
   let outputChannels: OutputChannels;
@@ -62,5 +63,13 @@ describe("send the summary information to the defined channels", async () => {
       lastCheckTime: getCurrentDateTime("th-TH"),
     });
     expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("should output gold price period summary", async () => {
+    const outputMessageSpy = vi.spyOn(terminalOutput, "outputMessage");
+    await outputChannels.outputDataGoldPricePeriodSummary(
+      goldPricePeriodSummary
+    );
+    expect(outputMessageSpy).toHaveBeenCalled();
   });
 });
