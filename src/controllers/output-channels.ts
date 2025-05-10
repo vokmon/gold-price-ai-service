@@ -21,7 +21,7 @@ export default class OutputChannels {
     const message = convertSummaryDataToString(summary);
     const promises = this._channels.map(async (channel) => {
       await channel.outputMessage(message, summary);
-      return channel;
+      return channel.toString();
     });
     const results = await Promise.allSettled(promises);
     console.log("Output result: ", results);
@@ -31,6 +31,10 @@ export default class OutputChannels {
     console.log(
       `Start sending the price alert to ${this._channels.length} channels.`
     );
+    if (!priceAlert.currentPrice) {
+      console.log("Price difference is undefined, skipping the output.");
+      return;
+    }
     const message = convertHuasenghengDataToString(
       priceAlert.currentPrice,
       priceAlert.priceDiff,
@@ -38,7 +42,7 @@ export default class OutputChannels {
     );
     const promises = this._channels.map(async (channel) => {
       await channel.outputMessage(message, priceAlert);
-      return channel;
+      return channel.toString();
     });
     const results = await Promise.allSettled(promises);
     console.log("Output result: ", results);

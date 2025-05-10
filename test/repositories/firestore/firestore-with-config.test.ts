@@ -73,7 +73,6 @@ describe("FirestoreRepo - when config is available", () => {
     expect(doc).toHaveBeenCalledWith(mockDb, testCollection, timestamp);
     expect(setDoc).toHaveBeenCalledWith(mockDocRef, {
       ...testData,
-      createdAt: timestamp,
     });
   });
 });

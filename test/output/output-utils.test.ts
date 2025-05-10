@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { convertHuasenghengDataToString, convertSummaryDataToString } from "../../src/services/outputs/output-utils";
+import {
+  convertHuasenghengDataToString,
+  convertSummaryDataToString,
+} from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
 
 describe("get output string from GoldPriceSummary", async () => {
-  
   it("should get summary message with current price", async () => {
     const result = convertSummaryDataToString(goldPriceSummary);
     expect(result).toBeDefined();
@@ -15,7 +17,7 @@ describe("get output string from GoldPriceSummary", async () => {
   it("should get summary message without current price", async () => {
     const result = convertSummaryDataToString({
       ...goldPriceSummary,
-      currentPrice: {buy: 0, sell: 0}
+      currentPrice: { buy: 0, sell: 0 },
     });
     expect(result).toBeDefined();
     expect(result).toContain("คาดการณ์ราคาทองคำวันนี้");
@@ -30,14 +32,22 @@ describe("get output string from GoldPriceSummary", async () => {
     expect(result).not.toContain("คาดการณ์ราคาทองคำวันนี้");
   });
 
-  it("should get price monitoring message, price goes up", async() => {
-    const result = convertHuasenghengDataToString(huasengsengPriceData1, 100, getCurrentDateTime('th-TH'));
+  it("should get price monitoring message, price goes up", async () => {
+    const result = convertHuasenghengDataToString(
+      huasengsengPriceData1,
+      100,
+      getCurrentDateTime("th-TH")
+    );
     console.log(result);
     expect(result).toBeDefined();
   });
 
-  it("should get price monitoring message, price goes down", async() => {
-    const result = convertHuasenghengDataToString(huasengsengPriceData1, -100, getCurrentDateTime('th-TH'));
+  it("should get price monitoring message, price goes down", async () => {
+    const result = convertHuasenghengDataToString(
+      huasengsengPriceData1,
+      -100,
+      getCurrentDateTime("th-TH")
+    );
     console.log(result);
     expect(result).toBeDefined();
   });

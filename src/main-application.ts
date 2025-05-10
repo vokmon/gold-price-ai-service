@@ -72,6 +72,7 @@ export default class MainApplication {
       const outputChannels = new OutputChannels([
         new TerminalOutput(),
         new TelegramOutput(),
+        new FirestoreOutput(this.FIRESTORE_COLLECTION_ALERT),
       ]);
       await outputChannels.outputDataPriceAlert(result);
     } else {

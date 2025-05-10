@@ -50,4 +50,8 @@ export default class TelegramOutput implements OutputInterface {
     const result = await Promise.allSettled(telegramNotifyPromises);
     console.log("Telegram notify result", result);
   }
+
+  toString() {
+    return `TelegramOutput(telegramBotToken: ${this._telegramBotToken}, telegramChannelIds: ${this._telegramChannelIds})`;
+  }
 }

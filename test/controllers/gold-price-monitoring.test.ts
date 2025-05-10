@@ -19,9 +19,7 @@ describe("retreive gold price and compare with the last seen price with env", as
     priceThreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 0);
     getMarketStatusSpy = vi
       .spyOn(Huasengheng.prototype, "getMarketStatus")
-      .mockReturnValueOnce(
-        Promise.resolve({ MarketStatus: "ON" } as MarketStatus)
-      );
+      .mockReturnValue(Promise.resolve({ MarketStatus: "ON" } as MarketStatus));
   });
 
   afterEach(() => {

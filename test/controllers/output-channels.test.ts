@@ -52,4 +52,15 @@ describe("send the summary information to the defined channels", async () => {
     });
     expect(outputMessageSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("should not output message if current price is undefined", async () => {
+    const outputMessageSpy = vi.spyOn(terminalOutput, "outputMessage");
+    await outputChannels.outputDataPriceAlert({
+      priceAlert: false,
+      currentPrice: undefined,
+      priceDiff: undefined,
+      lastCheckTime: getCurrentDateTime("th-TH"),
+    });
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
 });

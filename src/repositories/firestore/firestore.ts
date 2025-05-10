@@ -25,7 +25,6 @@ export class FirestoreRepo {
     const timestamp = new Date().getTime().toString();
     await setDoc(doc(this.db!, collectionName, timestamp), {
       ...data,
-      createdAt: timestamp,
     } as any);
   }
 }
