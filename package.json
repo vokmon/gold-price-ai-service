@@ -17,6 +17,7 @@
     "@langchain/community": "^0.3.42",
     "@langchain/core": "^0.3.55",
     "@langchain/google-genai": "^0.2.7",
+    "canvas": "^3.1.0",
     "chartjs-node-canvas": "^5.0.0",
     "cheerio": "^1.0.0",
     "firebase": "^11.7.1",

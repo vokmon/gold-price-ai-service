@@ -53,10 +53,8 @@ export default class MainApplication {
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date();
 
-    const [summary, graph] = await Promise.all([
-      this._goldPriceDataSummarization.getGoldPriceSummary(),
-      this._goldPricePeriodGraph.getGoldPricePeriodGraph(startDate, endDate),
-    ]);
+    const summary =
+      await this._goldPriceDataSummarization.getGoldPriceSummary();
 
     if (summary) {
       const outputChannels = new OutputChannels([
@@ -65,6 +63,11 @@ export default class MainApplication {
         new FirestoreOutput(this.FIRESTORE_COLLECTION_SUMMARY),
       ]);
       await outputChannels.outputData(summary);
+
+      const graph = await this._goldPricePeriodGraph.getGoldPricePeriodGraph(
+        startDate,
+        endDate
+      );
 
       if (graph.chartAsBuffer) {
         const outputChannels = new OutputChannels([new TelegramOutput()]);
