@@ -8,7 +8,7 @@ Additionally, the system offers real-time price monitoring, providing instant no
 
 ![alt text](./images/goldprice-log.png)
 
-Summary
+Summary<br/>
 <img src="./images/gold-price-telegram-notification-alert.png" alt="gold price Telegram Notify" width="400"/>
 <br/>
 <br/>
@@ -18,7 +18,7 @@ Price monitoring
 <br/>
 <br/>
 
-Weekly Summary
+Weekly Summary<br/>
 <img src="./images/gold-price-telegram-weekly-summary.png" alt="weekly summary" width="400"/>
 <br/>
 <br/>
