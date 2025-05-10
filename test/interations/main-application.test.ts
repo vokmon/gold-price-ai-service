@@ -8,7 +8,7 @@ import { huasengsengPriceData2 } from "../mock-data/huasengheng-data";
 import { getCurrentDateTime } from "../../src/utils/date-utils";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
-
+import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
 describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
 
@@ -47,16 +47,40 @@ describe("main application with TEST flag flase", async () => {
     const getGoldPriceSummarySpy = vi
       .spyOn(GoldPriceDataSummarization.prototype, "getGoldPriceSummary")
       .mockReturnValueOnce(Promise.resolve(goldPriceSummary));
+
+    const graphSpy = vi
+      .spyOn(GoldPricePeriodGraph.prototype, "getGoldPricePeriodGraph")
+      .mockReturnValueOnce(
+        Promise.resolve({
+          chartAsBuffer: Buffer.from("test"),
+          description: "test",
+          dataPeriod: {
+            startDate: new Date("2023-01-01"),
+            endDate: new Date("2023-01-07"),
+          },
+        })
+      );
+
     const runProcessSpy = vi.spyOn(MainApplication.prototype, "runProcess");
     const outputDataSpy = vi
       .spyOn(OutputChannels.prototype, "outputData")
       .mockImplementationOnce(vi.fn());
 
+    const outputGraphSpy = vi
+      .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodGraph")
+      .mockImplementationOnce(vi.fn());
+
     await mainApplication.runProcess();
 
     expect(getGoldPriceSummarySpy).toHaveBeenCalledTimes(1);
+
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date();
+    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
     expect(runProcessSpy).toHaveBeenCalledTimes(1);
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
+    expect(outputGraphSpy).toHaveBeenCalledTimes(1);
   });
 
   afterAll(() => {
@@ -125,16 +149,35 @@ describe("main application: Gold price period summary service", async () => {
     const summarizeGoldPricePeriodSpy = vi
       .spyOn(GoldPricePeriodSummary.prototype, "summarizeGoldPricePeriod")
       .mockReturnValueOnce(Promise.resolve(goldPriceSummary));
+
+    const graphSpy = vi
+      .spyOn(GoldPricePeriodGraph.prototype, "getGoldPricePeriodGraph")
+      .mockReturnValueOnce(
+        Promise.resolve({
+          chartAsBuffer: Buffer.from("test"),
+          description: "test",
+          dataPeriod: {
+            startDate: new Date("2023-01-01"),
+            endDate: new Date("2023-01-07"),
+          },
+        })
+      );
+
     const outputDataSpy = vi
       .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodSummary")
       .mockImplementationOnce(vi.fn());
 
-    await mainApplication.summarizeGoldPricePeriod(
-      new Date("2023-01-01"),
-      new Date("2023-01-07")
-    );
+    const outputGraphSpy = vi
+      .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodGraph")
+      .mockImplementationOnce(vi.fn());
+
+    const startDate = new Date("2023-01-01");
+    const endDate = new Date("2023-01-07");
+    await mainApplication.summarizeGoldPricePeriod(startDate, endDate);
 
     expect(summarizeGoldPricePeriodSpy).toHaveBeenCalledTimes(1);
+    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
+    expect(outputGraphSpy).toHaveBeenCalledTimes(1);
   });
 });

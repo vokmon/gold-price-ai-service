@@ -12,15 +12,7 @@ export default class TelegramOutput implements OutputInterface {
     : null;
 
   async outputMessage(message: string) {
-    console.log("\n");
-    if (
-      !this._telegramBotToken ||
-      !this._telegramChannelIds ||
-      this._telegramChannelIds.length === 0
-    ) {
-      console.log(
-        "Telegram out is not setup - skip sending message via https://web.telegram.org"
-      );
+    if (!this.checkTelegramSetup()) {
       return;
     }
 
@@ -48,7 +40,58 @@ export default class TelegramOutput implements OutputInterface {
     );
 
     const result = await Promise.allSettled(telegramNotifyPromises);
-    console.log("Telegram notify result", result);
+    console.log("Telegram send summary notify result", result);
+  }
+
+  async outputImage(imageBuffer: Buffer, description: string) {
+    if (!this.checkTelegramSetup()) {
+      return;
+    }
+
+    console.log("Output image to Telegram with description: ", description);
+    const telegramNotifyPromises = this._telegramChannelIds!.map(
+      async (channelId) => {
+        console.log(`Sending image to ${channelId.description}`);
+
+        // Create form data with the image buffer
+        const formData = new FormData();
+        formData.append("chat_id", channelId.channelId);
+        formData.append("photo", new Blob([imageBuffer]), "chart.png");
+
+        if (description) {
+          formData.append("caption", description);
+        }
+
+        const result = await fetch(
+          `https://api.telegram.org/bot${this._telegramBotToken}/sendPhoto`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        console.log(`Successfully sent image to ${channelId.description}`);
+        return result;
+      }
+    );
+
+    const result = await Promise.allSettled(telegramNotifyPromises);
+    console.log("Telegram send image notify result", result);
+  }
+
+  private checkTelegramSetup() {
+    console.log("\n");
+    if (
+      !this._telegramBotToken ||
+      !this._telegramChannelIds ||
+      this._telegramChannelIds.length === 0
+    ) {
+      console.log(
+        "Telegram out is not setup - skip sending image via https://web.telegram.org"
+      );
+      return false;
+    }
+    return true;
   }
 
   toString() {

@@ -4,8 +4,8 @@ import OutputChannels from "./controllers/output-channels.ts";
 import FirestoreOutput from "./services/outputs/impl/firestore-output.ts";
 import TelegramOutput from "./services/outputs/impl/telegram-output.ts";
 import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
-import { OutputInterface } from "./services/outputs/output-interface.ts";
 import GoldPricePeriodSummary from "./controllers/gold-price-period-summary.ts";
+import GoldPricePeriodGraph from "./controllers/gold-price-period-graph.ts";
 export default class MainApplication {
   /**
    * Maximum number of retry
@@ -24,11 +24,13 @@ export default class MainApplication {
   _goldPriceDataSummarization: GoldPriceDataSummarization;
   _goldPriceMonitoring: GoldPriceMonitoring;
   _goldPricePeriodSummary: GoldPricePeriodSummary;
+  _goldPricePeriodGraph: GoldPricePeriodGraph;
 
   constructor(
     goldPriceDataSummarization?: GoldPriceDataSummarization,
     goldPriceMonitoring?: GoldPriceMonitoring,
-    goldPricePeriodSummary?: GoldPricePeriodSummary
+    goldPricePeriodSummary?: GoldPricePeriodSummary,
+    goldPricePeriodGraph?: GoldPricePeriodGraph
   ) {
     this._goldPriceDataSummarization =
       goldPriceDataSummarization || new GoldPriceDataSummarization();
@@ -36,6 +38,8 @@ export default class MainApplication {
       goldPriceMonitoring || new GoldPriceMonitoring();
     this._goldPricePeriodSummary =
       goldPricePeriodSummary || new GoldPricePeriodSummary();
+    this._goldPricePeriodGraph =
+      goldPricePeriodGraph || new GoldPricePeriodGraph();
   }
 
   async runProcess() {
@@ -45,8 +49,15 @@ export default class MainApplication {
     console.log(label);
     console.time(label);
 
-    const summary =
-      await this._goldPriceDataSummarization.getGoldPriceSummary();
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date();
+
+    const [summary, graph] = await Promise.all([
+      this._goldPriceDataSummarization.getGoldPriceSummary(),
+      this._goldPricePeriodGraph.getGoldPricePeriodGraph(startDate, endDate),
+    ]);
+
     if (summary) {
       const outputChannels = new OutputChannels([
         new TerminalOutput(),
@@ -54,7 +65,13 @@ export default class MainApplication {
         new FirestoreOutput(this.FIRESTORE_COLLECTION_SUMMARY),
       ]);
       await outputChannels.outputData(summary);
+
+      if (graph.chartAsBuffer) {
+        const outputChannels = new OutputChannels([new TelegramOutput()]);
+        await outputChannels.outputDataGoldPricePeriodGraph(graph);
+      }
     }
+
     console.timeEnd(label);
     console.timeLog(`Process ${label} finished.`);
     console.log("\n");
@@ -95,18 +112,23 @@ export default class MainApplication {
     console.log(label);
     console.time(label);
 
-    const goldPricePeriodSummary = new GoldPricePeriodSummary();
-    const result = await goldPricePeriodSummary.summarizeGoldPricePeriod(
-      startDate,
-      endDate
-    );
-    console.log("Gold Price Period Summary: ", result);
+    const [summary, graph] = await Promise.all([
+      this._goldPricePeriodSummary.summarizeGoldPricePeriod(startDate, endDate),
+      this._goldPricePeriodGraph.getGoldPricePeriodGraph(startDate, endDate),
+    ]);
+
+    console.log("Gold Price Period Summary: ", summary);
 
     const outputChannels = new OutputChannels([
       new TerminalOutput(),
       new TelegramOutput(),
     ]);
-    await outputChannels.outputDataGoldPricePeriodSummary(result);
+
+    console.log("Gold Price Period Graph: ", graph);
+    await outputChannels.outputDataGoldPricePeriodSummary(summary);
+    if (graph.chartAsBuffer) {
+      await outputChannels.outputDataGoldPricePeriodGraph(graph);
+    }
 
     console.timeEnd(label);
     console.timeLog(`Process ${label} finished.`);

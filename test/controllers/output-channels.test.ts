@@ -72,4 +72,30 @@ describe("send the summary information to the defined channels", async () => {
     );
     expect(outputMessageSpy).toHaveBeenCalled();
   });
+
+  it("should output gold price period graph", async () => {
+    const outputGraphSpy = vi.spyOn(terminalOutput, "outputImage");
+    await outputChannels.outputDataGoldPricePeriodGraph({
+      chartAsBuffer: Buffer.from("test"),
+      description: "test",
+      dataPeriod: {
+        startDate: new Date("2023-01-01"),
+        endDate: new Date("2023-01-07"),
+      },
+    });
+    expect(outputGraphSpy).toHaveBeenCalled();
+  });
+
+  it("should not output graph if chartAsBuffer is undefined", async () => {
+    const outputGraphSpy = vi.spyOn(terminalOutput, "outputImage");
+    await outputChannels.outputDataGoldPricePeriodGraph({
+      chartAsBuffer: undefined,
+      description: "test",
+      dataPeriod: {
+        startDate: new Date("2023-01-01"),
+        endDate: new Date("2023-01-07"),
+      },
+    });
+    expect(outputGraphSpy).not.toHaveBeenCalled();
+  });
 });

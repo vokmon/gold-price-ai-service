@@ -8,6 +8,10 @@ export default class TerminalOutput implements OutputInterface {
     console.log(message);
   }
 
+  async outputImage(_imageBuffer: Buffer, description: string) {
+    console.log("Display image to the terminal for image: ", description);
+  }
+
   toString() {
     return "TerminalOutput";
   }

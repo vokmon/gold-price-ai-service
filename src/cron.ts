@@ -74,7 +74,8 @@ cron.schedule(
       const startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
       startDate.setDate(startDate.getDate() - 7);
-      await mainApp.summarizeGoldPricePeriod(new Date(), new Date());
+      const endDate = new Date();
+      await mainApp.summarizeGoldPricePeriod(startDate, endDate);
     } catch (e) {
       console.log("An error occurs");
       console.log(e);
@@ -83,5 +84,6 @@ cron.schedule(
   {
     timezone,
     name: periodSummaryCronName,
+    runOnInit: false,
   }
 );

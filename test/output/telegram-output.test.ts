@@ -16,6 +16,14 @@ describe("Output summary data to channels", async () => {
     telegramOutput.outputMessage(message);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it("should not output image to telegram", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(vi.fn());
+    const imageBuffer = Buffer.from("test_image_buffer", "utf-8");
+    const description = "test_image_description";
+    telegramOutput.outputImage(imageBuffer, description);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe("Output summary data to channels with ENV", async () => {
@@ -30,10 +38,18 @@ describe("Output summary data to channels with ENV", async () => {
     telegramOutput = new TelegramOutput();
   });
 
-  it("should output data to telegram notify", async () => {
+  it("should output message to telegram notify", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(vi.fn());
     const message = convertSummaryDataToString(goldPriceSummary);
     telegramOutput.outputMessage(message);
+    expect(fetchSpy).toHaveBeenCalled();
+  });
+
+  it("should output image to telegram notify", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(vi.fn());
+    const imageBuffer = Buffer.from("test_image_buffer", "utf-8");
+    const description = "test_image_description";
+    telegramOutput.outputImage(imageBuffer, description);
     expect(fetchSpy).toHaveBeenCalled();
   });
 

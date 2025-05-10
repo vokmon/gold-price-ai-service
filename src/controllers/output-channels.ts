@@ -9,6 +9,7 @@ import {
   convertGoldPricePeriodSummaryToString,
 } from "~/services/outputs/output-utils.ts";
 import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
+import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 export default class OutputChannels {
   _channels;
   constructor(channels: OutputInterface[]) {
@@ -60,6 +61,28 @@ export default class OutputChannels {
     );
     const promises = this._channels.map(async (channel) => {
       await channel.outputMessage(message, goldPricePeriodSummary);
+      return channel.toString();
+    });
+    const results = await Promise.allSettled(promises);
+    console.log("Output result: ", results);
+  }
+
+  async outputDataGoldPricePeriodGraph(
+    goldPricePeriodGraph: GoldPricePeriodGraphData
+  ) {
+    if (!goldPricePeriodGraph.chartAsBuffer) {
+      console.log("Chart buffer is undefined, skipping the output.");
+      return;
+    }
+
+    console.log(
+      `Start sending the gold price period graph to ${this._channels.length} channels.`
+    );
+    const promises = this._channels.map(async (channel) => {
+      await channel.outputImage(
+        goldPricePeriodGraph.chartAsBuffer!,
+        goldPricePeriodGraph.description
+      );
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);

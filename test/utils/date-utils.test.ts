@@ -3,6 +3,7 @@ import {
   getCurrentDate,
   getFormattedDate,
   getTimeOfDay,
+  formatDateAsDDMMYYYY,
 } from "../../src/utils/date-utils"; // Replace with the correct path
 describe("get current date", () => {
   it("should return the current date", () => {
@@ -64,5 +65,11 @@ describe("get time of day string", () => {
     const mockDate = new Date();
     const result = getFormattedDate(mockDate);
     expect(result).toBe("01 ม.ค. 2567");
+  });
+
+  it("should return the format date as DD/MM/YYYY", () => {
+    const mockDate = new Date();
+    const result = formatDateAsDDMMYYYY(mockDate);
+    expect(result).toBe("01/01/2024");
   });
 });

@@ -13,7 +13,7 @@ import {
   GoldPricePeriodSummaryInfo,
   GoldPricePeriodSummaryModel,
 } from "~/models/gold-price-period-summary.ts";
-
+import { getFormattedDate } from "~/utils/date-utils.ts";
 export default class GoldPricePeriodSummary {
   private _firestoreRepo: FirestoreRepo;
   private _goldPriceDataExtractor;
@@ -35,10 +35,9 @@ export default class GoldPricePeriodSummary {
     endDate: Date
   ): Promise<GoldPricePeriodSummaryInfo> {
     console.log(
-      "Summarizing gold price period from ",
-      startDate,
-      " to ",
-      endDate
+      `Summarizing gold price period from ${getFormattedDate(
+        startDate
+      )} to ${getFormattedDate(endDate)}`
     );
     const [summariesData, alertsData, goldPriceInformation, currentPrice] =
       await Promise.all([
@@ -63,8 +62,8 @@ export default class GoldPricePeriodSummary {
         info.result && info.result.trim().replace(/["'`\n\r]/g, "") !== ""
     );
 
-    console.log("Summaries: ", summariesData);
-    console.log("Alerts: ", alertsData);
+    console.log("Found summaries: ", summariesData.length);
+    console.log("Found alerts: ", alertsData.length);
     console.log("Gold price information: ", goldPriceInformationFiltered);
     console.log("Current price: ", currentPrice);
 

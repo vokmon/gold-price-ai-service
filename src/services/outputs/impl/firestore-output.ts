@@ -15,6 +15,13 @@ export default class FirestoreOutput implements OutputInterface {
     await this.firestoreRepo.saveDataToFireStore(this.collectionName, object);
   }
 
+  async outputImage(_imageBuffer: Buffer, description: string): Promise<void> {
+    console.log(
+      "(Not implemented) Output image to Firestore with description: ",
+      description
+    );
+  }
+
   toString() {
     return `FirestoreOutput(collectionName: ${this.collectionName})`;
   }

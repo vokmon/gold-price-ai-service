@@ -14,4 +14,11 @@ describe("Output summary data to channels", async () => {
     const message = convertSummaryDataToString(goldPriceSummary);
     terminalOutput.outputMessage(message);
   }); // increase timeout
+
+  it("should output image to terminal", async () => {
+    const image = await terminalOutput.outputImage(
+      Buffer.from("imageBuffer", "utf-8"),
+      "Test image"
+    );
+  });
 });

@@ -77,4 +77,20 @@ describe("FirestoreOutput", () => {
       testError
     );
   });
+
+  it("should output image to Firestore", async () => {
+    // Arrange
+    const testImage = Buffer.from("testImage", "utf-8");
+    const testDescription = "Test image description";
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    // Act
+    await firestoreOutput.outputImage(testImage, testDescription);
+
+    // Assert
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "(Not implemented) Output image to Firestore with description: ",
+      testDescription
+    );
+  });
 });
