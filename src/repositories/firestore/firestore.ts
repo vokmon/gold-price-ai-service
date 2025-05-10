@@ -22,9 +22,11 @@ export class FirestoreRepo {
       return;
     }
 
-    const timestamp = new Date().getTime().toString();
+    const date = new Date();
+    const timestamp = date.getTime().toString();
     await setDoc(doc(this.db!, collectionName, timestamp), {
       ...data,
+      createdDateTime: date,
     } as any);
   }
 }
