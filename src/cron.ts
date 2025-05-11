@@ -48,7 +48,7 @@ cron.schedule(
 
 console.log("\n");
 console.log(
-  `Start price monitoring cron job with the setup\nschedule: ${cronPriceDiffSchedule}, timezone: ${timezone}`
+  `🚀🚀🚀 Start price monitoring cron job with the setup\nschedule: ${cronPriceDiffSchedule}, timezone: ${timezone}`
 );
 console.log("\n");
 
@@ -73,7 +73,7 @@ cron.schedule(
 
 console.log("\n");
 console.log(
-  `Start period summary cron job with the setup\nschedule: ${cronPeriodSummarySchedule}, timezone: ${timezone}`
+  `🚀🚀🚀 Start period summary cron job with the setup\nschedule: ${cronPeriodSummarySchedule}, timezone: ${timezone}`
 );
 console.log("\n");
 
@@ -100,7 +100,7 @@ cron.schedule(
 
 console.log("\n");
 console.log(
-  `Start period monthly summary cron job with the setup\nschedule: ${cronPeriodMonthlySchedule}, timezone: ${timezone}`
+  `🚀🚀🚀 Start period monthly summary cron job with the setup\nschedule: ${cronPeriodMonthlySchedule}, timezone: ${timezone}`
 );
 console.log("\n");
 
@@ -128,7 +128,7 @@ cron.schedule(
 
 console.log("\n");
 console.log(
-  `Start period yearly summary cron job with the setup\nschedule: ${cronPeriodYearlySchedule}, timezone: ${timezone}`
+  `🚀🚀🚀 Start period yearly summary cron job with the setup\nschedule: ${cronPeriodYearlySchedule}, timezone: ${timezone}`
 );
 console.log("\n");
 

@@ -7,7 +7,6 @@ import {
 import { GoldPriceSummary } from "../../models/gold-price-summary.ts";
 import { HuasenghengDataType } from "../../models/huasengheng.ts";
 import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
-import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDate("th-TH");
@@ -49,7 +48,7 @@ export const convertHuasenghengDataToString = (
   ${getCurrentDateTime("th-TH")}
   🔔🔔🔔 ราคามีการเปลี่ยนแปลงสูง
   จากเวลา: ${diffTime}
-  ราคา${priceDiff > 0 ? "ขึ้น ⬆️ " : "ลง ⬇️"}: ${priceDiff.toLocaleString()}
+  ราคา${priceDiff > 0 ? "ขึ้น 🔺 " : "ลง 🔻"}: ${priceDiff.toLocaleString()}
 
   💰 ราคาปัจจุบัน
     ซื้อ: ${data.Buy} บาท
@@ -105,8 +104,8 @@ export const convertGoldPricePeriodGraphToString = ({
     priceDifference === 0
       ? "↔️ ไม่มีการเปลี่ยนแปลง"
       : priceDifference < 0
-      ? "⬇️ ลดลง"
-      : "⬆️ เพิ่มขึ้น"
+      ? "🔻 ลดลง"
+      : "🔺 เพิ่มขึ้น"
   } ${
     priceDifference !== 0
       ? `${Math.abs(priceDifference).toLocaleString()} บาท`

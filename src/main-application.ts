@@ -45,7 +45,7 @@ export default class MainApplication {
   async runProcess() {
     console.log("\n");
     console.log(`Base timeout: ${this.baseTimeoutTime}`);
-    const label = `Gold Price AI Service ${new Date()}`;
+    const label = `🏁🏁🏁 Gold Price AI Service ${new Date()}`;
     console.log(label);
     console.time(label);
 
@@ -76,13 +76,13 @@ export default class MainApplication {
     }
 
     console.timeEnd(label);
-    console.timeLog(`Process ${label} finished.`);
+    console.timeLog(`🏁🏁🏁 Process ${label} finished.`);
     console.log("\n");
   }
 
   async monitorPrice(priceTreshold: number) {
     console.log("\n");
-    const label = `Gold Price Monitoring Service: ${new Date()} with threshold of ${priceTreshold}`;
+    const label = `🔔🔔🔔 Gold Price Monitoring Service: ${new Date()} with threshold of ${priceTreshold}`;
     console.log(label);
     console.time(label);
 
@@ -100,18 +100,18 @@ export default class MainApplication {
       ]);
       await outputChannels.outputDataPriceAlert(result);
       console.log(
-        `Does not need to alert as the price change does not hit the threshold`
+        `🔔🔔🔔Does not need to alert as the price change does not hit the threshold`
       );
     }
 
     console.timeEnd(label);
-    console.timeLog(`Process ${label} finished.`);
+    console.timeLog(`🔔🔔🔔 Process ${label} finished.`);
     console.log("\n");
   }
 
   async summarizeGoldPricePeriod(startDate: Date, endDate: Date) {
     console.log("\n");
-    const label = `Gold Price Period Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
+    const label = `🔖🔖🔖 Gold Price Period Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
     console.log(label);
     console.time(label);
 
@@ -120,27 +120,27 @@ export default class MainApplication {
       this._goldPricePeriodGraph.getGoldPricePeriodGraph(startDate, endDate),
     ]);
 
-    console.log("Gold Price Period Summary: ", summary);
+    console.log("🔖🔖🔖 Gold Price Period Summary: ", summary);
 
     const outputChannels = new OutputChannels([
       new TerminalOutput(),
       new TelegramOutput(),
     ]);
 
-    console.log("Gold Price Period Graph: ", graph);
+    console.log("🔖🔖🔖 Gold Price Period Graph: ", graph);
     await outputChannels.outputDataGoldPricePeriodSummary(summary);
     if (graph.chartAsBuffer) {
       await outputChannels.outputDataGoldPricePeriodGraph(graph);
     }
 
     console.timeEnd(label);
-    console.timeLog(`Process ${label} finished.`);
+    console.timeLog(`🔖🔖🔖 Process ${label} finished.`);
     console.log("\n");
   }
 
   async summarizeGoldPricePeriodWithGraph(startDate: Date, endDate: Date) {
     console.log("\n");
-    const label = `Gold Price Period Price Graph Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
+    const label = `💹💹💹 Gold Price Period Price Graph Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
     console.log(label);
     console.time(label);
 
@@ -157,7 +157,7 @@ export default class MainApplication {
     await outputChannels.outputDataGoldPricePeriodGraph(graph);
 
     console.timeEnd(label);
-    console.timeLog(`Process ${label} finished.`);
+    console.timeLog(`💹💹💹Process ${label} finished.`);
     console.log("\n");
   }
 }
