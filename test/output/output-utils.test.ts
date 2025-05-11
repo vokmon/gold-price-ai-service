@@ -3,6 +3,7 @@ import {
   convertHuasenghengDataToString,
   convertSummaryDataToString,
   convertGoldPricePeriodSummaryToString,
+  convertGoldPricePeriodGraphToString,
 } from "../../src/services/outputs/output-utils";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
@@ -66,6 +67,42 @@ describe("get output string from GoldPriceSummary", async () => {
     const result = convertGoldPricePeriodSummaryToString({
       ...goldPricePeriodSummary,
       currentPrice: undefined,
+    });
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get gold price period graph message for price goes up", async () => {
+    const result = convertGoldPricePeriodGraphToString({
+      priceDifference: 2000,
+      minPrice: 10000,
+      maxPrice: 12000,
+      latestPrice: 11000,
+      earliestPrice: 10000,
+    });
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get gold price period graph message for price goes down", async () => {
+    const result = convertGoldPricePeriodGraphToString({
+      priceDifference: -2000,
+      minPrice: 10000,
+      maxPrice: 12000,
+      latestPrice: 11000,
+      earliestPrice: 10000,
+    });
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
+  it("should get gold price period graph message for price no change", async () => {
+    const result = convertGoldPricePeriodGraphToString({
+      priceDifference: 0,
+      minPrice: 10000,
+      maxPrice: 12000,
+      latestPrice: 11000,
+      earliestPrice: 10000,
     });
     console.log(result);
     expect(result).toBeDefined();

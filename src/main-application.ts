@@ -137,4 +137,27 @@ export default class MainApplication {
     console.timeLog(`Process ${label} finished.`);
     console.log("\n");
   }
+
+  async summarizeGoldPricePeriodWithGraph(startDate: Date, endDate: Date) {
+    console.log("\n");
+    const label = `Gold Price Period Price Graph Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
+    console.log(label);
+    console.time(label);
+
+    const graph = await this._goldPricePeriodGraph.getGoldPricePeriodGraph(
+      startDate,
+      endDate
+    );
+
+    const outputChannels = new OutputChannels([
+      new TerminalOutput(),
+      new TelegramOutput(),
+    ]);
+
+    await outputChannels.outputDataGoldPricePeriodGraph(graph);
+
+    console.timeEnd(label);
+    console.timeLog(`Process ${label} finished.`);
+    console.log("\n");
+  }
 }

@@ -7,10 +7,20 @@ const cronPriceDiffSchedule = process.env.CRON_MONITOR_PRICE || "*/15 * * * *";
 const cronPeriodSummarySchedule =
   process.env.CRON_PERIOD_SUMMARY_SCHEDULE || "0 9,17 * * 1-6";
 
+const cronPeriodMonthlySchedule =
+  process.env.CRON_PERIOD_MONTHLY_SCHEDULE || "0 9 1 * *";
+const cronPeriodYearlySchedule =
+  process.env.CRON_PERIOD_YEARLY_SCHEDULE || "0 9 1 1 *";
+
 const timezone = process.env.TIME_ZONE || "Asia/Bangkok";
+
 const summaryCronName = "Gold price summary service cron job";
 const priceMonitoringCronName = "Gold price price monitoring service cron job";
 const periodSummaryCronName = "Gold price period summary service cron job";
+const periodMonthlyCronName =
+  "Gold price period monthly summary service cron job";
+const periodYearlyCronName =
+  "Gold price period yearly summary service cron job";
 
 const mainApp = new MainApplication();
 
@@ -76,6 +86,59 @@ cron.schedule(
       startDate.setDate(startDate.getDate() - 7);
       const endDate = new Date();
       await mainApp.summarizeGoldPricePeriod(startDate, endDate);
+    } catch (e) {
+      console.log("An error occurs");
+      console.log(e);
+    }
+  },
+  {
+    timezone,
+    name: periodSummaryCronName,
+    runOnInit: false,
+  }
+);
+
+console.log("\n");
+console.log(
+  `Start period monthly summary cron job with the setup\nschedule: ${cronPeriodMonthlySchedule}, timezone: ${timezone}`
+);
+console.log("\n");
+
+cron.schedule(
+  cronPeriodSummarySchedule,
+  async () => {
+    try {
+      const startDate = new Date();
+      startDate.setDate(1);
+      const endDate = new Date();
+      await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
+    } catch (e) {
+      console.log("An error occurs");
+      console.log(e);
+    }
+  },
+  {
+    timezone,
+    name: periodSummaryCronName,
+    runOnInit: false,
+  }
+);
+
+console.log("\n");
+console.log(
+  `Start period yearly summary cron job with the setup\nschedule: ${cronPeriodYearlySchedule}, timezone: ${timezone}`
+);
+console.log("\n");
+
+cron.schedule(
+  cronPeriodSummarySchedule,
+  async () => {
+    try {
+      const startDate = new Date();
+      startDate.setDate(1);
+      startDate.setMonth(0);
+      const endDate = new Date();
+      await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
     } catch (e) {
       console.log("An error occurs");
       console.log(e);

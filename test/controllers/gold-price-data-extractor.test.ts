@@ -28,6 +28,19 @@ describe("extract gold price data from website link", async () => {
     timeout
   ); // increase timeout
 
+  it("should get gold price related information from web link with date range", async () => {
+    const goldPriceInformation =
+      await goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
+        links,
+        new Date("2025-05-04"),
+        new Date("2025-05-10")
+      );
+    expect(goldPriceInformation.length).toBeDefined();
+    const information = goldPriceInformation
+      .map((info) => info.result)
+      .join("\n");
+    expect(information).toBeDefined();
+  });
   it(
     "should return empty result",
     async () => {

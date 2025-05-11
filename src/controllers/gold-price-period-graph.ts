@@ -4,7 +4,7 @@ import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 import { GoldPriceAlertPersisted } from "~/models/gold-price-summary.ts";
 import { Timestamp } from "firebase/firestore";
-
+import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
 export default class GoldPricePeriodGraph {
   private FIRESTORE_COLLECTION_ALERT =
     process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
@@ -161,13 +161,19 @@ export default class GoldPricePeriodGraph {
     // await fs.writeFile(filePath, imageBuffer);
     // console.log(`Chart has been generated and saved to ${filePath}`);
 
+    const priceData = this.extractPriceData(goldPriceAlertData);
+
+    const description = `${chartTitle}\n
+    ${convertGoldPricePeriodGraphToString(priceData)}
+    `;
+
     return {
       dataPeriod: {
         startDate,
         endDate,
       },
       chartAsBuffer: imageBuffer,
-      description: `📊 ${chartTitle}`,
+      description: `📊 ${description}`,
     };
   }
 
@@ -247,6 +253,69 @@ export default class GoldPricePeriodGraph {
     return {
       isSameDay: groupingType === "hour",
       groupedData,
+    };
+  }
+
+  private extractPriceData(data: GoldPriceAlertPersisted[]) {
+    // Filter valid data with price information
+    const validData = data.filter(
+      (item) =>
+        item.createdDateTime && item.currentPrice && item.currentPrice.Sell
+    );
+
+    if (validData.length === 0) {
+      return {
+        minPrice: 0,
+        maxPrice: 0,
+        priceDifference: 0,
+        latestPrice: 0,
+        earliestPrice: 0,
+      };
+    }
+
+    // Convert all prices to numbers
+    const prices = validData.map((item) =>
+      parseInt(item.currentPrice.Sell.replace(/,/g, ""))
+    );
+
+    // Find min and max prices
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    // Sort data by date to find earliest and latest entries
+    const sortedData = [...validData].sort((a, b) => {
+      const dateA = (a.createdDateTime as unknown as Timestamp)
+        .toDate()
+        .getTime();
+      const dateB = (b.createdDateTime as unknown as Timestamp)
+        .toDate()
+        .getTime();
+      return dateA - dateB;
+    });
+
+    // Get earliest and latest prices
+    const earliestPrice = parseInt(
+      sortedData[0]?.currentPrice?.Sell?.replace(
+        /,/g,
+        ""
+      ) /* c8 ignore next */ ?? "0"
+    );
+    const latestPrice = parseInt(
+      sortedData[sortedData.length - 1]?.currentPrice?.Sell?.replace(
+        /,/g,
+        ""
+      ) /* c8 ignore next */ ?? "0"
+    );
+
+    // Calculate price difference
+    const priceDifference = latestPrice - earliestPrice;
+
+    return {
+      minPrice,
+      maxPrice,
+      priceDifference,
+      latestPrice,
+      earliestPrice,
     };
   }
 }

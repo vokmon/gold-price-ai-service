@@ -178,3 +178,37 @@ describe("main application: Gold price period summary service", async () => {
     expect(outputGraphSpy).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("main application: Gold price period graph service", async () => {
+  let mainApplication: MainApplication;
+
+  beforeAll(() => {
+    mainApplication = new MainApplication();
+  });
+
+  it("should output graph message to the specific channels", async () => {
+    const graphSpy = vi
+      .spyOn(GoldPricePeriodGraph.prototype, "getGoldPricePeriodGraph")
+      .mockReturnValueOnce(
+        Promise.resolve({
+          chartAsBuffer: Buffer.from("test"),
+          description: "test",
+          dataPeriod: {
+            startDate: new Date("2023-01-01"),
+            endDate: new Date("2023-01-07"),
+          },
+        })
+      );
+
+    const outputGraphSpy = vi
+      .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodGraph")
+      .mockImplementationOnce(vi.fn());
+
+    const startDate = new Date("2023-01-01");
+    const endDate = new Date("2023-01-07");
+    await mainApplication.summarizeGoldPricePeriodWithGraph(startDate, endDate);
+
+    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
+    expect(outputGraphSpy).toHaveBeenCalledTimes(1);
+  });
+});

@@ -7,12 +7,13 @@ import {
 import { GoldPriceSummary } from "../../models/gold-price-summary.ts";
 import { HuasenghengDataType } from "../../models/huasengheng.ts";
 import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
+import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDate("th-TH");
   const timeOfDay = getTimeOfDay();
   let message = `
-ข้อมูลราคาทองคำ ${currentDate} รอบ${timeOfDay}
+🔔 ข้อมูลราคาทองคำ ${currentDate} รอบ${timeOfDay}
 
 💰 ราคาทองคำแท่ง 96.5% 
   ซื้อ: ${
@@ -46,9 +47,9 @@ export const convertHuasenghengDataToString = (
 ) => {
   const message = `
   ${getCurrentDateTime("th-TH")}
-  ราคาทองคำมีการเปลี่ยนแปลงสูง
+  🔔🔔🔔 ราคามีการเปลี่ยนแปลงสูง
   จากเวลา: ${diffTime}
-  ราคา${priceDiff > 0 ? "ขึ้น 📈" : "ลง 📉"}: ${priceDiff.toLocaleString()}
+  ราคา${priceDiff > 0 ? "ขึ้น ⬆️ " : "ลง ⬇️"}: ${priceDiff.toLocaleString()}
 
   💰 ราคาปัจจุบัน
     ซื้อ: ${data.Buy} บาท
@@ -65,7 +66,7 @@ export const convertGoldPricePeriodSummaryToString = (
   const endDate = getFormattedDate(data.endDate);
 
   return `
-  🔔 สรุปข้อมูล ${startDate} - ${endDate}
+  ⭐ สรุปข้อมูล ${startDate} - ${endDate}
   
   ${
     data.currentPrice
@@ -83,5 +84,38 @@ export const convertGoldPricePeriodSummaryToString = (
   ${data.summary.predictions.map((st) => `🔸 ${st}`).join("\n")}
   
   ✨✨✨💰📈 📉📊✨✨✨
+  `;
+};
+
+export const convertGoldPricePeriodGraphToString = ({
+  priceDifference,
+  minPrice,
+  maxPrice,
+  latestPrice,
+  earliestPrice,
+}: {
+  priceDifference: number;
+  minPrice: number;
+  maxPrice: number;
+  latestPrice: number;
+  earliestPrice: number;
+}) => {
+  return `
+  ${
+    priceDifference === 0
+      ? "↔️ ไม่มีการเปลี่ยนแปลง"
+      : priceDifference < 0
+      ? "⬇️ ลดลง"
+      : "⬆️ เพิ่มขึ้น"
+  } ${
+    priceDifference !== 0
+      ? `${Math.abs(priceDifference).toLocaleString()} บาท`
+      : ""
+  }
+
+  💰 ราคาล่าสุด ${latestPrice.toLocaleString()} บาท
+  💰 ราคาเริ่มต้น ${earliestPrice.toLocaleString()} บาท
+
+  💹 ต่ำสุด-สูงสุด ${minPrice.toLocaleString()} ถึง ${maxPrice.toLocaleString()} บาท
   `;
 };
