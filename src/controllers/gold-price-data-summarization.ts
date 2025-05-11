@@ -61,7 +61,7 @@ export default class GoldPriceDataSummarization {
     console.log("Market status: ", marketStatus);
 
     if (marketStatus.MarketStatus !== "ON") {
-      console.log("Market is off. No price summary.");
+      console.log("🔴 Market is off. No price summary.");
       return undefined;
     }
 

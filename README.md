@@ -122,3 +122,26 @@ Deployment
 docker tag goldpriceaiservice vokmon/goldpriceaiservice:latest
 docker push vokmon/goldpriceaiservice:latest
 ```
+
+**Setup Firestore admin**
+
+## The firestore rule policy should be kept as
+
+```
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+## Create service account by
+
+- Go to Project Settings
+- Select Service accounts tab
+- Select Firebase Admin SDK
+- Click Generate new private key

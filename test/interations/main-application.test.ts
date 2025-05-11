@@ -9,6 +9,10 @@ import { getCurrentDateTime } from "../../src/utils/date-utils";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
+
+vi.mock("firebase-admin/firestore");
+vi.mock("firebase-admin/app");
+
 describe("main application: summary service", async () => {
   let mainApplication: MainApplication;
 
@@ -20,6 +24,20 @@ describe("main application: summary service", async () => {
     const getGoldPriceSummarySpy = vi
       .spyOn(GoldPriceDataSummarization.prototype, "getGoldPriceSummary")
       .mockReturnValueOnce(Promise.resolve(goldPriceSummary));
+
+    const getGoldPricePeriodGraphSpy = vi
+      .spyOn(GoldPricePeriodGraph.prototype, "getGoldPricePeriodGraph")
+      .mockReturnValueOnce(
+        Promise.resolve({
+          chartAsBuffer: Buffer.from("test"),
+          description: "test",
+          dataPeriod: {
+            startDate: new Date("2023-01-01"),
+            endDate: new Date("2023-01-07"),
+          },
+        })
+      );
+
     const runProcessSpy = vi.spyOn(MainApplication.prototype, "runProcess");
     const outputDataSpy = vi
       .spyOn(OutputChannels.prototype, "outputData")
@@ -28,6 +46,7 @@ describe("main application: summary service", async () => {
     await mainApplication.runProcess();
 
     expect(getGoldPriceSummarySpy).toHaveBeenCalledTimes(1);
+    expect(getGoldPricePeriodGraphSpy).toHaveBeenCalledTimes(1);
     expect(runProcessSpy).toHaveBeenCalledTimes(1);
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
   });

@@ -18,6 +18,8 @@ import { GoldPriceWebInformation } from "../../src/models/gold-price-information
 import { RunnableSequence } from "@langchain/core/runnables";
 
 // Mock dependencies
+vi.mock("firebase-admin/firestore");
+vi.mock("firebase-admin/app");
 vi.mock("../../src/repositories/firestore/firestore");
 vi.mock("../../src/controllers/gold-price-data-extractor");
 vi.mock("../../src/services/huasengheng/huasengheng-service");

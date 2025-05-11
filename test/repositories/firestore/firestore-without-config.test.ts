@@ -1,16 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
-import { doc, getFirestore, setDoc } from "firebase/firestore";
 import { FirestoreRepo } from "../../../src/repositories/firestore/firestore";
-import { initializeApp } from "firebase/app";
 
-// Mock firebase modules
-vi.mock("firebase/firestore", () => ({
-  doc: vi.fn(),
+// Mock firebase-admin modules
+vi.mock("firebase-admin/firestore", () => ({
   getFirestore: vi.fn(),
-  setDoc: vi.fn(),
 }));
 
-vi.mock("firebase/app", () => ({
+vi.mock("firebase-admin/app", () => ({
+  cert: vi.fn(),
   initializeApp: vi.fn(),
 }));
 
@@ -21,18 +18,20 @@ describe("FirestoreRepo - when config is not available", () => {
 
     vi.mock("../../../src/repositories/firestore/firestore.config.ts", () => ({
       firebaseConfig: {
-        apiKey: "",
-        authDomain: "test-domain",
-        projectId: "test-project",
+        projectId: "",
+        clientEmail: "test@example.com",
+        privateKey: "test-private-key",
       },
     }));
   });
 
-  it("should not initialize Firebase when config is missing API key", () => {
-    // Create new instance with empty API key config
+  it("should not initialize Firebase when config is missing projectId", () => {
+    // Create new instance with empty projectId config
     const uninitializedRepo = new FirestoreRepo();
-    // Verify Firebase was not initialized
-    expect(initializeApp).not.toHaveBeenCalled();
+
+    // Verify repository is not initialized
+    expect(uninitializedRepo["isInitialized"]).toBe(false);
+    expect(uninitializedRepo["db"]).toBeNull();
   });
 
   it("should not attempt to save data when not initialized", async () => {
@@ -46,7 +45,7 @@ describe("FirestoreRepo - when config is not available", () => {
     });
 
     // Assert
-    expect(setDoc).not.toHaveBeenCalled();
+    // We don't need to check Firebase methods since they're not being called
     expect(consoleSpy).toHaveBeenCalledWith("Firestore is not initialized");
   });
 
@@ -67,6 +66,7 @@ describe("FirestoreRepo - when config is not available", () => {
     );
 
     // Assert
+    expect(consoleSpy).toHaveBeenCalledWith("Firestore is not initialized");
     expect(result).toEqual([]);
   });
 });

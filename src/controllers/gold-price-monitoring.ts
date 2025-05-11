@@ -18,7 +18,7 @@ export default class GoldPriceMonitoring {
     console.log("Market status: ", marketStatus);
 
     if (marketStatus.MarketStatus !== "ON") {
-      console.log("Market is off. No price monitoring.");
+      console.log("🔴 Market is off. No price monitoring.");
       return {
         priceAlert: false,
       } as GoldPriceAlert;

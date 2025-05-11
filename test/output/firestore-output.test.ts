@@ -2,12 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 import { FirestoreRepo } from "../../src/repositories/firestore/firestore";
 
-// Mock the FirestoreRepo
-// vi.mock("../../src/repositories/firestore/firestore", () => ({
-//   FirestoreRepo: vi.fn().mockImplementation(() => ({
-//     saveDataToFireStore: vi.fn().mockResolvedValue(undefined),
-//   })),
-// }));
+vi.mock("firebase-admin/firestore");
+vi.mock("firebase-admin/app");
 
 describe("FirestoreOutput", () => {
   let firestoreOutput: FirestoreOutput;

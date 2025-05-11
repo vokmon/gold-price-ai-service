@@ -1,28 +1,28 @@
-import {
-  collection,
-  doc,
-  Firestore,
-  getDocs,
-  getFirestore,
-  query,
-  setDoc,
-  where,
-} from "firebase/firestore";
+import { getFirestore } from "firebase-admin/firestore";
+import { Firestore } from "firebase-admin/firestore";
 import { firebaseConfig } from "./firestore.config.ts";
-import { FirebaseApp, initializeApp } from "firebase/app";
+import { cert, initializeApp } from "firebase-admin/app";
 
+const app = initializeApp({
+  credential: cert({
+    projectId: firebaseConfig.projectId,
+    clientEmail: firebaseConfig.clientEmail,
+    privateKey: firebaseConfig.privateKey,
+  }),
+  databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
+});
+const db = getFirestore(app);
 export class FirestoreRepo {
   private readonly isInitialized: boolean = false;
-  private readonly app: FirebaseApp | null = null;
   private readonly db: Firestore | null = null;
 
   constructor() {
-    if (!firebaseConfig.apiKey) {
+    if (!firebaseConfig.projectId) {
       return;
     }
+
     this.isInitialized = true;
-    this.app = initializeApp(firebaseConfig);
-    this.db = getFirestore(this.app);
+    this.db = db;
   }
 
   async saveDataToFireStore<T>(collectionName: string, data: T) {
@@ -33,10 +33,11 @@ export class FirestoreRepo {
 
     const date = new Date();
     const timestamp = date.getTime().toString();
-    await setDoc(doc(this.db!, collectionName, timestamp), {
+    const docRef = this.db!.collection(collectionName).doc(timestamp);
+    await docRef.set({
       ...data,
       createdDateTime: date,
-    } as any);
+    });
   }
 
   async getDocumentsByDatetime<T>(
@@ -49,14 +50,12 @@ export class FirestoreRepo {
       return [];
     }
 
-    const collectionRef = collection(this.db!, collectionName);
-    const q = query(
-      collectionRef,
-      where("createdDateTime", ">=", startDate),
-      where("createdDateTime", "<=", endDate)
-    );
+    const collectionRef = this.db!.collection(collectionName);
+    const q = collectionRef
+      .where("createdDateTime", ">=", startDate)
+      .where("createdDateTime", "<=", endDate);
 
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await q.get();
     return querySnapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() } as T)
     );

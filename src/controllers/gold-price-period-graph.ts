@@ -3,7 +3,7 @@ import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 import { GoldPriceAlertPersisted } from "~/models/gold-price-summary.ts";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
 export default class GoldPricePeriodGraph {
   private FIRESTORE_COLLECTION_ALERT =
