@@ -100,7 +100,7 @@ export default class MainApplication {
       ]);
       await outputChannels.outputDataPriceAlert(result);
       console.log(
-        `🔔🔔🔔Does not need to alert as the price change does not hit the threshold`
+        `🔔🔔🔔 Does not need to alert as the price change does not hit the threshold`
       );
     }
 
