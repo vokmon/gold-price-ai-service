@@ -112,6 +112,7 @@ cron.schedule(
       startDate.setDate(1);
       const endDate = new Date();
       endDate.setDate(endDate.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
       await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
     } catch (e) {
       console.log("An error occurs");
@@ -140,6 +141,7 @@ cron.schedule(
       startDate.setMonth(0);
       const endDate = new Date();
       endDate.setDate(endDate.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
       await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
     } catch (e) {
       console.log("An error occurs");
