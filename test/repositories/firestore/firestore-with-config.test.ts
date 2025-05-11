@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { FirestoreRepo } from "../../../src/repositories/firestore/firestore";
 import * as firebaseApp from "firebase-admin/app";
 import * as firebaseFirestore from "firebase-admin/firestore";
-import * as firestoreConfig from "../../../src/repositories/firestore/firestore.config";
+import * as firestoreConfig from "../../../src/repositories/firebase/firebase.config";
 
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");

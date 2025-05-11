@@ -16,7 +16,7 @@ describe("FirestoreRepo - when config is not available", () => {
     vi.clearAllMocks();
     vi.resetModules();
 
-    vi.mock("../../../src/repositories/firestore/firestore.config.ts", () => ({
+    vi.mock("../../../src/repositories/firebase/firebase.config.ts", () => ({
       firebaseConfig: {
         projectId: "",
         clientEmail: "test@example.com",
