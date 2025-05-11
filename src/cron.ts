@@ -105,7 +105,7 @@ console.log(
 console.log("\n");
 
 cron.schedule(
-  cronPeriodSummarySchedule,
+  cronPeriodMonthlySchedule,
   async () => {
     try {
       const startDate = new Date();
@@ -121,7 +121,7 @@ cron.schedule(
   },
   {
     timezone,
-    name: periodSummaryCronName,
+    name: periodMonthlyCronName,
     runOnInit: false,
   }
 );
@@ -133,7 +133,7 @@ console.log(
 console.log("\n");
 
 cron.schedule(
-  cronPeriodSummarySchedule,
+  cronPeriodYearlySchedule,
   async () => {
     try {
       const startDate = new Date();
@@ -150,7 +150,7 @@ cron.schedule(
   },
   {
     timezone,
-    name: periodSummaryCronName,
+    name: periodYearlyCronName,
     runOnInit: false,
   }
 );
