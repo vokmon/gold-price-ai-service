@@ -19,7 +19,7 @@ vi.mock("~/repositories/firestore/firestore.ts", () => {
 
 describe("GoldPricePeriodGraph", () => {
   let goldPricePeriodGraph: GoldPricePeriodGraph;
-  let huasenghengSpy: any;
+  let huasenghengSpy: ReturnType<typeof vi.spyOn>;
 
   // Mock environment variable
   const originalEnv = process.env;

@@ -1,5 +1,5 @@
 import { HuasenghengDataType } from "./huasengheng.ts";
-
+import { Timestamp } from "firebase-admin/firestore";
 export type GoldPriceSummary = {
   hasEnoughData: boolean;
   currentPrice: { buy: number; sell: number };
@@ -23,5 +23,5 @@ export type GoldPriceSummaryPersisted = GoldPriceSummary & {
 
 export type GoldPriceAlertPersisted = GoldPriceAlert & {
   id: string;
-  createdDateTime: Date;
+  createdDateTime: Date | Timestamp;
 };

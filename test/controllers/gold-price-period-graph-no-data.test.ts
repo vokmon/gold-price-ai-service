@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
+import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 
 vi.mock("~/repositories/firestore/firestore.ts", () => {
   const mockGetDocumentsByDatetime = vi.fn();
@@ -45,6 +46,12 @@ describe("GoldPricePeriodGraph", () => {
       // Mock the getDocumentsByDatetime call to return empty array
       const mockRepo = (goldPricePeriodGraph as any)._firestoreRepo;
       mockRepo.getDocumentsByDatetime.mockResolvedValue([]);
+
+      const huasenghengSpy = vi.spyOn(
+        Huasengheng.prototype,
+        "getCurrentHuasenghengPrice"
+      );
+      huasenghengSpy.mockResolvedValue(undefined);
 
       // Act
       const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
