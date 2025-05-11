@@ -5,14 +5,18 @@ import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 import { GoldPriceAlertPersisted } from "~/models/gold-price-summary.ts";
 import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
+import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
+import { HuasenghengDataType } from "~/models/huasengheng.ts";
 export default class GoldPricePeriodGraph {
   private FIRESTORE_COLLECTION_ALERT =
     process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
 
   private _firestoreRepo: FirestoreRepo;
+  private _huasengheng: Huasengheng;
 
   constructor() {
     this._firestoreRepo = new FirestoreRepo();
+    this._huasengheng = new Huasengheng();
   }
 
   async getGoldPricePeriodGraph(
@@ -24,12 +28,25 @@ export default class GoldPricePeriodGraph {
         this.FIRESTORE_COLLECTION_ALERT
       } from ${getFormattedDate(startDate)} to ${getFormattedDate(endDate)}`
     );
-    const goldPriceAlertData =
-      await this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlertPersisted>(
+
+    const result = await Promise.allSettled([
+      this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlertPersisted>(
         this.FIRESTORE_COLLECTION_ALERT,
         startDate,
         endDate
-      );
+      ),
+      this._huasengheng.getCurrentHuasenghengPrice(),
+    ]);
+
+    const goldPriceAlertData =
+      /* c8 ignore next */ result[0].status === "fulfilled"
+        ? result[0].value
+        : /* c8 ignore next */ [];
+    const huasenghengData =
+      /* c8 ignore next */ result[1].status === "fulfilled"
+        ? result[1].value
+        : /* c8 ignore next */ undefined;
+
     console.log(`Found ${goldPriceAlertData.length} documents`);
 
     if (goldPriceAlertData.length === 0) {
@@ -45,13 +62,19 @@ export default class GoldPricePeriodGraph {
       };
     }
 
-    return this.generateGoldPriceChart(goldPriceAlertData, startDate, endDate);
+    return this.generateGoldPriceChart(
+      goldPriceAlertData,
+      startDate,
+      endDate,
+      huasenghengData
+    );
   }
 
   private async generateGoldPriceChart(
     goldPriceAlertData: GoldPriceAlertPersisted[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    huasenghengData?: HuasenghengDataType
   ): Promise<GoldPricePeriodGraphData> {
     // Group data by day
     const { groupedData, isSameDay } = this.groupData(goldPriceAlertData);
@@ -161,7 +184,10 @@ export default class GoldPricePeriodGraph {
     // await fs.writeFile(filePath, imageBuffer);
     // console.log(`Chart has been generated and saved to ${filePath}`);
 
-    const priceData = this.extractPriceData(goldPriceAlertData);
+    const priceData = this.extractPriceData(
+      goldPriceAlertData,
+      huasenghengData
+    );
 
     const description = `${chartTitle}\n
     ${convertGoldPricePeriodGraphToString(priceData)}
@@ -256,7 +282,10 @@ export default class GoldPricePeriodGraph {
     };
   }
 
-  private extractPriceData(data: GoldPriceAlertPersisted[]) {
+  private extractPriceData(
+    data: GoldPriceAlertPersisted[],
+    huasenghengData?: HuasenghengDataType
+  ) {
     // Filter valid data with price information
     const validData = data.filter(
       (item) =>
@@ -301,10 +330,12 @@ export default class GoldPricePeriodGraph {
       ) /* c8 ignore next */ ?? "0"
     );
     const latestPrice = parseInt(
-      sortedData[sortedData.length - 1]?.currentPrice?.Sell?.replace(
-        /,/g,
-        ""
-      ) /* c8 ignore next */ ?? "0"
+      huasenghengData?.Sell.replace(/,/g, "") ??
+        sortedData[sortedData.length - 1]?.currentPrice?.Sell?.replace(
+          /,/g,
+          ""
+        ) /* c8 ignore next */ ??
+        "0"
     );
 
     // Calculate price difference

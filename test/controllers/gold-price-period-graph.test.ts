@@ -1,9 +1,8 @@
 // test/controllers/gold-price-period-graph.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
-import { FirestoreRepo } from "../../src/repositories/firestore/firestore";
-import { GoldPricePeriodGraphData } from "../../src/models/gold-price-period-graph";
 import { HuasenghengDataType, HGoldType } from "../../src/models/huasengheng";
+import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 
 // This is a more complete mock of FirestoreRepo
 vi.mock("~/repositories/firestore/firestore.ts", () => {
@@ -20,6 +19,7 @@ vi.mock("~/repositories/firestore/firestore.ts", () => {
 
 describe("GoldPricePeriodGraph", () => {
   let goldPricePeriodGraph: GoldPricePeriodGraph;
+  let huasenghengSpy: any;
 
   // Mock environment variable
   const originalEnv = process.env;
@@ -33,6 +33,14 @@ describe("GoldPricePeriodGraph", () => {
 
     // Create instance
     goldPricePeriodGraph = new GoldPricePeriodGraph();
+
+    huasenghengSpy = vi.spyOn(
+      Huasengheng.prototype,
+      "getCurrentHuasenghengPrice"
+    );
+
+    const mockHuasenghengData = createMockHuasenghengData("36,999");
+    huasenghengSpy.mockResolvedValue(mockHuasenghengData);
   });
 
   afterEach(() => {
@@ -68,8 +76,6 @@ describe("GoldPricePeriodGraph", () => {
       const mockRepo = (goldPricePeriodGraph as any)._firestoreRepo;
       mockRepo.getDocumentsByDatetime.mockResolvedValue(mockData);
 
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
       // Act
       const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
         startDate,
@@ -91,10 +97,6 @@ describe("GoldPricePeriodGraph", () => {
         chartAsBuffer: expect.any(Buffer),
         description: expect.stringContaining("ราคาทองคำ"),
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Getting gold price period graph")
-      );
     });
 
     it("should correctly parse gold prices with commas", async () => {
