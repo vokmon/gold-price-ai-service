@@ -48,6 +48,7 @@ export default class GoldPricePeriodGraph {
         : /* c8 ignore next */ undefined;
 
     console.log(`Found ${goldPriceAlertData.length} documents`);
+    console.log(`Huasengheng data: `, huasenghengData);
 
     if (goldPriceAlertData.length === 0) {
       return {
