@@ -23,7 +23,7 @@ Weekly Summary<br/>
 <br/>
 <br/>
 
-Gold Price Chart<br>
+Gold Price Chart for daily, weekly, monthly and yearly report<br>
 <img src="./images/gold-price-telegram-graph-price.png" alt="graph price" width="300"/>
 
 <br/>
