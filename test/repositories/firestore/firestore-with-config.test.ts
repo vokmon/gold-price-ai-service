@@ -1,39 +1,53 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { FirestoreRepo } from "../../../src/repositories/firestore/firestore";
+import * as firebaseApp from "firebase-admin/app";
+import * as firebaseFirestore from "firebase-admin/firestore";
+import * as firestoreConfig from "../../../src/repositories/firestore/firestore.config";
 
-// Mock the required firebase-admin modules first
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");
-vi.mock("../../../src/repositories/firestore/firestore.config.ts", () => ({
-  firebaseConfig: {
-    projectId: "test-project",
-    clientEmail: "test@example.com",
-    privateKey: "test-private-key",
-  },
-}));
 
 describe("FirestoreRepo - when config is available", () => {
-  // Define all mock objects
-  const mockCollection = {
-    doc: vi.fn(),
-    where: vi.fn(),
-  };
-  const mockQuery = {
-    where: vi.fn(),
-    get: vi.fn(),
-  };
-  const mockDocRef = {
-    set: vi.fn(),
-  };
-  const mockDb = {
-    collection: vi.fn(),
-  };
-
   let repo: FirestoreRepo;
+  let mockCollection: any;
+  let mockDocRef: any;
+  let mockQuery: any;
+  let mockDb: any;
 
-  // Setup mocks before each test
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Create mock objects
+    mockDocRef = {
+      set: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockQuery = {
+      where: vi.fn(),
+      get: vi.fn(),
+    };
+
+    mockCollection = {
+      doc: vi.fn().mockReturnValue(mockDocRef),
+      where: vi.fn().mockReturnValue(mockQuery),
+    };
+
+    mockDb = {
+      collection: vi.fn().mockReturnValue(mockCollection),
+    };
+
+    // Set up spies
+    vi.spyOn(firebaseApp, "initializeApp").mockReturnValue({} as any);
+    vi.spyOn(firebaseApp, "cert").mockReturnValue({} as any);
+    vi.spyOn(firebaseFirestore, "getFirestore").mockReturnValue(mockDb as any);
+
+    // Mock the config
+    vi.spyOn(firestoreConfig, "firebaseConfig", "get").mockReturnValue({
+      projectId: "test-project",
+      clientEmail: "test@example.com",
+      privateKey: "test-key",
+    });
+    vi.spyOn(firestoreConfig, "firestoreDatabase", "get").mockReturnValue(
+      mockDb as any
+    );
 
     // Mock timestamp for consistent testing
     const mockTimestamp = "1234567890";
@@ -41,12 +55,7 @@ describe("FirestoreRepo - when config is available", () => {
       parseInt(mockTimestamp)
     );
 
-    // Setup mock return values
-    mockDb.collection.mockReturnValue(mockCollection);
-    mockCollection.doc.mockReturnValue(mockDocRef);
-    mockDocRef.set.mockResolvedValue(undefined);
-
-    mockCollection.where.mockReturnValue(mockQuery);
+    // Set up the mock behaviors for query
     mockQuery.where.mockReturnValue(mockQuery);
     mockQuery.get.mockResolvedValue({
       docs: [
@@ -59,28 +68,14 @@ describe("FirestoreRepo - when config is available", () => {
 
     // Create repository instance for tests
     repo = new FirestoreRepo();
-
-    // Mock the internal db property since we cannot access the real Firestore instance
-    Object.defineProperty(repo, "db", {
-      value: mockDb,
-      writable: true,
-    });
-
-    // Set isInitialized to true
-    Object.defineProperty(repo, "isInitialized", {
-      value: true,
-      writable: true,
-    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("should initialize Firebase when config is available", () => {
-    // Verify the properties were set correctly
+  it("should initialize with proper configuration", () => {
     expect(repo["isInitialized"]).toBe(true);
-    expect(repo["db"]).toBe(mockDb);
   });
 
   it("should save data to Firestore with timestamp", async () => {

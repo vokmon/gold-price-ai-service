@@ -1,17 +1,6 @@
-import { getFirestore } from "firebase-admin/firestore";
 import { Firestore } from "firebase-admin/firestore";
-import { firebaseConfig } from "./firestore.config.ts";
-import { cert, initializeApp } from "firebase-admin/app";
+import { firebaseConfig, firestoreDatabase } from "./firestore.config.ts";
 
-const app = initializeApp({
-  credential: cert({
-    projectId: firebaseConfig.projectId,
-    clientEmail: firebaseConfig.clientEmail,
-    privateKey: firebaseConfig.privateKey,
-  }),
-  databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
-});
-const db = getFirestore(app);
 export class FirestoreRepo {
   private readonly isInitialized: boolean = false;
   private readonly db: Firestore | null = null;
@@ -22,7 +11,7 @@ export class FirestoreRepo {
     }
 
     this.isInitialized = true;
-    this.db = db;
+    this.db = firestoreDatabase;
   }
 
   async saveDataToFireStore<T>(collectionName: string, data: T) {
