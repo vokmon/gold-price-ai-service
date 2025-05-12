@@ -54,7 +54,7 @@ console.log("\n");
 
 const priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
 
-cron.schedule(
+const priceMonitoringCron = cron.schedule(
   cronPriceDiffSchedule,
   async () => {
     try {
@@ -67,9 +67,9 @@ cron.schedule(
   {
     timezone,
     name: priceMonitoringCronName,
-    runOnInit: true,
   }
 );
+priceMonitoringCron.execute();
 
 console.log("\n");
 console.log(
@@ -94,7 +94,6 @@ cron.schedule(
   {
     timezone,
     name: periodSummaryCronName,
-    runOnInit: false,
   }
 );
 
@@ -122,7 +121,6 @@ cron.schedule(
   {
     timezone,
     name: periodMonthlyCronName,
-    runOnInit: false,
   }
 );
 
@@ -151,6 +149,5 @@ cron.schedule(
   {
     timezone,
     name: periodYearlyCronName,
-    runOnInit: false,
   }
 );
