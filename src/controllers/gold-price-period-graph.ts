@@ -6,6 +6,7 @@ import { GoldPriceAlertPersisted } from "~/models/gold-price-summary.ts";
 import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
+// import { randomUUID } from "crypto";
 export default class GoldPricePeriodGraph {
   private FIRESTORE_COLLECTION_ALERT =
     process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
@@ -113,8 +114,8 @@ export default class GoldPricePeriodGraph {
     const lowestValue = Math.min(...lowestValues) - 1000;
 
     // Set up chart configuration
-    const width = 800;
-    const height = 500;
+    const width = 1000;
+    const height = 600;
 
     const chartJSNodeCanvas = new ChartJSNodeCanvas({
       width,
