@@ -140,6 +140,20 @@ export default class GoldPricePeriodGraph {
             backgroundColor: "rgba(55, 162, 240, 0.6)",
             borderColor: "rgba(55, 162, 240, 1)",
             borderWidth: 1,
+            borderRadius: 5,
+          },
+          {
+            data: dataArray.map(
+              (item) =>
+                ((item?.[0] /* c8 ignore next */ ?? 0) +
+                  (item?.[1] /* c8 ignore next */ ?? 0)) /
+                2
+            ),
+            backgroundColor: "rgba(255, 70, 120, 1)", // Golden rod
+            borderColor: "rgba(200, 75, 105, 1)", // Darker gold for border
+            borderWidth: 2,
+            tension: 0.1,
+            type: "line",
           },
         ],
       },
@@ -189,7 +203,7 @@ export default class GoldPricePeriodGraph {
     // const outputDir = "./output";
     // await fs.mkdir(outputDir, { recursive: true });
 
-    // const fileName = `gold-price-chart-${randomUUID()}.png`;
+    // const fileName = `gold-price-chart-${new Date().getTime()}.png`;
     // const filePath = path.join(outputDir, fileName);
 
     // await fs.writeFile(filePath, imageBuffer);
