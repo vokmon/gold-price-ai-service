@@ -8,6 +8,13 @@ import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-u
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
 // import { randomUUID } from "crypto";
 export default class GoldPricePeriodGraph {
+  private FONT_SIZE = 26;
+  private FONT_SIZE_TITLE = 22;
+  private MIN_LABELS = 10;
+  private HUASENGHENG_ID = "huasengheng-current-price-id";
+  private MIN_PRICE_BAR_HEIGHT = 20;
+  private GRAPH_OFFSET = 100;
+
   private FIRESTORE_COLLECTION_ALERT =
     process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
 
@@ -29,22 +36,39 @@ export default class GoldPricePeriodGraph {
       } from ${getFormattedDate(startDate)} to ${getFormattedDate(endDate)}`
     );
 
-    const result = await Promise.allSettled([
+    const promises = [
       this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlertPersisted>(
         this.FIRESTORE_COLLECTION_ALERT,
         startDate,
         endDate
       ),
-      this._huasengheng.getCurrentHuasenghengPrice(),
-    ]);
+    ] as any[];
+
+    // Check if endDate is today or in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDateIsToday = endDate.getTime() >= today.getTime();
+
+    // Only fetch current price if endDate includes today
+    if (endDateIsToday) {
+      console.log("🔍 Fetching huasengheng current price");
+      promises.push(this._huasengheng.getCurrentHuasenghengPrice());
+    } else {
+      console.log(
+        "🚫 End date is not today, skipping huasengheng current price"
+      );
+    }
+
+    const result = await Promise.allSettled(promises);
 
     const goldPriceAlertData =
-      /* c8 ignore next */ result[0].status === "fulfilled"
+      /* c8 ignore next */ result?.[0]?.status === "fulfilled"
         ? result[0].value
         : /* c8 ignore next */ [];
+
     const huasenghengData =
-      /* c8 ignore next */ result[1].status === "fulfilled"
-        ? result[1].value
+      endDateIsToday && result?.[1]?.status === "fulfilled"
+        ? /* c8 ignore next */ result[1].value
         : /* c8 ignore next */ undefined;
 
     console.log(`Found ${goldPriceAlertData.length} documents`);
@@ -57,7 +81,7 @@ export default class GoldPricePeriodGraph {
         currentPrice: huasenghengData,
         priceAlert: true,
         priceDiff: 0,
-        id: "huasengheng-current-price-id",
+        id: this.HUASENGHENG_ID,
       });
     }
     if (goldPriceAlertData.length === 0) {
@@ -104,14 +128,17 @@ export default class GoldPricePeriodGraph {
 
       if (minPrice === maxPrice) {
         // If the min and max price are the same, we need to add a small buffer to display the bar
-        dataArray.push([minPrice - 20, minPrice + 20]);
+        dataArray.push([
+          minPrice - this.MIN_PRICE_BAR_HEIGHT,
+          minPrice + this.MIN_PRICE_BAR_HEIGHT,
+        ]);
       } else {
         dataArray.push([minPrice, maxPrice]);
       }
     }
 
-    const highestValue = Math.max(...highestValues) + 1000;
-    const lowestValue = Math.min(...lowestValues) - 1000;
+    const highestValue = Math.max(...highestValues) + this.GRAPH_OFFSET;
+    const lowestValue = Math.min(...lowestValues) - this.GRAPH_OFFSET;
 
     // Set up chart configuration
     const width = 1000;
@@ -129,6 +156,14 @@ export default class GoldPricePeriodGraph {
           endDate
         )})`;
 
+    // Ensure labels has at least 10 elements
+    if (labels.length < this.MIN_LABELS) {
+      const emptyLabelsToAdd = this.MIN_LABELS - labels.length;
+      for (let i = 0; i < emptyLabelsToAdd; i++) {
+        labels.push("");
+      }
+    }
+
     const configuration = {
       type: "bar",
       data: {
@@ -141,6 +176,7 @@ export default class GoldPricePeriodGraph {
             borderColor: "rgba(55, 162, 240, 1)",
             borderWidth: 1,
             borderRadius: 5,
+            borderSkipped: false,
           },
           {
             data: dataArray.map(
@@ -179,12 +215,28 @@ export default class GoldPricePeriodGraph {
             title: {
               display: true,
               text: "ราคา (บาท)",
+              font: {
+                size: this.FONT_SIZE_TITLE,
+              },
+            },
+            ticks: {
+              font: {
+                size: this.FONT_SIZE,
+              },
             },
           },
           x: {
             title: {
               display: false,
               text: "วันที่",
+              font: {
+                size: this.FONT_SIZE_TITLE,
+              },
+            },
+            ticks: {
+              font: {
+                size: this.FONT_SIZE,
+              },
             },
           },
         },
