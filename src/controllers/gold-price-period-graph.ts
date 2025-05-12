@@ -109,8 +109,8 @@ export default class GoldPricePeriodGraph {
       }
     }
 
-    const highestValue = Math.floor(Math.max(...highestValues) * 1.1);
-    const lowestValue = Math.floor(Math.min(...lowestValues) * 0.9);
+    const highestValue = Math.max(...highestValues) + 1000;
+    const lowestValue = Math.min(...lowestValues) - 1000;
 
     // Set up chart configuration
     const width = 800;
