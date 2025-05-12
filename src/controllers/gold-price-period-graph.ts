@@ -152,6 +152,7 @@ export default class GoldPricePeriodGraph {
             backgroundColor: "rgba(255, 70, 120, 1)", // Golden rod
             borderColor: "rgba(200, 75, 105, 1)", // Darker gold for border
             borderWidth: 2,
+            pointRadius: 2,
             tension: 0.1,
             type: "line",
           },
