@@ -103,11 +103,14 @@ export default class GoldPricePeriodGraph {
 
       if (minPrice === maxPrice) {
         // If the min and max price are the same, we need to add a small buffer to display the bar
-        dataArray.push([minPrice, minPrice + 10]);
+        dataArray.push([minPrice - 20, minPrice + 20]);
       } else {
         dataArray.push([minPrice, maxPrice]);
       }
     }
+
+    const highestValue = Math.floor(Math.max(...highestValues) * 1.1);
+    const lowestValue = Math.floor(Math.min(...lowestValues) * 0.9);
 
     // Set up chart configuration
     const width = 800;
@@ -154,6 +157,9 @@ export default class GoldPricePeriodGraph {
         scales: {
           y: {
             beginAtZero: false,
+            offset: true,
+            min: lowestValue,
+            max: highestValue,
             title: {
               display: true,
               text: "ราคา (บาท)",
