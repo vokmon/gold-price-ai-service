@@ -39,7 +39,7 @@ describe("GoldPricePeriodGraph", () => {
       "getCurrentHuasenghengPrice"
     );
 
-    const mockHuasenghengData = createMockHuasenghengData("36,999");
+    const mockHuasenghengData = createMockHuasenghengData(36999);
     huasenghengSpy.mockResolvedValue(mockHuasenghengData);
   });
 
@@ -59,15 +59,15 @@ describe("GoldPricePeriodGraph", () => {
       const mockData = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          currentPrice: createMockHuasenghengData("36,000"),
+          currentPrice: createMockHuasenghengData(36000),
         },
       ];
 
@@ -104,15 +104,15 @@ describe("GoldPricePeriodGraph", () => {
       const mockData = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"), // Format with 1 comma
+          currentPrice: createMockHuasenghengData(35000), // Format with 1 comma
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T12:00:00") },
-          currentPrice: createMockHuasenghengData("1,234,567"), // Format with multiple commas
+          currentPrice: createMockHuasenghengData(1234567), // Format with multiple commas
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData("35750"), // Format with no commas
+          currentPrice: createMockHuasenghengData(35750), // Format with no commas
         },
       ];
 
@@ -128,9 +128,7 @@ describe("GoldPricePeriodGraph", () => {
       for (const record in groupedData) {
         groupedData[record]?.forEach((item) => {
           // This is the exact logic we want to test
-          const parsedPrice = parseInt(
-            item.currentPrice.Sell.replace(/,/g, "")
-          );
+          const parsedPrice = item.currentPrice.Sell;
           parsedPrices.push(parsedPrice);
         });
       }
@@ -153,11 +151,11 @@ describe("GoldPricePeriodGraph", () => {
       const data: IncompleteFirestoreDoc[] = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           // Missing createdDateTime
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
@@ -196,15 +194,15 @@ describe("GoldPricePeriodGraph", () => {
       const data = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T16:00:00") },
-          currentPrice: createMockHuasenghengData("36,000"),
+          currentPrice: createMockHuasenghengData(36000),
         },
       ];
 
@@ -233,15 +231,15 @@ describe("GoldPricePeriodGraph", () => {
       const data = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-03-15T14:00:00") },
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-05-20T16:00:00") },
-          currentPrice: createMockHuasenghengData("36,000"),
+          currentPrice: createMockHuasenghengData(36000),
         },
       ];
 
@@ -272,15 +270,15 @@ describe("GoldPricePeriodGraph", () => {
       const mockData = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          currentPrice: createMockHuasenghengData("36,000"),
+          currentPrice: createMockHuasenghengData(36000),
         },
       ];
 
@@ -311,7 +309,7 @@ describe("GoldPricePeriodGraph", () => {
       const mockData = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"), // Only one price for this day
+          currentPrice: createMockHuasenghengData(35000), // Only one price for this day
         },
       ];
 
@@ -366,11 +364,11 @@ describe("GoldPricePeriodGraph", () => {
 });
 
 // Helper function to create a mock HuasenghengDataType object
-function createMockHuasenghengData(sellPrice: string): HuasenghengDataType {
+function createMockHuasenghengData(sellPrice: number): HuasenghengDataType {
   return {
     GoldType: HGoldType.HSH,
     GoldCode: "96.50",
-    Buy: (parseInt(sellPrice.replace(/,/g, "")) - 50).toString(),
+    Buy: sellPrice - 50,
     Sell: sellPrice,
     TimeUpdate: "2023-01-01T10:00:00",
     BuyChange: 0,

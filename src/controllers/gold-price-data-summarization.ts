@@ -32,7 +32,7 @@ export default class GoldPriceDataSummarization {
     );
 
     const currentGoldPriceString = currentGoldPrice
-      ? `** The current 96.5% gold price is Buy: ${currentGoldPrice.buy}, Sell: ${currentGoldPrice.sell}`
+      ? `** The current 96.5% gold price is Buy: ${currentGoldPrice.buy.toLocaleString()}, Sell: ${currentGoldPrice.sell.toLocaleString()}`
       : "";
 
     const result = await chain.invoke({
@@ -81,8 +81,8 @@ export default class GoldPriceDataSummarization {
       .map((info) => info.result)
       .join("\n");
     const goldPriceHsh: GoldPrice = {
-      buy: Number(huasenghengInformation?.Buy.replaceAll(",", "")),
-      sell: Number(huasenghengInformation?.Sell.replaceAll(",", "")),
+      buy: Number(huasenghengInformation?.Buy),
+      sell: Number(huasenghengInformation?.Sell),
     };
     const result = await this.summarizeGoldPriceDataByContext(
       information,

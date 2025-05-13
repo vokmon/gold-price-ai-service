@@ -117,8 +117,8 @@ export default class GoldPricePeriodGraph {
 
     for (const record in groupedData) {
       const prices =
-        groupedData[record]?.map((item) =>
-          parseInt(item.currentPrice.Sell.replace(/,/g, ""))
+        groupedData[record]?.map(
+          (item) => item.currentPrice.Sell
         ) /* c8 ignore next */ || [];
 
       const minPrice = Math.min(...prices);
@@ -375,9 +375,7 @@ export default class GoldPricePeriodGraph {
     }
 
     // Convert all prices to numbers
-    const prices = validData.map((item) =>
-      parseInt(item.currentPrice.Sell.replace(/,/g, ""))
-    );
+    const prices = validData.map((item) => item.currentPrice.Sell);
 
     // Find min and max prices
     const minPrice = Math.min(...prices);
@@ -395,24 +393,17 @@ export default class GoldPricePeriodGraph {
     });
 
     // Get earliest and latest prices
-    const earliestPrice = parseInt(
-      sortedData[0]?.currentPrice?.Sell?.replace(
-        /,/g,
-        ""
-      ) /* c8 ignore next */ ?? "0"
-    );
+    const earliestPrice =
+      sortedData[0]?.currentPrice?.Sell /* c8 ignore next */ || 0;
 
     console.log(
       `Latest price: `,
       sortedData[sortedData.length - 1]?.currentPrice
     );
 
-    const latestPrice = parseInt(
-      sortedData[sortedData.length - 1]?.currentPrice?.Sell?.replace(
-        /,/g,
-        ""
-      ) /* c8 ignore next */ ?? "0"
-    );
+    const latestPrice =
+      sortedData[sortedData.length - 1]?.currentPrice
+        ?.Sell /* c8 ignore next */ || 0;
 
     // Calculate price difference
     const priceDifference = latestPrice - earliestPrice;

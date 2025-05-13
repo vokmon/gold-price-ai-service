@@ -1,5 +1,6 @@
 import {
   HGoldType,
+  HuasenghengDataResponseType,
   HuasenghengDataType,
   MarketStatus,
 } from "../../models/huasengheng.ts";
@@ -9,9 +10,9 @@ export default class Huasengheng {
   private _urlGetStatus =
     "https://apicheckpricev3.huasengheng.com/api/values/GetMarketStatus";
 
-  async getCurrentPrice(): Promise<HuasenghengDataType[]> {
+  async getCurrentPrice(): Promise<HuasenghengDataResponseType[]> {
     const result = await fetch(this._url);
-    return (await result.json()) as HuasenghengDataType[];
+    return (await result.json()) as HuasenghengDataResponseType[];
   }
 
   async getCurrentHuasenghengPrice(): Promise<HuasenghengDataType | undefined> {
@@ -21,7 +22,16 @@ export default class Huasengheng {
     }
 
     const h = result.find((r) => r.GoldType === HGoldType.HSH);
-    return h;
+    if (!h) {
+      return undefined;
+    }
+
+    const hResult: HuasenghengDataType = {
+      ...h,
+      Sell: Number((h?.Sell /* c8 ignore next */ || "0").replace(/,/g, "")),
+      Buy: Number((h?.Buy /* c8 ignore next */ || "0").replace(/,/g, "")),
+    };
+    return hResult;
   }
 
   async getMarketStatus(): Promise<MarketStatus> {

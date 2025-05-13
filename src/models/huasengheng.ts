@@ -1,4 +1,4 @@
-export type HuasenghengDataType = {
+export type HuasenghengDataResponseType = {
   GoldType: HGoldType;
   GoldCode: string;
   Buy: string;
@@ -18,6 +18,14 @@ export type HuasenghengDataType = {
   Increment: any;
   SourcePrice: any;
   StrTimeUpdate: string;
+};
+
+export type HuasenghengDataType = Omit<
+  HuasenghengDataResponseType,
+  "Buy" | "Sell"
+> & {
+  Buy: number;
+  Sell: number;
 };
 
 export enum HGoldType {

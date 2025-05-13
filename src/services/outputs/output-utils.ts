@@ -51,8 +51,8 @@ export const convertHuasenghengDataToString = (
   ราคา${priceDiff > 0 ? "ขึ้น 🔺 " : "ลง 🔻"}: ${priceDiff.toLocaleString()}
 
   💰 ราคาปัจจุบัน
-    ซื้อ: ${data.Buy} บาท
-    ขาย: ${data.Sell} บาท
+    ซื้อ: ${data.Buy.toLocaleString()} บาท
+    ขาย: ${data.Sell.toLocaleString()} บาท
   `;
 
   return message;
