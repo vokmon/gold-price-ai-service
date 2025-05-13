@@ -131,7 +131,12 @@ describe("GoldPricePeriodSummary", () => {
     );
 
     // Assertions
-    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledTimes(1);
+    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledTimes(2);
+    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
+      "gold-price-summaries",
+      mockStartDate,
+      mockEndDate
+    );
     expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
       "gold-price-alerts",
       mockStartDate,
@@ -143,6 +148,13 @@ describe("GoldPricePeriodSummary", () => {
     ).toHaveBeenCalledWith(["https://example.com"], mockStartDate, mockEndDate);
 
     expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
+
+    expect(mockInvoke).toHaveBeenCalledWith({
+      summariesText: expect.any(String),
+      alertsText: expect.any(String),
+      goldPriceInformationText: expect.any(String),
+      currentPrice: expect.any(String),
+    });
 
     // Check the final result structure
     expect(result).toEqual({

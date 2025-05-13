@@ -20,6 +20,8 @@ export default class MainApplication {
   baseTimeoutTime = process.env.TEST === "true" ? 100 : 1000 * 60 * 60;
   FIRESTORE_COLLECTION_SUMMARY = process.env.FIRESTORE_COLLECTION_SUMMARY!;
   FIRESTORE_COLLECTION_ALERT = process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
+  FIRESTORE_COLLECTION_PERIOD_SUMMARY =
+    process.env.FIRESTORE_COLLECTION_PERIOD_SUMMARY!;
 
   _goldPriceDataSummarization: GoldPriceDataSummarization;
   _goldPriceMonitoring: GoldPriceMonitoring;
@@ -125,6 +127,7 @@ export default class MainApplication {
     const outputChannels = new OutputChannels([
       new TerminalOutput(),
       new TelegramOutput(),
+      new FirestoreOutput(this.FIRESTORE_COLLECTION_PERIOD_SUMMARY),
     ]);
 
     console.log("🔖🔖🔖 Gold Price Period Graph: ", graph);
