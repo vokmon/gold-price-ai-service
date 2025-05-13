@@ -1,2 +1,17 @@
-docker build --pull --rm -f 'DockerfileTest' -t 'goldpriceaiservicetest:latest' '.'
-docker run -d --name goldpriceaiservice_test goldpriceaiservicetest:latest
+#!/bin/bash
+
+# Define variables
+CONTAINER_NAME="goldpriceaiservice_test"
+IMAGE_NAME="goldpriceaiservicetest:latest"
+DOCKERFILE="DockerfileTest"
+
+# Stop and remove existing container if it exists
+docker stop $CONTAINER_NAME 2>/dev/null || true
+docker rm $CONTAINER_NAME 2>/dev/null || true
+
+# Remove existing image if it exists
+docker rmi $IMAGE_NAME 2>/dev/null || true
+
+# Build and run the container
+docker build --pull --rm -f "$DOCKERFILE" -t "$IMAGE_NAME" '.'
+docker run -d --name $CONTAINER_NAME $IMAGE_NAME
