@@ -19,8 +19,6 @@ export default class GoldPricePeriodSummary {
   private _goldPriceDataExtractor;
   private _huasengheng;
 
-  private FIRESTORE_COLLECTION_SUMMARY =
-    process.env.FIRESTORE_COLLECTION_SUMMARY!;
   private FIRESTORE_COLLECTION_ALERT =
     process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
 
@@ -39,32 +37,26 @@ export default class GoldPricePeriodSummary {
         startDate
       )} to ${getFormattedDate(endDate)}`
     );
-    const [summariesData, alertsData, goldPriceInformation, currentPrice] =
-      await Promise.all([
-        this._firestoreRepo.getDocumentsByDatetime<GoldPriceSummary>(
-          this.FIRESTORE_COLLECTION_SUMMARY,
-          startDate,
-          endDate
-        ),
-        this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlert>(
-          this.FIRESTORE_COLLECTION_ALERT,
-          startDate,
-          endDate
-        ),
-        this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
-          getArticleLinks(startDate, endDate),
-          startDate,
-          endDate
-        ),
-        this._huasengheng.getCurrentHuasenghengPrice(),
-      ]);
+    const [alertsData, goldPriceInformation, currentPrice] = await Promise.all([
+      this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlert>(
+        this.FIRESTORE_COLLECTION_ALERT,
+        startDate,
+        endDate
+      ),
+      this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
+        getArticleLinks(startDate, endDate),
+        startDate,
+        endDate
+      ),
+      this._huasengheng.getCurrentHuasenghengPrice(),
+    ]);
 
     const goldPriceInformationFiltered = goldPriceInformation.filter(
       (info) =>
         info.result && info.result.trim().replace(/["'`\n\r]/g, "") !== ""
     );
 
-    console.log("Found summaries: ", summariesData.length);
+    // console.log("Found summaries: ", summariesData.length);
     console.log("Found alerts: ", alertsData.length);
     console.log("Gold price information: ", goldPriceInformationFiltered);
     console.log("Current price: ", currentPrice);
@@ -75,7 +67,6 @@ export default class GoldPricePeriodSummary {
     );
 
     const result = await chain.invoke({
-      summariesText: this.convertToText(summariesData),
       alertsText: this.convertToText(alertsData),
       goldPriceInformationText: this.convertToText(
         goldPriceInformationFiltered
