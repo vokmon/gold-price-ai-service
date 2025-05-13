@@ -21,8 +21,6 @@ export default class GoldPricePeriodSummary {
 
   private FIRESTORE_COLLECTION_SUMMARY =
     process.env.FIRESTORE_COLLECTION_SUMMARY!;
-  private FIRESTORE_COLLECTION_ALERT =
-    process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
 
   constructor() {
     this._firestoreRepo = new FirestoreRepo();
