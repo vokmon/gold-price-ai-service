@@ -152,7 +152,7 @@ export default class GoldPricePeriodGraph {
     });
 
     const chartTitle = isSameDay
-      ? `ราคาทองคำ (${getFormattedDate(startDate)})`
+      ? `ราคาทองคำ (${getFormattedDate(endDate)})`
       : `ราคาทองคำ (${getFormattedDate(startDate)} - ${getFormattedDate(
           endDate
         )})`;
