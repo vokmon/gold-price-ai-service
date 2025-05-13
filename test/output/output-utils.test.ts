@@ -72,6 +72,16 @@ describe("get output string from GoldPriceSummary", async () => {
     expect(result).toBeDefined();
   });
 
+  it("should get gold price period summary message with same start date and end date", async () => {
+    const result = convertGoldPricePeriodSummaryToString({
+      ...goldPricePeriodSummary,
+      startDate: new Date("2025-05-13"),
+      endDate: new Date("2025-05-13"),
+    });
+    console.log(result);
+    expect(result).toBeDefined();
+  });
+
   it("should get gold price period graph message for price goes up", async () => {
     const result = convertGoldPricePeriodGraphToString({
       priceDifference: 2000,

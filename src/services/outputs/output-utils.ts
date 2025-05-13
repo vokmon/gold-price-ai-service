@@ -64,8 +64,11 @@ export const convertGoldPricePeriodSummaryToString = (
   const startDate = getFormattedDate(data.startDate);
   const endDate = getFormattedDate(data.endDate);
 
+  const dateDisplay =
+    startDate === endDate ? startDate : `${startDate} - ${endDate}`;
+
   return `
-  ⭐ สรุปข้อมูล ${startDate} - ${endDate}
+  ⭐ สรุปข้อมูล ${dateDisplay}
   
   ${
     data.currentPrice
