@@ -5,13 +5,9 @@ import GoldPriceDataExtractor from "../../src/controllers/gold-price-data-extrac
 import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 import { getChain } from "../../src/utils/chain";
 import * as urlUtils from "../../src/utils/url";
-import {
-  GoldPriceAlert,
-  GoldPriceSummary,
-} from "../../src/models/gold-price-summary";
+import { GoldPriceSummary } from "../../src/models/gold-price-summary";
 import { HuasenghengDataType } from "../../src/models/huasengheng";
 import { GoldPricePeriodSummaryModel } from "../../src/models/gold-price-period-summary";
-import { goldPriceAlertMockedData1 } from "../mock-data/gold-price-alert-mocked-data";
 import { goldPriceSummary } from "../mock-data/gold-price-summary";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 import { GoldPriceWebInformation } from "../../src/models/gold-price-information";
@@ -38,7 +34,6 @@ describe("GoldPricePeriodSummary", () => {
   const mockEndDate = new Date("2023-01-07");
 
   const mockSummariesData: GoldPriceSummary[] = [goldPriceSummary];
-  const mockAlertsData: GoldPriceAlert[] = [goldPriceAlertMockedData1];
 
   const mockGoldPriceInfo: GoldPriceWebInformation[] = [
     {
@@ -80,7 +75,6 @@ describe("GoldPricePeriodSummary", () => {
 
     // Mock environment variables
     process.env.FIRESTORE_COLLECTION_SUMMARY = "gold-price-summaries";
-    process.env.FIRESTORE_COLLECTION_PRICE_ALERT = "gold-price-alerts";
 
     // Create instance with mocked dependencies
     goldPricePeriodSummary = new GoldPricePeriodSummary();
@@ -92,8 +86,6 @@ describe("GoldPricePeriodSummary", () => {
       (collection, start, end) => {
         if (collection === "gold-price-summaries") {
           return Promise.resolve(mockSummariesData);
-        } else if (collection === "gold-price-alerts") {
-          return Promise.resolve(mockAlertsData);
         }
         return Promise.resolve([]);
       }
@@ -131,14 +123,9 @@ describe("GoldPricePeriodSummary", () => {
     );
 
     // Assertions
-    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledTimes(2);
+    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledTimes(1);
     expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
       "gold-price-summaries",
-      mockStartDate,
-      mockEndDate
-    );
-    expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
-      "gold-price-alerts",
       mockStartDate,
       mockEndDate
     );
@@ -151,7 +138,6 @@ describe("GoldPricePeriodSummary", () => {
 
     expect(mockInvoke).toHaveBeenCalledWith({
       summariesText: expect.any(String),
-      alertsText: expect.any(String),
       goldPriceInformationText: expect.any(String),
       currentPrice: expect.any(String),
     });
@@ -213,12 +199,8 @@ describe("GoldPricePeriodSummary", () => {
   it("should filter out empty goldPriceInformation results", async () => {
     // Setup mock return values with some empty information
     vi.mocked(mockFirestoreRepo.getDocumentsByDatetime).mockImplementation(
-      (collection) => {
-        if (collection === "gold-price-summaries") {
-          return Promise.resolve(mockSummariesData);
-        } else {
-          return Promise.resolve(mockAlertsData);
-        }
+      () => {
+        return Promise.resolve(mockSummariesData);
       }
     );
 

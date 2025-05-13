@@ -78,10 +78,6 @@ export const goldPriceInformationTemplate = `
     {summariesText}
 
     --------------------------------
-    # Gold Price Alerts:
-    {alertsText}
-
-    --------------------------------
     # Gold Price Information:
     {goldPriceInformationText}
 

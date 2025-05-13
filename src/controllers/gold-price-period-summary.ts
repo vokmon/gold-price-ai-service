@@ -39,18 +39,14 @@ export default class GoldPricePeriodSummary {
         startDate
       )} to ${getFormattedDate(endDate)}`
     );
-    const [summariesData, alertsData, goldPriceInformation, currentPrice] =
+    const [summariesData, goldPriceInformation, currentPrice] =
       await Promise.all([
         this._firestoreRepo.getDocumentsByDatetime<GoldPriceSummary>(
           this.FIRESTORE_COLLECTION_SUMMARY,
           startDate,
           endDate
         ),
-        this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlert>(
-          this.FIRESTORE_COLLECTION_ALERT,
-          startDate,
-          endDate
-        ),
+
         this._goldPriceDataExtractor.extractGoldPriceInformationFromWebLinks(
           getArticleLinks(startDate, endDate),
           startDate,
@@ -65,7 +61,6 @@ export default class GoldPricePeriodSummary {
     );
 
     console.log("Found summaries: ", summariesData.length);
-    console.log("Found alerts: ", alertsData.length);
     console.log("Gold price information: ", goldPriceInformationFiltered);
     console.log("Current price: ", currentPrice);
 
@@ -76,7 +71,6 @@ export default class GoldPricePeriodSummary {
 
     const result = await chain.invoke({
       summariesText: this.convertToText(summariesData),
-      alertsText: this.convertToText(alertsData),
       goldPriceInformationText: this.convertToText(
         goldPriceInformationFiltered
       ),
