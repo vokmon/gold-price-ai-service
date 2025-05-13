@@ -120,6 +120,6 @@ describe("retreive gold price and compare with the last seen price with env", as
 
     expect(result.priceAlert).toBeFalsy();
     expect(marketStatusSpy).toHaveBeenCalledTimes(1);
-    expect(getCurrentHuasenghengPriceSpy).not.toHaveBeenCalled();
+    expect(getCurrentHuasenghengPriceSpy).toHaveBeenCalled();
   });
 });

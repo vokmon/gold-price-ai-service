@@ -17,12 +17,12 @@ export default class GoldPriceMonitoring {
     const marketStatus = await this._huasengheng.getMarketStatus();
     console.log("Market status: ", marketStatus);
 
-    if (marketStatus.MarketStatus !== "ON") {
-      console.log("🔴 Market is off. No price monitoring.");
-      return {
-        priceAlert: false,
-      } as GoldPriceAlert;
-    }
+    // if (marketStatus.MarketStatus !== "ON") {
+    //   console.log("🔴 Market is off. No price monitoring.");
+    //   return {
+    //     priceAlert: false,
+    //   } as GoldPriceAlert;
+    // }
 
     const currentPrice = await this._huasengheng.getCurrentHuasenghengPrice();
     if (!currentPrice) {
