@@ -40,7 +40,8 @@ export default class GoldPricePeriodGraph {
       this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlertPersisted>(
         this.FIRESTORE_COLLECTION_ALERT,
         startDate,
-        endDate
+        endDate,
+        ["createdDateTime", "currentPrice"]
       ),
     ] as any[];
 

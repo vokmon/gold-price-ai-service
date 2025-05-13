@@ -39,7 +39,7 @@ describe("GoldPricePeriodGraph", () => {
       "getCurrentHuasenghengPrice"
     );
 
-    const mockHuasenghengData = createMockHuasenghengData("36,999");
+    const mockHuasenghengData = createMockHuasenghengData(36999);
     huasenghengSpy.mockResolvedValue(mockHuasenghengData);
   });
 
@@ -59,15 +59,15 @@ describe("GoldPricePeriodGraph", () => {
       const mockData = [
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData("35,000"),
+          currentPrice: createMockHuasenghengData(35000),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData("35,500"),
+          currentPrice: createMockHuasenghengData(35500),
         },
         {
           createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          currentPrice: createMockHuasenghengData("36,000"),
+          currentPrice: createMockHuasenghengData(36000),
         },
       ];
 
@@ -86,7 +86,8 @@ describe("GoldPricePeriodGraph", () => {
       expect(mockRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
         "test-price-alerts",
         startDate,
-        endDate
+        endDate,
+        ["createdDateTime", "currentPrice"]
       );
 
       expect(result).toEqual({
@@ -102,11 +103,11 @@ describe("GoldPricePeriodGraph", () => {
 });
 
 // Helper function to create a mock HuasenghengDataType object
-function createMockHuasenghengData(sellPrice: string): HuasenghengDataType {
+function createMockHuasenghengData(sellPrice: number): HuasenghengDataType {
   return {
     GoldType: HGoldType.HSH,
     GoldCode: "96.50",
-    Buy: (parseInt(sellPrice.replace(/,/g, "")) - 50).toString(),
+    Buy: sellPrice - 50,
     Sell: sellPrice,
     TimeUpdate: "2023-01-01T10:00:00",
     BuyChange: 0,

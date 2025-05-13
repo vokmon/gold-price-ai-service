@@ -86,7 +86,8 @@ describe("GoldPricePeriodGraph", () => {
       expect(mockRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
         "test-price-alerts",
         startDate,
-        endDate
+        endDate,
+        ["createdDateTime", "currentPrice"]
       );
 
       expect(result).toEqual({

@@ -36,6 +36,7 @@ export class FirestoreRepo {
     collectionName: string,
     startDate: Date,
     endDate: Date,
+    fields?: string[],
     pageSize: number = 80
   ): Promise<T[]> {
     if (!this.isInitialized) {
@@ -49,8 +50,14 @@ export class FirestoreRepo {
     let query = collectionRef
       .where("createdDateTime", ">=", startDate)
       .where("createdDateTime", "<=", endDate)
-      .orderBy("createdDateTime")
-      .limit(pageSize);
+      .orderBy("createdDateTime");
+
+    // Only apply select if fields are specified
+    if (fields && fields.length > 0) {
+      query = query.select(...fields);
+    }
+
+    query = query.limit(pageSize);
 
     let lastDoc = null;
     let hasMoreData = true;
@@ -61,15 +68,21 @@ export class FirestoreRepo {
         query = collectionRef
           .where("createdDateTime", ">=", startDate)
           .where("createdDateTime", "<=", endDate)
-          .orderBy("createdDateTime")
-          .startAfter(lastDoc)
-          .limit(pageSize);
+          .orderBy("createdDateTime");
+
+        // Only apply select if fields are specified
+        if (fields && fields.length > 0) {
+          query = query.select(...fields);
+        }
+
+        // Continue building the query with pagination
+        query = query.startAfter(lastDoc).limit(pageSize);
       }
 
       const querySnapshot = await query.get();
 
       console.log(
-        `querySnapshot for $querySnapshot: `,
+        `querySnapshot for ${collectionName}: `,
         querySnapshot.docs.length
       );
 

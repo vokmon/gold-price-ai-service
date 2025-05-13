@@ -24,6 +24,7 @@ describe("FirestoreRepo - when config is available", () => {
       where: vi.fn(),
       get: vi.fn(),
       orderBy: vi.fn(),
+      select: vi.fn(),
       limit: vi.fn(),
       startAfter: vi.fn(),
     };
@@ -31,6 +32,7 @@ describe("FirestoreRepo - when config is available", () => {
     // Ensure each method returns the mockQuery for proper chaining
     mockQuery.where.mockReturnValue(mockQuery);
     mockQuery.orderBy.mockReturnValue(mockQuery);
+    mockQuery.select.mockReturnValue(mockQuery);
     mockQuery.limit.mockReturnValue(mockQuery);
     mockQuery.startAfter.mockReturnValue(mockQuery);
 
@@ -192,7 +194,8 @@ describe("FirestoreRepo - when config is available", () => {
       testCollection,
       startDate,
       endDate,
-      pageSize
+      ["createdDateTime", "currentPrice"],
+      2
     );
 
     // Assert
@@ -231,7 +234,6 @@ describe("FirestoreRepo - when config is available", () => {
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 1);
-    const pageSize = 2;
 
     // Create mock data for first page only
     const page1Docs = [
@@ -262,7 +264,8 @@ describe("FirestoreRepo - when config is available", () => {
       testCollection,
       startDate,
       endDate,
-      pageSize
+      undefined,
+      2
     );
 
     // Assert
