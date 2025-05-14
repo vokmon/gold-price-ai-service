@@ -20,9 +20,9 @@ export type HuasenghengDataResponseType = {
   StrTimeUpdate: string;
 };
 
-export type HuasenghengDataType = Omit<
+export type HuasenghengDataType = Pick<
   HuasenghengDataResponseType,
-  "Buy" | "Sell"
+  "BuyChange" | "SellChange" | "StrTimeUpdate" | "TimeUpdate"
 > & {
   Buy: number;
   Sell: number;
