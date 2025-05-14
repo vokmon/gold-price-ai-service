@@ -1,12 +1,17 @@
-import { TelegramNotifyChannel } from "~/models/telegram-notify-channels.ts";
 import { OutputInterface } from "../output-interface.ts";
+
+type TelegramNotifyChannel = {
+  channelId: string;
+  description: string;
+};
 
 export default class TelegramOutput implements OutputInterface {
   private _telegramBotToken: string | undefined =
-    process.env.TELEGRAM_BOT_TOKEN;
-  private _telegramChannelIds: TelegramNotifyChannel[] | null = process.env
-    .TELEGRAM_CHANNEL_IDS
-    ? JSON.parse(process.env.TELEGRAM_CHANNEL_IDS)
+    Deno.env.get("TELEGRAM_BOT_TOKEN");
+  private _telegramChannelIds: TelegramNotifyChannel[] | null = Deno.env.get(
+    "TELEGRAM_CHANNEL_IDS"
+  )
+    ? JSON.parse(Deno.env.get("TELEGRAM_CHANNEL_IDS")!)
     : null;
 
   async outputMessage(message: string) {

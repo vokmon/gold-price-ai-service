@@ -146,12 +146,14 @@ service cloud.firestore {
 - Select Firebase Admin SDK
 - Click Generate new private key
 
-**Setup Superbase for storing price data**
-Supabase will only be used for storing data. This helps keep the process separate from the database.
-
-- Supabase Edge Functions have limitations (like execution time limits) preventing us from running certain processes. https://supabase.com/docs/guides/functions/limits
-- This includes tasks like long-running web scraping that requires tools like Puppeteer/Chromium, which aren't supported in Edge Functions.
-- To avoid splitting our backend logic across different platforms, we chose to use Supabase solely for data storage and keep all processing together elsewhere.
+**Setup Superbase for storing price data and monitoring price**
 
 projectname: goldpriceaiservice
 username: goldpriceaiservice
+
+Edge Function
+
+- Delegate the process of monitor price and price alert to Supabase edge function. to ensure that it runs all the time.
+- Check README.md in Supabase folder for details
+
+Cron job for running Edge

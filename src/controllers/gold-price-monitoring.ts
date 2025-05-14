@@ -56,9 +56,9 @@ export default class GoldPriceMonitoring {
     }
 
     console.log(
-      `Start checking the price with the threshold ${priceThreshold}. Current price: ${currentPrice.Buy}, Previous price: ${this.lastCheckPrice.Buy}`
+      `Start checking the price with the threshold ${priceThreshold}. Current price: ${currentPrice.Sell}, Previous price: ${this.lastCheckPrice.Sell}`
     );
-    const priceDiff = currentPrice.Buy - this.lastCheckPrice.Buy;
+    const priceDiff = currentPrice.Sell - this.lastCheckPrice.Sell;
 
     const result: GoldPriceAlert = {
       priceAlert: Math.abs(priceDiff) >= priceThreshold,

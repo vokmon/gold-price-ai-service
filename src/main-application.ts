@@ -84,6 +84,7 @@ export default class MainApplication {
 
     const result = await this._goldPriceMonitoring.monitorPrice(priceTreshold);
     if (result.priceAlert) {
+      console.log("🔔🔔🔔 Price alert triggered.");
       const outputChannels = new OutputChannels([
         new TerminalOutput(),
         new TelegramOutput(),
