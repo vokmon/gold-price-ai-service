@@ -36,8 +36,15 @@ export class FirestoreRepo {
     collectionName: string,
     startDate: Date,
     endDate: Date,
-    fields?: string[],
-    pageSize: number = 80
+    {
+      fields,
+      pageSize,
+    }: {
+      fields?: string[];
+      pageSize?: number;
+    } = {
+      pageSize: 80,
+    }
   ): Promise<T[]> {
     if (!this.isInitialized) {
       console.log("Firestore is not initialized");
@@ -57,7 +64,7 @@ export class FirestoreRepo {
       query = query.select(...fields);
     }
 
-    query = query.limit(pageSize);
+    query = query.limit(pageSize!);
 
     let lastDoc = null;
     let hasMoreData = true;
@@ -76,7 +83,7 @@ export class FirestoreRepo {
         }
 
         // Continue building the query with pagination
-        query = query.startAfter(lastDoc).limit(pageSize);
+        query = query.startAfter(lastDoc).limit(pageSize!);
       }
 
       const querySnapshot = await query.get();
@@ -101,7 +108,7 @@ export class FirestoreRepo {
       results.push(...pageResults);
 
       // Stop if we got fewer documents than requested (last page)
-      if (docs.length < pageSize) {
+      if (docs.length < pageSize!) {
         hasMoreData = false;
       }
     }

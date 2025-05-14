@@ -16,12 +16,11 @@ export type GoldPriceAlert = {
   lastCheckTime?: string;
 };
 
-export type GoldPriceSummaryPersisted = GoldPriceSummary & {
+type PersistedData = {
   id: string;
-  createdDateTime: Date;
+  createdDateTime: Timestamp;
 };
 
-export type GoldPriceAlertPersisted = GoldPriceAlert & {
-  id: string;
-  createdDateTime: Date | Timestamp;
-};
+export type GoldPriceSummaryPersisted = GoldPriceSummary & PersistedData;
+
+export type GoldPriceAlertPersisted = GoldPriceAlert & PersistedData;

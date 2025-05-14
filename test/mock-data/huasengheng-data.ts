@@ -3,8 +3,8 @@ import { HGoldType, HuasenghengDataType } from "../../src/models/huasengheng";
 export const huasengsengPriceData1: HuasenghengDataType = {
   GoldType: HGoldType.HSH,
   GoldCode: "96.50",
-  Buy: "40,410",
-  Sell: "40,460",
+  Buy: 40410,
+  Sell: 40460,
   TimeUpdate: "2024-08-06T08:47:14",
   BuyChange: -10.0,
   SellChange: -10.0,
@@ -25,8 +25,8 @@ export const huasengsengPriceData1: HuasenghengDataType = {
 export const huasengsengPriceData2: HuasenghengDataType = {
   GoldType: HGoldType.HSH,
   GoldCode: "96.50",
-  Buy: "40,610",
-  Sell: "40,660",
+  Buy: 40610,
+  Sell: 40660,
   TimeUpdate: "2024-08-06T08:47:14",
   BuyChange: 10.0,
   SellChange: 10.0,
@@ -47,8 +47,8 @@ export const huasengsengPriceData2: HuasenghengDataType = {
 export const huasengsengPriceData3: HuasenghengDataType = {
   GoldType: HGoldType.HSH,
   GoldCode: "96.50",
-  Buy: "40,210",
-  Sell: "40,260",
+  Buy: 40210,
+  Sell: 40260,
   TimeUpdate: "2024-08-06T08:47:14",
   BuyChange: -20.0,
   SellChange: -20.0,
@@ -69,8 +69,8 @@ export const huasengsengPriceData3: HuasenghengDataType = {
 export const huasengsengPriceData4: HuasenghengDataType = {
   GoldType: HGoldType.HSH,
   GoldCode: "96.50",
-  Buy: "40,420",
-  Sell: "40,470",
+  Buy: 40420,
+  Sell: 40470,
   TimeUpdate: "2024-08-06T08:47:14",
   BuyChange: 20.0,
   SellChange: 20.0,

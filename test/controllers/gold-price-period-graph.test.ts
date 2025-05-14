@@ -87,7 +87,9 @@ describe("GoldPricePeriodGraph", () => {
         "test-price-alerts",
         startDate,
         endDate,
-        ["createdDateTime", "currentPrice"]
+        {
+          fields: ["createdDateTime", "currentPrice"],
+        }
       );
 
       expect(result).toEqual({

@@ -194,8 +194,10 @@ describe("FirestoreRepo - when config is available", () => {
       testCollection,
       startDate,
       endDate,
-      ["createdDateTime", "currentPrice"],
-      2
+      {
+        fields: ["createdDateTime", "currentPrice"],
+        pageSize: 2,
+      }
     );
 
     // Assert
@@ -264,8 +266,9 @@ describe("FirestoreRepo - when config is available", () => {
       testCollection,
       startDate,
       endDate,
-      undefined,
-      2
+      {
+        pageSize: 2,
+      }
     );
 
     // Assert

@@ -41,7 +41,9 @@ export default class GoldPricePeriodGraph {
         this.FIRESTORE_COLLECTION_ALERT,
         startDate,
         endDate,
-        ["createdDateTime", "currentPrice"]
+        {
+          fields: ["createdDateTime", "currentPrice"],
+        }
       ),
     ] as any[];
 
