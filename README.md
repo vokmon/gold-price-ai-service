@@ -151,9 +151,15 @@ service cloud.firestore {
 projectname: goldpriceaiservice
 username: goldpriceaiservice
 
-Edge Function
+**_Edge Function in Supabase_**
 
 - Delegate the process of monitor price and price alert to Supabase edge function. to ensure that it runs all the time.
 - Check README.md in Supabase folder for details
 
-Cron job for running Edge
+**_Cron job for running Edge in Supabase_**
+
+- Open the project
+- Goto Integrations
+- Search for Crons and install the extentions
+- Setup Cron
+- https://supabase.com/docs/guides/cron
