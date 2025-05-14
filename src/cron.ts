@@ -4,13 +4,15 @@ import MainApplication from "./main-application.ts";
 // Environment variables with defaults
 const cronConfig = {
   summary: process.env.CRON_SUMMARY_SCHEDULE || "0 9,17 * * 1-6",
-  priceMonitoring: process.env.CRON_MONITOR_PRICE || "*/15 * * * *",
+  priceMonitoring: process.env.CRON_MONITOR_PRICE,
+  priceRecord: process.env.CRON_PRICE_RECORD,
+
   periodSummary: process.env.CRON_PERIOD_SUMMARY_SCHEDULE || "0 9,17 * * 1-6",
   periodMonthly: process.env.CRON_PERIOD_MONTHLY_SCHEDULE || "0 9 1 * *",
   periodYearly: process.env.CRON_PERIOD_YEARLY_SCHEDULE || "0 9 1 1 *",
+
   timezone: process.env.TIME_ZONE || "Asia/Bangkok",
   priceTreshold: Number(process.env.PRICE_DIFF_THRESHOLD || 100),
-  priceRecord: process.env.CRON_PRICE_RECORD || "0 9 * * *",
 };
 
 const mainApp = new MainApplication();
@@ -30,11 +32,16 @@ function setupCronJob({
   runImmediately = false,
 }: {
   name: string;
-  schedule: string;
+  schedule?: string;
   handler: () => Promise<void>;
   runImmediately?: boolean;
 }) {
   console.log("\n");
+
+  if (!schedule) {
+    console.log(`🔴🔴🔴 ${name} is not scheduled to run`);
+    return;
+  }
   console.log(
     `🚀🚀🚀 Start ${name} with the setup\nschedule: ${schedule}, timezone: ${cronConfig.timezone}`
   );
