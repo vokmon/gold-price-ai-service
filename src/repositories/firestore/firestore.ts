@@ -17,15 +17,19 @@ export class FirestoreRepo {
     this.db = firestoreDatabase;
   }
 
-  async saveDataToFireStore<T>(collectionName: string, data: T) {
+  async saveDataToFireStore<T>(
+    collectionName: string,
+    data: T,
+    { id }: { id?: string } = { id: undefined }
+  ) {
     if (!this.isInitialized) {
       console.log("Firestore is not initialized");
       return;
     }
 
     const date = new Date();
-    const timestamp = date.getTime().toString();
-    const docRef = this.db!.collection(collectionName).doc(timestamp);
+    const docId = id || date.getTime().toString();
+    const docRef = this.db!.collection(collectionName).doc(docId);
     await docRef.set({
       ...data,
       createdDateTime: date,

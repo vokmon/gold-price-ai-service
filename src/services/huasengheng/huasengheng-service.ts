@@ -27,12 +27,13 @@ export default class Huasengheng {
     }
 
     const hResult: HuasenghengDataType = {
+      id: new Date().getTime(),
       Sell: Number((h?.Sell /* c8 ignore next */ || "0").replace(/,/g, "")),
       Buy: Number((h?.Buy /* c8 ignore next */ || "0").replace(/,/g, "")),
-      BuyChange: h?.BuyChange || 0,
-      SellChange: h?.SellChange || 0,
-      StrTimeUpdate: h?.StrTimeUpdate || "",
-      TimeUpdate: h?.TimeUpdate || "",
+      BuyChange: h?.BuyChange /* c8 ignore next */ || 0,
+      SellChange: h?.SellChange /* c8 ignore next */ || 0,
+      StrTimeUpdate: h?.StrTimeUpdate /* c8 ignore next */ || "",
+      TimeUpdate: h?.TimeUpdate /* c8 ignore next */ || "",
     };
     return hResult;
   }

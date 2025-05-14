@@ -24,6 +24,7 @@ export type HuasenghengDataType = Pick<
   HuasenghengDataResponseType,
   "BuyChange" | "SellChange" | "StrTimeUpdate" | "TimeUpdate"
 > & {
+  id: number;
   Buy: number;
   Sell: number;
 };
