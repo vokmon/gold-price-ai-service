@@ -1,153 +1,124 @@
 import cron from "node-cron";
 import MainApplication from "./main-application.ts";
 
-const cronSummarySchedule =
-  process.env.CRON_SUMMARY_SCHEDULE || "0 9,17 * * 1-6";
-const cronPriceDiffSchedule = process.env.CRON_MONITOR_PRICE || "*/15 * * * *";
-const cronPeriodSummarySchedule =
-  process.env.CRON_PERIOD_SUMMARY_SCHEDULE || "0 9,17 * * 1-6";
-
-const cronPeriodMonthlySchedule =
-  process.env.CRON_PERIOD_MONTHLY_SCHEDULE || "0 9 1 * *";
-const cronPeriodYearlySchedule =
-  process.env.CRON_PERIOD_YEARLY_SCHEDULE || "0 9 1 1 *";
-
-const timezone = process.env.TIME_ZONE || "Asia/Bangkok";
-
-const summaryCronName = "Gold price summary service cron job";
-const priceMonitoringCronName = "Gold price price monitoring service cron job";
-const periodSummaryCronName = "Gold price period summary service cron job";
-const periodMonthlyCronName =
-  "Gold price period monthly summary service cron job";
-const periodYearlyCronName =
-  "Gold price period yearly summary service cron job";
+// Environment variables with defaults
+const cronConfig = {
+  summary: process.env.CRON_SUMMARY_SCHEDULE || "0 9,17 * * 1-6",
+  priceMonitoring: process.env.CRON_MONITOR_PRICE || "*/15 * * * *",
+  periodSummary: process.env.CRON_PERIOD_SUMMARY_SCHEDULE || "0 9,17 * * 1-6",
+  periodMonthly: process.env.CRON_PERIOD_MONTHLY_SCHEDULE || "0 9 1 * *",
+  periodYearly: process.env.CRON_PERIOD_YEARLY_SCHEDULE || "0 9 1 1 *",
+  timezone: process.env.TIME_ZONE || "Asia/Bangkok",
+  priceTreshold: Number(process.env.PRICE_DIFF_THRESHOLD || 100),
+  priceRecord: process.env.CRON_PRICE_RECORD || "0 9 * * *",
+};
 
 const mainApp = new MainApplication();
 
-console.log("\n");
-console.log(
-  `Start summary cron job with the setup\nschedule: ${cronSummarySchedule}, timezone: ${timezone}`
-);
-console.log("\n");
+/**
+ * Helper function to setup and register a cron job
+ * @param name Job name
+ * @param schedule Cron schedule
+ * @param handler Function to execute on schedule
+ * @param runImmediately Whether to run the job immediately
+ * @returns The created cron job
+ */
+function setupCronJob({
+  name,
+  schedule,
+  handler,
+  runImmediately = false,
+}: {
+  name: string;
+  schedule: string;
+  handler: () => Promise<void>;
+  runImmediately?: boolean;
+}) {
+  console.log("\n");
+  console.log(
+    `🚀🚀🚀 Start ${name} with the setup\nschedule: ${schedule}, timezone: ${cronConfig.timezone}`
+  );
+  console.log("\n");
 
-cron.schedule(
-  cronSummarySchedule,
-  async () => {
-    try {
-      await mainApp.runProcess();
-    } catch (e) {
-      console.log("An error occurs");
-      console.log(e);
+  const job = cron.schedule(
+    schedule,
+    async () => {
+      try {
+        await handler();
+      } catch (e) {
+        console.log(`An error occurred in ${name}:`);
+        console.log(e);
+      }
+    },
+    {
+      timezone: cronConfig.timezone,
+      name,
     }
-  },
-  {
-    timezone,
-    name: summaryCronName,
+  );
+
+  if (runImmediately) {
+    job.execute();
   }
-);
 
-console.log("\n");
-console.log(
-  `🚀🚀🚀 Start price monitoring cron job with the setup\nschedule: ${cronPriceDiffSchedule}, timezone: ${timezone}`
-);
-console.log("\n");
+  return job;
+}
 
-const priceTreshold = Number(process.env.PRICE_DIFF_THRESHOLD || 100);
+// Setup all cron jobs
+setupCronJob({
+  name: "Gold price summary service",
+  schedule: cronConfig.summary,
+  handler: async () => await mainApp.runProcess(),
+});
 
-const priceMonitoringCron = cron.schedule(
-  cronPriceDiffSchedule,
-  async () => {
-    try {
-      await mainApp.monitorPrice(priceTreshold);
-    } catch (e) {
-      console.log("An error occurs");
-      console.log(e);
-    }
+setupCronJob({
+  name: "Gold price monitoring service",
+  schedule: cronConfig.priceMonitoring,
+  handler: async () => await mainApp.monitorPrice(cronConfig.priceTreshold),
+  runImmediately: true,
+});
+
+setupCronJob({
+  name: "Gold price period summary service",
+  schedule: cronConfig.periodSummary,
+  handler: async () => {
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - 7);
+    const endDate = new Date();
+    await mainApp.summarizeGoldPricePeriod(startDate, endDate);
   },
-  {
-    timezone,
-    name: priceMonitoringCronName,
-  }
-);
-priceMonitoringCron.execute();
+});
 
-console.log("\n");
-console.log(
-  `🚀🚀🚀 Start period summary cron job with the setup\nschedule: ${cronPeriodSummarySchedule}, timezone: ${timezone}`
-);
-console.log("\n");
-
-cron.schedule(
-  cronPeriodSummarySchedule,
-  async () => {
-    try {
-      const startDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
-      startDate.setDate(startDate.getDate() - 7);
-      const endDate = new Date();
-      await mainApp.summarizeGoldPricePeriod(startDate, endDate);
-    } catch (e) {
-      console.log("An error occurs");
-      console.log(e);
-    }
+setupCronJob({
+  name: "Gold price period monthly summary service",
+  schedule: cronConfig.periodMonthly,
+  handler: async () => {
+    const startDate = new Date();
+    startDate.setDate(1);
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() - 1);
+    endDate.setHours(23, 59, 59, 999);
+    await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
   },
-  {
-    timezone,
-    name: periodSummaryCronName,
-  }
-);
+});
 
-console.log("\n");
-console.log(
-  `🚀🚀🚀 Start period monthly summary cron job with the setup\nschedule: ${cronPeriodMonthlySchedule}, timezone: ${timezone}`
-);
-console.log("\n");
-
-cron.schedule(
-  cronPeriodMonthlySchedule,
-  async () => {
-    try {
-      const startDate = new Date();
-      startDate.setDate(1);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() - 1);
-      endDate.setHours(23, 59, 59, 999);
-      await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
-    } catch (e) {
-      console.log("An error occurs");
-      console.log(e);
-    }
+setupCronJob({
+  name: "Gold price period yearly summary service",
+  schedule: cronConfig.periodYearly,
+  handler: async () => {
+    const startDate = new Date();
+    startDate.setDate(1);
+    startDate.setMonth(0);
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() - 1);
+    endDate.setHours(23, 59, 59, 999);
+    await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
   },
-  {
-    timezone,
-    name: periodMonthlyCronName,
-  }
-);
+});
 
-console.log("\n");
-console.log(
-  `🚀🚀🚀 Start period yearly summary cron job with the setup\nschedule: ${cronPeriodYearlySchedule}, timezone: ${timezone}`
-);
-console.log("\n");
-
-cron.schedule(
-  cronPeriodYearlySchedule,
-  async () => {
-    try {
-      const startDate = new Date();
-      startDate.setDate(1);
-      startDate.setMonth(0);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() - 1);
-      endDate.setHours(23, 59, 59, 999);
-      await mainApp.summarizeGoldPricePeriodWithGraph(startDate, endDate);
-    } catch (e) {
-      console.log("An error occurs");
-      console.log(e);
-    }
-  },
-  {
-    timezone,
-    name: periodYearlyCronName,
-  }
-);
+setupCronJob({
+  name: "Gold price record service",
+  schedule: cronConfig.priceRecord,
+  handler: async () => await mainApp.recordGoldPriceData(),
+  runImmediately: true,
+});

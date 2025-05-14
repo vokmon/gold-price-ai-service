@@ -6,6 +6,7 @@ import TelegramOutput from "./services/outputs/impl/telegram-output.ts";
 import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
 import GoldPricePeriodSummary from "./controllers/gold-price-period-summary.ts";
 import GoldPricePeriodGraph from "./controllers/gold-price-period-graph.ts";
+import { GoldPriceDataRecorder } from "./controllers/gold-price-data-recorder.ts";
 export default class MainApplication {
   /**
    * Maximum number of retry
@@ -27,21 +28,14 @@ export default class MainApplication {
   _goldPriceMonitoring: GoldPriceMonitoring;
   _goldPricePeriodSummary: GoldPricePeriodSummary;
   _goldPricePeriodGraph: GoldPricePeriodGraph;
+  _goldPriceDataRecorder: GoldPriceDataRecorder;
 
-  constructor(
-    goldPriceDataSummarization?: GoldPriceDataSummarization,
-    goldPriceMonitoring?: GoldPriceMonitoring,
-    goldPricePeriodSummary?: GoldPricePeriodSummary,
-    goldPricePeriodGraph?: GoldPricePeriodGraph
-  ) {
-    this._goldPriceDataSummarization =
-      goldPriceDataSummarization || new GoldPriceDataSummarization();
-    this._goldPriceMonitoring =
-      goldPriceMonitoring || new GoldPriceMonitoring();
-    this._goldPricePeriodSummary =
-      goldPricePeriodSummary || new GoldPricePeriodSummary();
-    this._goldPricePeriodGraph =
-      goldPricePeriodGraph || new GoldPricePeriodGraph();
+  constructor() {
+    this._goldPriceDataSummarization = new GoldPriceDataSummarization();
+    this._goldPriceMonitoring = new GoldPriceMonitoring();
+    this._goldPricePeriodSummary = new GoldPricePeriodSummary();
+    this._goldPricePeriodGraph = new GoldPricePeriodGraph();
+    this._goldPriceDataRecorder = new GoldPriceDataRecorder();
   }
 
   async runProcess() {
@@ -161,6 +155,19 @@ export default class MainApplication {
 
     console.timeEnd(label);
     console.timeLog(`💹💹💹Process ${label} finished.`);
+    console.log("\n");
+  }
+
+  async recordGoldPriceData() {
+    console.log("\n");
+    const label = `🧈🧈🧈 Gold Price Data Recorder Service: ${new Date()}`;
+    console.log(label);
+    console.time(label);
+
+    await this._goldPriceDataRecorder.recordGoldPriceData();
+
+    console.timeEnd(label);
+    console.timeLog(`🧈🧈🧈 Process ${label} finished.`);
     console.log("\n");
   }
 }

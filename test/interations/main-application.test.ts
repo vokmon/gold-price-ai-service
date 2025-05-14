@@ -9,6 +9,7 @@ import { getCurrentDateTime } from "../../src/utils/date-utils";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
+import { GoldPriceDataRecorder } from "../../src/controllers/gold-price-data-recorder";
 
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");
@@ -229,5 +230,47 @@ describe("main application: Gold price period graph service", async () => {
 
     expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
     expect(outputGraphSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("main application: Gold price data recorder service", async () => {
+  let mainApplication: MainApplication;
+
+  beforeAll(() => {
+    mainApplication = new MainApplication();
+  });
+
+  it("should call recordGoldPriceData method from GoldPriceDataRecorder", async () => {
+    // Setup the spy on the GoldPriceDataRecorder
+    const recordGoldPriceDataSpy = vi
+      .spyOn(GoldPriceDataRecorder.prototype, "recordGoldPriceData")
+      .mockResolvedValueOnce(undefined);
+
+    // Call the method under test
+    await mainApplication.recordGoldPriceData();
+
+    // Verify the GoldPriceDataRecorder was called
+    expect(recordGoldPriceDataSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should handle errors from recordGoldPriceData method", async () => {
+    // Setup the spy to throw an error
+    const testError = new Error("Test recording error");
+    const recordGoldPriceDataSpy = vi
+      .spyOn(GoldPriceDataRecorder.prototype, "recordGoldPriceData")
+      .mockRejectedValueOnce(testError);
+
+    // Call the method and expect it to throw
+    try {
+      await mainApplication.recordGoldPriceData();
+      // If no error is thrown, fail the test
+      expect(true).toBe(false);
+    } catch (error) {
+      // Verify error was caught
+      expect(error).toBe(testError);
+    }
+
+    // Verify the method was called despite the error
+    expect(recordGoldPriceDataSpy).toHaveBeenCalledTimes(1);
   });
 });
