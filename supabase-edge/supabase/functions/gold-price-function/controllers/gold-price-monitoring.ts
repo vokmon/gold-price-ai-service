@@ -14,10 +14,9 @@ export default class GoldPriceMonitoring {
   private lastCheckPriceCollectionName = "last_check_price";
   private lastCheckCheckPriceId = "last_check_alert_id";
 
-  private _huasengheng;
+  private _huasengheng: Huasengheng;
   private _firestore: FirestoreRepo;
-  private lastCheckPrice: HuasenghengDataType | null;
-  private lastCheckTime: string | undefined;
+  private lastCheckPrice: LastCheckPricePersistence | null;
 
   constructor() {
     this._firestore = new FirestoreRepo();
@@ -57,56 +56,65 @@ export default class GoldPriceMonitoring {
           "🎯 Found last check price from firestore - Last check price: ",
           lastCheckPriceFromFireStore
         );
-        this.lastCheckPrice = lastCheckPriceFromFireStore?.price;
-        this.lastCheckTime = lastCheckPriceFromFireStore?.lastCheckTime;
+        this.lastCheckPrice = lastCheckPriceFromFireStore;
       }
     }
 
     if (!this.lastCheckPrice) {
       console.log("No price to compare from cache and firestore.");
-      this.lastCheckPrice = currentPrice;
-      this.lastCheckTime = getCurrentDateTime("th-TH");
+
+      const dateTime = getCurrentDateTime("th-TH");
       await this.outputPriceAlertToFirestore({
-        lastCheckTime: this.lastCheckTime,
         price: currentPrice,
+        lastCheckTime: dateTime,
       });
+      this.lastCheckPrice = {
+        price: currentPrice,
+        lastCheckTime: dateTime,
+      };
       return {
         priceAlert: false,
         currentPrice: currentPrice,
         priceDiff: 0,
-        lastCheckTime: this.lastCheckTime,
+        lastCheckTime: this.lastCheckPrice.lastCheckTime,
       } as GoldPriceAlert;
     }
 
-    if (this.lastCheckPrice.StrTimeUpdate === currentPrice.StrTimeUpdate) {
-      console.log("No price update.", this.lastCheckPrice.StrTimeUpdate);
-      this.lastCheckTime = getCurrentDateTime("th-TH");
+    if (
+      this.lastCheckPrice.price.StrTimeUpdate === currentPrice.StrTimeUpdate
+    ) {
+      console.log("No price update.", this.lastCheckPrice.price.StrTimeUpdate);
+      this.lastCheckPrice.lastCheckTime = getCurrentDateTime("th-TH");
       await this.outputPriceAlertToFirestore({
-        lastCheckTime: this.lastCheckTime,
-        price: this.lastCheckPrice,
+        lastCheckTime: this.lastCheckPrice.lastCheckTime,
+        price: this.lastCheckPrice.price,
+        createdDateTime: this.lastCheckPrice.createdDateTime,
       });
       return {
         priceAlert: false,
         currentPrice: currentPrice,
         priceDiff: 0,
-        lastCheckTime: this.lastCheckTime,
+        lastCheckTime: this.lastCheckPrice.lastCheckTime,
       } as GoldPriceAlert;
     }
 
     console.log(
-      `Start checking the price with the threshold ${priceThreshold}. Current price: ${currentPrice.Sell}, Previous price: ${this.lastCheckPrice.Sell}`
+      `Start checking the price with the threshold ${priceThreshold}. Current price: ${currentPrice.Sell}, Previous price: ${this.lastCheckPrice.price.Sell}`
     );
-    const priceDiff = currentPrice.Sell - this.lastCheckPrice.Sell;
+    const priceDiff = currentPrice.Sell - this.lastCheckPrice.price.Sell;
 
     const result: GoldPriceAlert = {
       priceAlert: Math.abs(priceDiff) >= priceThreshold,
       currentPrice: currentPrice,
       priceDiff,
-      lastCheckTime: this.lastCheckTime,
+      lastCheckTime: this.lastCheckPrice.lastCheckTime,
     };
     console.log(`Monitoring result: `, result);
-    this.lastCheckPrice = currentPrice;
-    this.lastCheckTime = getCurrentDateTime("th-TH");
+    this.lastCheckPrice = {
+      price: currentPrice,
+      lastCheckTime: getCurrentDateTime("th-TH"),
+      createdDateTime: this.lastCheckPrice.createdDateTime,
+    };
 
     if (result.priceAlert) {
       console.log(
@@ -115,8 +123,9 @@ export default class GoldPriceMonitoring {
       const promises = [
         this.outputPriceAlert(result),
         this.outputPriceAlertToFirestore({
-          lastCheckTime: this.lastCheckTime,
+          lastCheckTime: this.lastCheckPrice.lastCheckTime,
           price: currentPrice,
+          createdDateTime: this.lastCheckPrice.createdDateTime,
         }),
       ];
       const results = await Promise.allSettled(promises);
@@ -126,8 +135,9 @@ export default class GoldPriceMonitoring {
         `⛔ No price alert triggered, price diff is ${priceDiff} which less than ${priceThreshold}, save to firestore for next comparison.`
       );
       await this.outputPriceAlertToFirestore({
-        lastCheckTime: this.lastCheckTime,
+        lastCheckTime: this.lastCheckPrice.lastCheckTime,
         price: currentPrice,
+        createdDateTime: this.lastCheckPrice.createdDateTime,
       });
     }
     return result;

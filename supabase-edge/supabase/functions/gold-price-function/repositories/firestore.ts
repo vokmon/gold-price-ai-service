@@ -54,7 +54,7 @@ export class FirestoreRepo {
 
     const body = {
       ...data,
-      createdDateTime: date,
+      updatedDateTime: date,
     };
 
     const firestoreBody = {

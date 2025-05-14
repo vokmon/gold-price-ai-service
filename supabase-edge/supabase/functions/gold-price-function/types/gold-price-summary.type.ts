@@ -10,4 +10,6 @@ export type GoldPriceAlert = {
 export type LastCheckPricePersistence = {
   lastCheckTime: string;
   price: HuasenghengDataType;
+  createdDateTime?: string;
+  updatedDateTime?: string;
 };
