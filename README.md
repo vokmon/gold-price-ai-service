@@ -148,4 +148,4 @@ service cloud.firestore {
 
 **Setup Superbase for storing price data**
 projectname: goldpriceaiservice
-username: goldpriceaiservice, password: goldpriceaiservice
+username: goldpriceaiservice
