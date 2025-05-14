@@ -1,6 +1,6 @@
 import { describe, it, vi, beforeEach, expect } from "vitest";
 import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
-import { FirestoreRepo } from "../../src/repositories/firestore/firestore";
+import { FirestoreRepo } from "../../src/repositories/firebase/firestore/firestore";
 import GoldPriceDataExtractor from "../../src/controllers/gold-price-data-extractor";
 import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 import { getChain } from "../../src/utils/chain";
@@ -16,7 +16,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 // Mock dependencies
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");
-vi.mock("../../src/repositories/firestore/firestore");
+vi.mock("../../src/repositories/firebase/firestore/firestore");
 vi.mock("../../src/controllers/gold-price-data-extractor");
 vi.mock("../../src/services/huasengheng/huasengheng-service");
 vi.mock("../../src/utils/chain");

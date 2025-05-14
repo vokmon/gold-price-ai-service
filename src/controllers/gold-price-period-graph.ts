@@ -1,4 +1,4 @@
-import { FirestoreRepo } from "~/repositories/firestore/firestore.ts";
+import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";

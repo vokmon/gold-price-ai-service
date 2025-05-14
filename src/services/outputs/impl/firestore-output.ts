@@ -1,4 +1,4 @@
-import { FirestoreRepo } from "~/repositories/firestore/firestore.ts";
+import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import { OutputInterface } from "../output-interface.ts";
 
 export default class FirestoreOutput implements OutputInterface {

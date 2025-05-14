@@ -145,3 +145,7 @@ service cloud.firestore {
 - Select Service accounts tab
 - Select Firebase Admin SDK
 - Click Generate new private key
+
+**Setup Superbase for storing price data**
+projectname: goldpriceaiservice
+username: goldpriceaiservice, password: goldpriceaiservice

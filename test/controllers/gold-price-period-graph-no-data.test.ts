@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
 import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 
-vi.mock("~/repositories/firestore/firestore.ts", () => {
+vi.mock("~/repositories/firebase/firestore/firestore.ts", () => {
   const mockGetDocumentsByDatetime = vi.fn();
 
   return {

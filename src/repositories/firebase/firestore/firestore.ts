@@ -1,8 +1,5 @@
 import { Firestore } from "firebase-admin/firestore";
-import {
-  firebaseConfig,
-  firestoreDatabase,
-} from "../firebase/firebase.config.ts";
+import { firebaseConfig, firestoreDatabase } from "../firebase.config.ts";
 
 export class FirestoreRepo {
   private readonly isInitialized: boolean = false;

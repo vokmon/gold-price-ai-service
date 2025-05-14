@@ -5,7 +5,7 @@ import { HuasenghengDataType, HGoldType } from "../../src/models/huasengheng";
 import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 
 // This is a more complete mock of FirestoreRepo
-vi.mock("~/repositories/firestore/firestore.ts", () => {
+vi.mock("~/repositories/firebase/firestore/firestore.ts", () => {
   const mockGetDocumentsByDatetime = vi.fn();
 
   return {
@@ -369,24 +369,12 @@ describe("GoldPricePeriodGraph", () => {
 // Helper function to create a mock HuasenghengDataType object
 function createMockHuasenghengData(sellPrice: number): HuasenghengDataType {
   return {
-    GoldType: HGoldType.HSH,
-    GoldCode: "96.50",
+    id: new Date().getTime(),
     Buy: sellPrice - 50,
     Sell: sellPrice,
     TimeUpdate: "2023-01-01T10:00:00",
     BuyChange: 0,
     SellChange: 0,
-    PresentDate: "2023-01-01",
-    FxAsk: null,
-    FxBid: null,
-    Bid: null,
-    Ask: null,
-    QtyBid: null,
-    QtyAsk: null,
-    Discount: null,
-    Premium: null,
-    Increment: null,
-    SourcePrice: null,
     StrTimeUpdate: "อัพเดตล่าสุด วันที่ 1 ม.ค. 2566",
   };
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
-import { FirestoreRepo } from "../../src/repositories/firestore/firestore";
+import { FirestoreRepo } from "../../src/repositories/firebase/firestore/firestore";
 
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");
