@@ -34,8 +34,6 @@ export class GoldPriceDataRecorder {
   }
 
   private async recordToFirestore(price: HuasenghengDataType) {
-    console.log("\n\n\n\n\n\n\n");
-    console.log(this.collectionName);
     if (!this.collectionName) {
       console.log("🔴 No collection name found. Skip recording to Firestore.");
       return;

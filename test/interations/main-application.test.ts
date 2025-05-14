@@ -151,7 +151,7 @@ describe("main application: Price monitoring service", async () => {
     await mainApplication.monitorPrice(100);
     expect(monitorPriceSpy).toHaveBeenCalledTimes(1);
 
-    expect(firestoreOutputSpy).toHaveBeenCalledTimes(1);
+    expect(firestoreOutputSpy).not.toHaveBeenCalled();
   });
 });
 

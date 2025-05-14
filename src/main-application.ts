@@ -91,10 +91,6 @@ export default class MainApplication {
       ]);
       await outputChannels.outputDataPriceAlert(result);
     } else {
-      const outputChannels = new OutputChannels([
-        new FirestoreOutput(this.FIRESTORE_COLLECTION_ALERT),
-      ]);
-      await outputChannels.outputDataPriceAlert(result);
       console.log(
         `🔔🔔🔔 Does not need to alert as the price change does not hit the threshold`
       );

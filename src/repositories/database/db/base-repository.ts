@@ -7,6 +7,7 @@ export abstract class BaseRepository {
 
   constructor() {
     const connectionString = process.env.DB_CONNECTION;
+    console.log("🔌 Connecting to database...", connectionString);
     if (!connectionString) {
       throw new Error(
         "🔴 Database connection string is missing. Please check DB_CONNECTION environment variable."
