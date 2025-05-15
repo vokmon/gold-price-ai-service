@@ -108,6 +108,6 @@ export default class GoldPriceDataSummarization {
       new TelegramOutput(),
       new FirestoreOutput(this.GOLD_PRICE_SUMMARY_COLLECTION_NAME),
     ]);
-    const outputResult = await outputChannels.outputData(summary);
+    await outputChannels.outputData(summary);
   }
 }

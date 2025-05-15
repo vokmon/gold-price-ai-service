@@ -162,16 +162,16 @@ export class GoogleAIService {
         // Extract JSON content even if wrapped in markdown code blocks
         let jsonText = text;
 
-        // Check if the content is wrapped in markdown code blocks
-        const jsonCodeBlockRegex = /```(?:json)?\s*\n([\s\S]*?)\n```/;
+        // Check for JSON content in markdown code blocks with more flexible pattern matching
+        // This handles both ```json and ``` formats, and cases where closing ``` might be missing
+        const jsonCodeBlockRegex = /```(?:json)?\s*\n([\s\S]*?)(?:\n```|$)/;
         const match = text.match(jsonCodeBlockRegex);
 
         if (match && match[1]) {
-          jsonText = match[1];
+          jsonText = match[1].trim();
         }
 
         // Check if the content is valid JSON
-        jsonText = jsonText.trim();
         if (jsonText.startsWith("{") && jsonText.endsWith("}")) {
           return JSON.parse(jsonText);
         }

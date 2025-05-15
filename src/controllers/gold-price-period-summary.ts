@@ -30,7 +30,7 @@ export default class GoldPricePeriodSummary {
     endDate: Date
   ): Promise<GoldPricePeriodSummaryInfo> {
     console.log(
-      `Summarizing gold price period from ${getFormattedDate(
+      `📝 Summarizing gold price period from ${getFormattedDate(
         startDate
       )} to ${getFormattedDate(endDate)}`
     );
@@ -55,9 +55,9 @@ export default class GoldPricePeriodSummary {
         info.result && info.result.trim().replace(/["'`\n\r]/g, "") !== ""
     );
 
-    console.log("Found summaries: ", summariesData.length);
-    console.log("Gold price information: ", goldPriceInformationFiltered);
-    console.log("Current price: ", currentPrice);
+    console.log("📝🗄️ Found summaries: ", summariesData.length);
+    console.log("📝🗄️ Gold price information: ", goldPriceInformationFiltered);
+    console.log("📝🗄️ Current price: ", currentPrice);
 
     const chain = await getChain(
       goldPriceInformationTemplate,
@@ -72,7 +72,7 @@ export default class GoldPricePeriodSummary {
       currentPrice: this.convertToText(currentPrice),
     });
 
-    console.log("Summary Result: ", result);
+    console.log("📝 Summary Result: ", result);
 
     return {
       startDate: startDate,

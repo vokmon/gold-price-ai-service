@@ -22,10 +22,18 @@ bunx supabase functions download gold-price-monitoring
 
 <br/>
 
-For Summary
+For Daily Summary
 
 ```
 bunx supabase functions download gold-price-data-summary
+```
+
+<br/>
+
+For Weekly Summary
+
+```
+bunx supabase functions download gold-price-data-weekly-summary
 ```
 
 <br/>
@@ -48,10 +56,18 @@ bunx supabase functions deploy gold-price-monitoring
 
 <br/>
 
-For Summary
+For Daily Summary
 
 ```
 bunx supabase functions deploy gold-price-data-summary
+```
+
+<br/>
+
+For Weekly Summary
+
+```
+bunx supabase functions deploy gold-price-data-weekly-summary
 ```
 
 <br/>
@@ -83,10 +99,21 @@ Payload: { "priceThreshold": 100 }
 
 <br />
 
-Monitor price:
+Daily Summary:
 
 ```
-GET https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-data-summary
+POST https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-data-summary
+
+Header: Authorization: Bearer <token>
+
+```
+
+<br />
+
+Weekly Summary:
+
+```
+POST https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-data-weekly-summary
 
 Header: Authorization: Bearer <token>
 

@@ -74,9 +74,6 @@ export const goldPriceInformationTemplate = `
     --------------------------------
     The prediction should be based on the information and the price of the gold.
 
-    # Historical Gold Price Summaries:
-    {summariesText}
-
     --------------------------------
     # Gold Price Information:
     {goldPriceInformationText}

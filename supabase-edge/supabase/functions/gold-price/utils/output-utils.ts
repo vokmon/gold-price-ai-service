@@ -1,6 +1,7 @@
-import { getCurrentDateTime } from "./date-utils.ts";
+import { getCurrentDateTime, getFormattedDate } from "./date-utils.ts";
 import { HuasenghengDataType } from "../types/huasengheng.type.ts";
 import { GoldPriceSummary } from "../types/gold-price-summary.type.ts";
+import { GoldPricePeriodSummaryInfo } from "../types/gold-price-period-summary.type.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
   const currentDate = getCurrentDateTime("th-TH");
@@ -49,4 +50,68 @@ export const convertHuasenghengDataToString = (
   `;
 
   return message;
+};
+
+export const convertGoldPricePeriodSummaryToString = (
+  data: GoldPricePeriodSummaryInfo
+) => {
+  const startDate = getFormattedDate(data.startDate);
+  const endDate = getFormattedDate(data.endDate);
+
+  const dateDisplay =
+    startDate === endDate ? startDate : `${startDate} - ${endDate}`;
+
+  return `
+  ⭐ สรุปข้อมูล ${dateDisplay}
+  
+  ${
+    data.currentPrice
+      ? `💰 ราคาทองคำแท่ง 96.5%
+  ซื้อ: ${data.currentPrice.Buy.toLocaleString()} บาท
+  ขาย: ${data.currentPrice.Sell.toLocaleString()} บาท
+  `
+      : ""
+  }
+
+  ***** 📊 สรุป *****
+  ${data.summary.summaries.map((st) => `✅ ${st}`).join("\n")} 
+
+  ***** 🔍 คาดการณ์ *****
+  ${data.summary.predictions.map((st) => `🔸 ${st}`).join("\n")}
+  
+  ✨✨✨💰📈 📉📊✨✨✨
+  `;
+};
+
+export const convertGoldPricePeriodGraphToString = ({
+  priceDifference,
+  minPrice,
+  maxPrice,
+  latestPrice,
+  earliestPrice,
+}: {
+  priceDifference: number;
+  minPrice: number;
+  maxPrice: number;
+  latestPrice: number;
+  earliestPrice: number;
+}) => {
+  return `
+  ${
+    priceDifference === 0
+      ? "↔️ ไม่มีการเปลี่ยนแปลง"
+      : priceDifference < 0
+      ? "🔻 ลดลง"
+      : "🔺 เพิ่มขึ้น"
+  } ${
+    priceDifference !== 0
+      ? `${Math.abs(priceDifference).toLocaleString()} บาท`
+      : ""
+  }
+
+  💰 ราคาล่าสุด ${latestPrice.toLocaleString()} บาท
+  💰 ราคาเริ่มต้น ${earliestPrice.toLocaleString()} บาท
+
+  💹 ต่ำสุด-สูงสุด ${minPrice.toLocaleString()} ถึง ${maxPrice.toLocaleString()} บาท
+  `;
 };
