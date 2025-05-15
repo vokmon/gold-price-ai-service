@@ -1,3 +1,5 @@
+const timeZone = "Asia/Bangkok";
+
 export function getCurrentDateTime(
   format: string = "th-TH",
   monthFormat: "2-digit" | "short" = "short"
@@ -11,5 +13,6 @@ export function getCurrentDateTime(
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone: timeZone, // Apply the timezone
   }).format(currentDate);
 }
