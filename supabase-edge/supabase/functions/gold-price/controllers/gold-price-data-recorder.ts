@@ -1,21 +1,30 @@
 import { FirestoreRepo } from "../repositories/firestore.ts";
 import { GoldPriceDbRepository } from "../repositories/gold-price-supabase-repository.ts";
 import Huasengheng from "../services/huasengheng-service.ts";
+import { GoldPriceAlert } from "../types/gold-price-summary.type.ts";
 import { HuasenghengDataType } from "../types/huasengheng.type.ts";
 
 export class GoldPriceDataRecorder {
-  private readonly huasenheng;
+  private readonly huasengheng;
   private readonly firestoreRepo;
 
-  private readonly collectionName = "gold_price";
+  private readonly GOLD_PRICE_COLLECTION_NAME = "gold_price";
 
   constructor() {
-    this.huasenheng = new Huasengheng();
+    this.huasengheng = new Huasengheng();
     this.firestoreRepo = new FirestoreRepo();
   }
 
   async recordGoldPriceData(req: any) {
-    const price = await this.huasenheng.getCurrentHuasenghengPrice();
+    const marketStatus = await this.huasengheng.getMarketStatus();
+    console.log("🛒 Market status: ", marketStatus);
+
+    if (marketStatus.MarketStatus !== "ON") {
+      console.log("🔴 Market is off. No price recording.");
+      return;
+    }
+
+    const price = await this.huasengheng.getCurrentHuasenghengPrice();
     if (!price) {
       console.log("🔴 No price data found.");
       return;
@@ -32,11 +41,10 @@ export class GoldPriceDataRecorder {
   }
 
   private async recordToFirestore(price: HuasenghengDataType) {
-    if (!this.collectionName) {
-      console.log("🔴 No collection name found. Skip recording to Firestore.");
-      return;
-    }
-    await this.firestoreRepo.saveDataToFireStore(this.collectionName, price);
+    await this.firestoreRepo.saveDataToFireStore(
+      this.GOLD_PRICE_COLLECTION_NAME,
+      price
+    );
     console.log("💾-🔥 Gold price data recorded successfully to Firestore.");
     return "💾-🔥 save to firestore successfully";
   }

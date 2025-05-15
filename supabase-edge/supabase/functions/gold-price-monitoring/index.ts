@@ -10,6 +10,7 @@ Deno.serve(async (req) => {
       status: 405,
     });
   }
+
   try {
     const requestBody = await req.json();
     // Perform actions for price-monitoring

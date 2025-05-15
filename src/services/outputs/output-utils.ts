@@ -1,18 +1,15 @@
 import {
-  getCurrentDate,
   getCurrentDateTime,
   getFormattedDate,
-  getTimeOfDay,
 } from "../../utils/date-utils.ts";
 import { GoldPriceSummary } from "../../models/gold-price-summary.ts";
 import { HuasenghengDataType } from "../../models/huasengheng.ts";
 import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
-  const currentDate = getCurrentDate("th-TH");
-  const timeOfDay = getTimeOfDay();
+  const currentDate = getCurrentDateTime("th-TH");
   let message = `
-🔔 ข้อมูลราคาทองคำ ${currentDate} รอบ${timeOfDay}
+🔔 ข้อมูลราคาทองคำ ${currentDate}
 
 💰 ราคาทองคำแท่ง 96.5% 
   ซื้อ: ${

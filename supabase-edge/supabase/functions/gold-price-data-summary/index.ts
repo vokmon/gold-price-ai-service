@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { GoldPriceDataRecorder } from "../gold-price/controllers/gold-price-data-recorder.ts";
+import GoldPriceDataSummarization from "../gold-price/controllers/gold-price-data-summary.ts";
 
-const goldPriceDataRecorder = new GoldPriceDataRecorder();
+const goldPriceDataSummarization = new GoldPriceDataSummarization();
 
 Deno.serve(async (req) => {
   // Check if the request method is POST
@@ -10,9 +10,10 @@ Deno.serve(async (req) => {
       status: 405,
     });
   }
+
   try {
-    const price = await goldPriceDataRecorder.recordGoldPriceData(req);
-    return new Response(JSON.stringify(price), {
+    const result = await goldPriceDataSummarization.getGoldPriceSummary();
+    return new Response(JSON.stringify(result), {
       headers: {
         "Content-Type": "application/json",
       },

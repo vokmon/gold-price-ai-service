@@ -13,6 +13,52 @@ export function getCurrentDateTime(
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    timeZone: timeZone, // Apply the timezone
+    timeZone: timeZone,
   }).format(currentDate);
+}
+
+export function getCurrentDate(
+  format: string = "th-TH",
+  monthFormat: "2-digit" | "short" = "short"
+) {
+  const currentDate = new Date();
+  return new Intl.DateTimeFormat(format, {
+    day: "2-digit",
+    month: monthFormat,
+    year: "numeric",
+    timeZone: timeZone,
+  }).format(currentDate);
+}
+
+export function getFormattedDate(
+  date: Date,
+  format: string = "th-TH",
+  monthFormat: "2-digit" | "short" = "short"
+) {
+  return new Intl.DateTimeFormat(format, {
+    day: "2-digit",
+    month: monthFormat,
+    year: "numeric",
+    timeZone: timeZone,
+  }).format(date);
+}
+
+export function getCurrentDateInThai() {
+  const currentDate = new Date();
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: timeZone,
+  }).format(currentDate);
+}
+
+/**
+ * Returns a Date object for the current date in Thailand timezone
+ */
+export function getTodayThaiDate(): Date {
+  // Create a date object in the Thai timezone
+  const options = { timeZone };
+  const thailandTime = new Date().toLocaleString("en-US", options);
+  return new Date(thailandTime);
 }

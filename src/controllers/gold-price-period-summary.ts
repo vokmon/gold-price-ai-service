@@ -1,7 +1,4 @@
-import {
-  GoldPriceAlert,
-  GoldPriceSummary,
-} from "~/models/gold-price-summary.ts";
+import { GoldPriceSummary } from "~/models/gold-price-summary.ts";
 import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import GoldPriceDataExtractor from "./gold-price-data-extractor.ts";
 import { getArticleLinks } from "~/utils/url.ts";

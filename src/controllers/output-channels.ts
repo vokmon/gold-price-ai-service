@@ -18,7 +18,7 @@ export default class OutputChannels {
 
   async outputData(summary: GoldPriceSummary) {
     console.log(
-      `Start sending the summary to ${this._channels.length} channels.`
+      `⌯⌲ Start sending the summary to ${this._channels.length} channels.`
     );
     const message = convertSummaryDataToString(summary);
     const promises = this._channels.map(async (channel) => {
@@ -26,12 +26,12 @@ export default class OutputChannels {
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);
-    console.log("Output result: ", results);
+    console.log("🎉 Output result: ", results);
   }
 
   async outputDataPriceAlert(priceAlert: GoldPriceAlert) {
     console.log(
-      `Start sending the price alert to ${this._channels.length} channels.`
+      `⌯⌲ Start sending the price alert to ${this._channels.length} channels.`
     );
     if (!priceAlert.currentPrice) {
       console.log("Price difference is undefined, skipping the output.");
@@ -47,14 +47,14 @@ export default class OutputChannels {
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);
-    console.log("Output result: ", results);
+    console.log("🎉 Output result: ", results);
   }
 
   async outputDataGoldPricePeriodSummary(
     goldPricePeriodSummary: GoldPricePeriodSummaryInfo
   ) {
     console.log(
-      `Start sending the gold price period summary to ${this._channels.length} channels.`
+      `⌯⌲ Start sending the gold price period summary to ${this._channels.length} channels.`
     );
     const message = convertGoldPricePeriodSummaryToString(
       goldPricePeriodSummary
@@ -64,7 +64,7 @@ export default class OutputChannels {
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);
-    console.log("Output result: ", results);
+    console.log("🎉 Output result: ", results);
   }
 
   async outputDataGoldPricePeriodGraph(
@@ -76,7 +76,7 @@ export default class OutputChannels {
     }
 
     console.log(
-      `Start sending the gold price period graph to ${this._channels.length} channels.`
+      `⌯⌲ Start sending the gold price period graph to ${this._channels.length} channels.`
     );
     const promises = this._channels.map(async (channel) => {
       await channel.outputImage(
@@ -86,6 +86,6 @@ export default class OutputChannels {
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);
-    console.log("Output result: ", results);
+    console.log("🎉 Output result: ", results);
   }
 }

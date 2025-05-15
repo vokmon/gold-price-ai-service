@@ -24,7 +24,7 @@ export default class GoldPriceDataSummarization {
     context: string,
     currentGoldPrice?: GoldPrice
   ): Promise<GoldPriceSummary> {
-    console.log(`Summarizing data with context\n${context}`);
+    console.log(`📝 Summarizing data with context\n${context}`);
     const currentDate = getCurrentDate("th-TH");
     const chain = await getChain(
       summaryPageTemplate,
@@ -32,7 +32,7 @@ export default class GoldPriceDataSummarization {
     );
 
     const currentGoldPriceString = currentGoldPrice
-      ? `** The current 96.5% gold price is Buy: ${currentGoldPrice.buy.toLocaleString()}, Sell: ${currentGoldPrice.sell.toLocaleString()}`
+      ? `📝 The current 96.5% gold price is Buy: ${currentGoldPrice.buy.toLocaleString()}, Sell: ${currentGoldPrice.sell.toLocaleString()}`
       : "";
 
     const result = await chain.invoke({
@@ -58,7 +58,7 @@ export default class GoldPriceDataSummarization {
 
   async getGoldPriceSummary(): Promise<GoldPriceSummary | undefined> {
     const marketStatus = await this._huasengheng.getMarketStatus();
-    console.log("Market status: ", marketStatus);
+    console.log("🛒 Market status: ", marketStatus);
 
     if (marketStatus.MarketStatus !== "ON") {
       console.log("🔴 Market is off. No price summary.");

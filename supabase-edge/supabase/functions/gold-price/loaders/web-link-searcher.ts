@@ -1,27 +1,31 @@
-import { getJson } from "serpapi";
-import { getCurrentDate } from "../../utils/date-utils.ts";
+import { getCurrentDate } from "../utils/date-utils.ts";
 
 // Declaration
 export default class WebLinkSearcher {
-  sertApiKey = process.env.SERP_API_KEY;
+  apiKey = Deno.env.get("SERPAPI_API_KEY")!;
   excludedDomains: string[];
 
   constructor(excludedDomains: string[]) {
     this.excludedDomains = excludedDomains;
   }
 
-  async searchByKeywords(keywords: string[]): Promise<string[]> {
+  async searchByKeywords(
+    keywords: string[],
+    additionalKeyword: string = ""
+  ): Promise<string[]> {
     const currentDate = getCurrentDate("th-TH");
     const searchPromises = keywords.map(async (keyword, index) => {
-      const searchKeyword = `${keyword} ${currentDate}`;
-      console.log(`Start Keyword: ${searchKeyword}`);
+      const searchKeyword = `${keyword} ${currentDate} ${additionalKeyword}`;
+      console.log(`🔍 Start Keyword: ${searchKeyword}`);
 
-      const searchResult = await getJson({
+      const params = new URLSearchParams({
         engine: "google",
-        api_key: this.sertApiKey,
         q: searchKeyword,
-        location: "Thailand",
+        api_key: this.apiKey,
       });
+
+      const response = await fetch(`https://serpapi.com/search.json?${params}`);
+      const searchResult = await response.json();
 
       const links = searchResult?.organic_results
         .filter((organicResult: any) => {
@@ -30,7 +34,7 @@ export default class WebLinkSearcher {
           return !this.excludedDomains.includes(domain);
         })
         .map((organicResult: any) => organicResult.link);
-      console.log(`📄 Result of Keyword: ${searchKeyword}`, links);
+      console.log(`🔍 Result of Keyword: ${searchKeyword}`, links);
       return links;
     });
 

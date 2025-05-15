@@ -1,6 +1,12 @@
-import { GoldPriceAlert } from "../types/gold-price-summary.type.ts";
+import {
+  GoldPriceAlert,
+  GoldPriceSummary,
+} from "../types/gold-price-summary.type.ts";
 import { OutputInterface } from "./output-interface.ts";
-import { convertHuasenghengDataToString } from "../utils/output-utils.ts";
+import {
+  convertHuasenghengDataToString,
+  convertSummaryDataToString,
+} from "../utils/output-utils.ts";
 
 export default class OutputChannels {
   _channels;
@@ -8,9 +14,22 @@ export default class OutputChannels {
     this._channels = channels;
   }
 
+  async outputData(summary: GoldPriceSummary) {
+    console.log(
+      `⌯⌲ Start sending the summary to ${this._channels.length} channels.`
+    );
+    const message = convertSummaryDataToString(summary);
+    const promises = this._channels.map(async (channel) => {
+      await channel.outputMessage(message, summary);
+      return channel.toString();
+    });
+    const results = await Promise.allSettled(promises);
+    console.log("🎉 Output result: ", results);
+  }
+
   async outputDataPriceAlert(priceAlert: GoldPriceAlert) {
     console.log(
-      `Start sending the price alert to ${this._channels.length} channels.`
+      `⌯⌲ Start sending the price alert to ${this._channels.length} channels.`
     );
     if (!priceAlert.currentPrice) {
       console.log("Price difference is undefined, skipping the output.");
@@ -26,6 +45,6 @@ export default class OutputChannels {
       return channel.toString();
     });
     const results = await Promise.allSettled(promises);
-    console.log("Output result: ", results);
+    console.log("🎉 Output result: ", results);
   }
 }

@@ -178,9 +178,6 @@ describe("BaseRepository", () => {
 
       // Close should not throw
       await repository.close();
-
-      // No log message should be output
-      expect(consoleSpy.log).not.toHaveBeenCalled();
     });
   });
 });

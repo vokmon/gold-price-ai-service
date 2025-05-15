@@ -11,6 +11,7 @@ import FirestoreOutput from "../outputs/impl/firestore-output.ts";
 import { FirestoreRepo } from "../repositories/firestore.ts";
 
 export default class GoldPriceMonitoring {
+  private GOLD_PRICE_ALERT_COLLECTION_NAME = "gold_price_alert";
   private lastCheckPriceCollectionName = "last_check_price";
   private lastCheckCheckPriceId = "last_check_alert_id";
 
@@ -26,7 +27,7 @@ export default class GoldPriceMonitoring {
 
   async monitorPrice(priceThreshold: number): Promise<GoldPriceAlert> {
     const marketStatus = await this._huasengheng.getMarketStatus();
-    console.log("Market status: ", marketStatus);
+    console.log("🛒 Market status: ", marketStatus);
 
     if (marketStatus.MarketStatus !== "ON") {
       console.log("🔴 Market is off. No price monitoring.");
@@ -146,7 +147,7 @@ export default class GoldPriceMonitoring {
   async outputPriceAlert(result: GoldPriceAlert) {
     const outputChannels = new OutputChannels([
       new TelegramOutput(),
-      new FirestoreOutput("gold_price_alert"),
+      new FirestoreOutput(this.GOLD_PRICE_ALERT_COLLECTION_NAME),
     ]);
     const outputResult = await outputChannels.outputDataPriceAlert(result);
     console.log("🔔🔔🔔 Output result: ", outputResult);

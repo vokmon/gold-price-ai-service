@@ -1,4 +1,4 @@
-import { getFormattedDate } from "./date-utils.ts";
+import { getCurrentDate, getFormattedDate } from "./date-utils.ts";
 
 const isValidUrl = (urlString: string): boolean => {
   try {

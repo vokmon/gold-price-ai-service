@@ -1,10 +1,9 @@
-import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
-import { convert } from "html-to-text";
-import { extractInformationPageTemplate } from "../constants/prompt-constants.ts";
-import { GoldPriceWebInformation } from "../models/gold-price-information.ts";
+import { convert } from "https://esm.sh/html-to-text";
+import { extractInformationPageTemplate } from "../prompt-constants.ts";
+import { GoldPriceWebInformation } from "../types/gold-price-information.type.ts";
 import { getCurrentDate, getFormattedDate } from "../utils/date-utils.ts";
-import { getChain } from "../utils/chain.ts";
-
+import { GoogleAIService } from "../ai/google-ai.service.ts";
+import { WebContentLoader } from "./web-content-loader.ts";
 /**
  * Extracting gold price data from web links.
  */
@@ -51,7 +50,7 @@ export default class GoldPriceDataExtractor {
       }
       console.log(`🌐 Start fetching data for ${link} with time ${dateRange}`);
 
-      const loader = new CheerioWebBaseLoader(link!);
+      const loader = new WebContentLoader(link!);
       const docs = await loader.load();
 
       if (docs && docs[0]) {
@@ -61,13 +60,15 @@ export default class GoldPriceDataExtractor {
           wordwrap: 300,
         });
 
-        const chain = await getChain(extractInformationPageTemplate);
-        const result = (await chain.invoke({
-          text,
-          dateRange: dateRange,
-        })) as string;
+        const result = await GoogleAIService.getInstance().generateFromTemplate(
+          extractInformationPageTemplate,
+          {
+            text,
+            dateRange: dateRange,
+          }
+        );
+
         console.log(`🌐 Result of ${link} is ${result}`);
-        console.log("\n");
         return {
           link,
           result,

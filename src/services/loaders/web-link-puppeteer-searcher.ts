@@ -83,7 +83,7 @@ export default class WebLinkPuppeteerSearcher {
               domain === excludedDomain || domain.endsWith(`.${excludedDomain}`)
           );
         });
-        console.log(`Result of Keyword: ${searchKeyword}`, result);
+        console.log(`📄 Result of Keyword: ${searchKeyword}`, result);
         await page.close();
         return result;
       });

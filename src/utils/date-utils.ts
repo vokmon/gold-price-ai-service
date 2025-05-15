@@ -38,23 +38,6 @@ export function getCurrentDateTime(
   }).format(currentDate);
 }
 
-export function getTimeOfDay() {
-  const now = new Date();
-  const hours = now.getHours();
-
-  if (hours < 12) {
-    return "เช้า";
-  } else if (hours < 15) {
-    return "บ่าย";
-  } else if (hours < 18) {
-    return "เย็น";
-  } else if (hours < 21) {
-    return "ค่ำ";
-  } else {
-    return "ดึก";
-  }
-}
-
 export function formatDateAsDDMMYYYY(date: Date = new Date()): string {
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");

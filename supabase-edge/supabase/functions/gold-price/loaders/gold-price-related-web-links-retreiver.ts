@@ -1,5 +1,4 @@
-// import WebLinkSearcher from "../services/loaders/web-link-searcher.ts";
-import WebLinkPuppeteerSearcher from "~/services/loaders/web-link-puppeteer-searcher.ts";
+import WebLinkSearcher from "./web-link-searcher.ts";
 import { getAdditionalLinks } from "../utils/url.ts";
 
 /**
@@ -7,12 +6,12 @@ import { getAdditionalLinks } from "../utils/url.ts";
  */
 export default class GoldPriceRelatedWebLinksRetreiver {
   keywordsList = (
-    process.env.SEARCH_KEYWORD ||
+    Deno.env.get("SEARCH_KEYWORD") ||
     "'คาดการณ์ราคาทองคำวันที่','วิเคราะห์ราคาทอง','แนวโน้มทองคำไทยวันนี้'"
   ).split(",");
 
   excludedDomains = (
-    process.env.EXCLUDE_DOMAINS ||
+    Deno.env.get("EXCLUDE_DOMAINS") ||
     "intergold.co.th,huasengheng.com,youtube.com,goldtraders.or.th,goldshopping.huasengheng.com,xn--42cah7d0cxcvbbb9x.com,ylgbullion.co.th"
   ).split(",");
 
@@ -21,8 +20,7 @@ export default class GoldPriceRelatedWebLinksRetreiver {
    */
   async getGoldPriceLinks() {
     console.group("🔍 Search web related to the keywords", this.keywordsList);
-    // const webLinkSearcher = new WebLinkSearcher(this.excludedDomains);
-    const webLinkSearcher = new WebLinkPuppeteerSearcher(this.excludedDomains);
+    const webLinkSearcher = new WebLinkSearcher(this.excludedDomains);
 
     let links: string[] = [];
     try {

@@ -15,7 +15,7 @@ export default class GoldPriceMonitoring {
 
   async monitorPrice(priceThreshold: number): Promise<GoldPriceAlert> {
     const marketStatus = await this._huasengheng.getMarketStatus();
-    console.log("Market status: ", marketStatus);
+    console.log("🛒 Market status: ", marketStatus);
 
     if (marketStatus.MarketStatus !== "ON") {
       console.log("🔴 Market is off. No price monitoring.");

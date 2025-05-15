@@ -22,6 +22,14 @@ bunx supabase functions download gold-price-monitoring
 
 <br/>
 
+For Summary
+
+```
+bunx supabase functions download gold-price-data-summary
+```
+
+<br/>
+
 **Deploy the function**
 
 For Recording Price
@@ -37,6 +45,16 @@ For Price Monitoring
 ```
 bunx supabase functions deploy gold-price-monitoring
 ```
+
+<br/>
+
+For Summary
+
+```
+bunx supabase functions deploy gold-price-data-summary
+```
+
+<br/>
 
 **URL**
 
@@ -60,6 +78,17 @@ POST https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-monitoring
 Header: Authorization: Bearer <token>
 
 Payload: { "priceThreshold": 100 }
+
+```
+
+<br />
+
+Monitor price:
+
+```
+GET https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-data-summary
+
+Header: Authorization: Bearer <token>
 
 ```
 

@@ -11,7 +11,7 @@ export default class FirestoreOutput implements OutputInterface {
   }
 
   async outputMessage<T>(_message: string, object?: T): Promise<void> {
-    console.log("Output message to Firestore with object: ", object);
+    console.log("🔥 Output message to Firestore with object: ", object);
     await this.firestoreRepo.saveDataToFireStore(this.collectionName, object);
   }
 

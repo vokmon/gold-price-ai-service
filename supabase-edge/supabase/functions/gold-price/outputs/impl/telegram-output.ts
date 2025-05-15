@@ -21,7 +21,7 @@ export default class TelegramOutput implements OutputInterface {
 
     const telegramNotifyPromises = this._telegramChannelIds!.map(
       async (channelId) => {
-        console.log(`Sending summary message to ${channelId.description}`);
+        console.log(`➤ Sending summary message to ${channelId.description}`);
         const result = await fetch(
           `https://api.telegram.org/bot${this._telegramBotToken}/sendMessage`,
           {
@@ -36,14 +36,14 @@ export default class TelegramOutput implements OutputInterface {
           }
         );
         console.log(
-          `Successfully sent summary message to ${channelId.description}`
+          `➤ Successfully sent summary message to ${channelId.description}`
         );
         return result;
       }
     );
 
     const result = await Promise.allSettled(telegramNotifyPromises);
-    console.log("Telegram send summary notify result", result);
+    console.log("➤ Telegram send summary notify result", result);
   }
 
   async outputImage(imageBuffer: Buffer, description: string) {
@@ -83,7 +83,6 @@ export default class TelegramOutput implements OutputInterface {
   }
 
   private checkTelegramSetup() {
-    console.log("\n");
     if (
       !this._telegramBotToken ||
       !this._telegramChannelIds ||

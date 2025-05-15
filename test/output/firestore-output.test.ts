@@ -32,7 +32,7 @@ describe("FirestoreOutput", () => {
 
     // Assert
     expect(consoleSpy).toHaveBeenCalledWith(
-      "Output message to Firestore with object: ",
+      "🔥 Output message to Firestore with object: ",
       testObject
     );
     expect(
@@ -50,7 +50,7 @@ describe("FirestoreOutput", () => {
 
     // Assert
     expect(consoleSpy).toHaveBeenCalledWith(
-      "Output message to Firestore with object: ",
+      "🔥 Output message to Firestore with object: ",
       undefined
     );
     expect(
