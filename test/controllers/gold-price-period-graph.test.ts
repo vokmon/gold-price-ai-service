@@ -1,355 +1,635 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { GoldPriceGraphType } from "../../src/models/gold-price-graph";
-import { Timestamp } from "firebase-admin/firestore";
+import { describe, it, vi, beforeEach, expect } from "vitest";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
+import {
+  GoldPriceDbRepository,
+  PriceRangeData,
+} from "../../src/repositories/database/gold-price-db-repository";
+import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
+import GeneratePriceGraph from "../../src/services/graph/generate-price-graph";
+import { GoldPriceGraphType } from "../../src/models/gold-price-graph";
+import { GoldPriceAggregate } from "../../src/models/gold-price";
+import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
+import { formatDateAsDDMMYYYY } from "../../src/utils/date-utils";
 
 // Mock dependencies
-vi.mock("../../src/repositories/firebase/firestore/firestore", () => ({
-  FirestoreRepo: vi.fn(() => ({
-    getDocumentsByDatetime: vi.fn(),
-  })),
-}));
-
-vi.mock("../../src/services/huasengheng/huasengheng-service", () => ({
-  default: vi.fn(() => ({
-    getCurrentHuasenghengPrice: vi.fn(),
-  })),
-}));
-
-vi.mock("../../src/services/graph/generate-price-graph", () => ({
-  default: vi.fn(() => ({
-    generatePriceGraph: vi.fn(),
-  })),
-}));
+vi.mock("../../src/repositories/database/gold-price-db-repository");
+vi.mock("../../src/services/huasengheng/huasengheng-service");
+vi.mock("../../src/services/graph/generate-price-graph");
+vi.mock("../../src/utils/date-utils", async () => {
+  const actual = await vi.importActual("../../src/utils/date-utils");
+  return {
+    ...actual,
+    getFormattedDate: vi
+      .fn()
+      .mockImplementation((date) => formatDateAsDDMMYYYY(date)),
+    formatDateAsDDMMYYYY: vi.fn().mockImplementation((date) => {
+      if (!date) return "";
+      return `${date.getDate().toString().padStart(2, "0")}/${(
+        date.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}/${date.getFullYear()}`;
+    }),
+  };
+});
 
 describe("GoldPricePeriodGraph", () => {
   let goldPricePeriodGraph: GoldPricePeriodGraph;
-  let mockFirestoreRepo: any;
-  let mockHuasengheng: any;
-  let mockGeneratePriceGraph: any;
-  let consoleSpy: any;
+  let mockGoldPriceDbRepo: GoldPriceDbRepository;
+  let mockHuasengheng: Huasengheng;
+  let mockGeneratePriceGraph: GeneratePriceGraph;
+
+  const mockStartDate = new Date("2023-01-01");
+  const mockEndDate = new Date("2023-01-07");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Mock aggregated data
+  const mockAggregatedData: GoldPriceAggregate[] = [
+    {
+      date_time: new Date("2023-01-01T09:00:00"),
+      min_sell: 40000,
+      max_sell: 40200,
+    },
+    {
+      date_time: new Date("2023-01-02T09:00:00"),
+      min_sell: 40100,
+      max_sell: 40300,
+    },
+    {
+      date_time: new Date("2023-01-03T09:00:00"),
+      min_sell: 40200,
+      max_sell: 40400,
+    },
+  ];
+
+  // Mock price range data
+  const mockPriceRangeData: PriceRangeData = {
+    earliest_price: 40000,
+    earliest_time: new Date("2023-01-01T09:00:00"),
+    latest_price: 40400,
+    latest_time: new Date("2023-01-03T09:00:00"),
+  };
+
+  // Mock image buffer
+  const mockImageBuffer = Buffer.from("mock-image-data");
 
   beforeEach(() => {
-    // Save original environment variables
-    process.env.FIRESTORE_COLLECTION_PRICE_RECORD = "gold_prices_test";
-
-    // Setup spies
-    consoleSpy = {
-      log: vi.spyOn(console, "log").mockImplementation(() => {}),
-      error: vi.spyOn(console, "error").mockImplementation(() => {}),
-    };
-
-    goldPricePeriodGraph = new GoldPricePeriodGraph();
-
-    // Get instances of mocks
-    mockFirestoreRepo = (goldPricePeriodGraph as any)._firestoreRepo;
-    mockHuasengheng = (goldPricePeriodGraph as any)._huasengheng;
-    mockGeneratePriceGraph = (goldPricePeriodGraph as any)._generatePriceGraph;
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
-    consoleSpy.log.mockRestore();
-    consoleSpy.error.mockRestore();
+
+    // Setup mock implementations
+    mockGoldPriceDbRepo = {
+      getAggregatedDataByPeriod: vi.fn(),
+      getPriceRangeData: vi.fn(),
+    } as unknown as GoldPriceDbRepository;
+
+    mockHuasengheng = {
+      getCurrentHuasenghengPrice: vi.fn(),
+    } as unknown as Huasengheng;
+
+    mockGeneratePriceGraph = {
+      generatePriceGraph: vi.fn(),
+    } as unknown as GeneratePriceGraph;
+
+    // Setup mock implementations
+    vi.mocked(GoldPriceDbRepository).mockImplementation(
+      () => mockGoldPriceDbRepo
+    );
+    vi.mocked(Huasengheng).mockImplementation(() => mockHuasengheng);
+    vi.mocked(GeneratePriceGraph).mockImplementation(
+      () => mockGeneratePriceGraph
+    );
+
+    // Create instance with mocked dependencies
+    goldPricePeriodGraph = new GoldPricePeriodGraph();
   });
 
   describe("getGoldPricePeriodGraph", () => {
-    it("should return data with chart for valid date range with data", async () => {
-      // Setup mock data
-      const startDate = new Date("2023-10-01");
-      const endDate = new Date("2023-10-03");
-      const graphType = GoldPriceGraphType.DAY;
-
-      const mockGoldPriceData = [
-        {
-          id: "1",
-          Sell: 2000,
-          Buy: 2050,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-01T10:00:00Z")),
-        },
-        {
-          id: "2",
-          Sell: 2100,
-          Buy: 2150,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-02T10:00:00Z")),
-        },
-        {
-          id: "3",
-          Sell: 2050,
-          Buy: 2100,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-03T10:00:00Z")),
-        },
-      ];
-
-      const mockImageBuffer = Buffer.from("mock-image-data");
-
-      // Setup mock responses
-      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue(
-        mockGoldPriceData
+    it("should generate a chart with aggregated data", async () => {
+      // Setup mock return values
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
       );
-      mockGeneratePriceGraph.generatePriceGraph.mockResolvedValue(
+      vi.mocked(mockGeneratePriceGraph.generatePriceGraph).mockResolvedValue(
         mockImageBuffer
       );
 
-      // Execute the method
+      // End date is not today, so no need to mock huasengheng
       const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
-        startDate,
-        endDate,
-        graphType
-      );
-
-      // Verify firestore was called with correct parameters
-      expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
-        "gold_prices_test",
-        startDate,
-        endDate
-      );
-
-      // Verify chart generation was called
-      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalled();
-
-      // Verify returned result
-      expect(result).toEqual({
-        dataPeriod: {
-          startDate,
-          endDate,
-        },
-        chartAsBuffer: mockImageBuffer,
-        description: expect.stringContaining("ราคาทองคำ"),
-      });
-    });
-
-    it("should include huasengheng data when end date is today", async () => {
-      // Setup today's date
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      // Setup mock data
-      const startDate = new Date(today);
-      startDate.setDate(startDate.getDate() - 2); // 2 days ago
-      const endDate = new Date(today);
-      const graphType = GoldPriceGraphType.DAY;
-
-      const mockGoldPriceData = [
-        {
-          id: "1",
-          Sell: 2000,
-          Buy: 2050,
-          createdDateTime: Timestamp.fromDate(new Date(startDate)),
-        },
-      ];
-
-      const mockHuasenghengData = {
-        sell: 2100,
-        buy: 2150,
-        sell_change: 50,
-        buy_change: 50,
-      };
-
-      const mockImageBuffer = Buffer.from("mock-image-data");
-
-      // Setup mock responses
-      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue(
-        mockGoldPriceData
-      );
-      mockHuasengheng.getCurrentHuasenghengPrice.mockResolvedValue(
-        mockHuasenghengData
-      );
-      mockGeneratePriceGraph.generatePriceGraph.mockResolvedValue(
-        mockImageBuffer
-      );
-
-      // Execute the method
-      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
-        startDate,
-        endDate,
-        graphType
-      );
-
-      // Verify huasengheng service was called
-      expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
-
-      // Verify chart generation was called
-      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalled();
-
-      // Verify returned result
-      expect(result).toEqual({
-        dataPeriod: {
-          startDate,
-          endDate,
-        },
-        chartAsBuffer: mockImageBuffer,
-        description: expect.stringContaining("ราคาทองคำ"),
-      });
-    });
-
-    it("should return error message when no data found", async () => {
-      // Setup mock data
-      const startDate = new Date("2023-12-01");
-      const endDate = new Date("2023-12-03");
-      const graphType = GoldPriceGraphType.DAY;
-
-      // Return empty data
-      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue([]);
-
-      // Execute the method
-      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
-        startDate,
-        endDate,
-        graphType
-      );
-
-      // Verify generatePriceGraph was not called
-      expect(mockGeneratePriceGraph.generatePriceGraph).not.toHaveBeenCalled();
-
-      // Verify returned result
-      expect(result).toEqual({
-        dataPeriod: {
-          startDate,
-          endDate,
-        },
-        chartAsBuffer: undefined,
-        description: expect.stringContaining(
-          "❌ ไม่พบข้อมูลราคาทองคำสำหรับช่วงวันที่"
-        ),
-      });
-    });
-  });
-
-  describe("prepareChartData", () => {
-    it("should correctly prepare chart data with min and max prices", async () => {
-      // Mock grouped data
-      const groupedData = {
-        "01/10/2023": [
-          {
-            Sell: 2000,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-01T08:00:00Z")
-            ),
-          },
-          {
-            Sell: 2050,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-01T16:00:00Z")
-            ),
-          },
-        ],
-        "02/10/2023": [
-          {
-            Sell: 2100,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-02T10:00:00Z")
-            ),
-          },
-        ],
-      };
-
-      // Call the private method
-      // @ts-ignore - accessing private method for testing
-      const result = goldPricePeriodGraph.prepareChartData(
-        groupedData,
+        mockStartDate,
+        mockEndDate,
         GoldPriceGraphType.DAY
       );
 
+      // Verify method calls
+      expect(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).toHaveBeenCalledWith("day", mockStartDate, mockEndDate);
+      expect(mockGoldPriceDbRepo.getPriceRangeData).toHaveBeenCalledWith(
+        mockStartDate,
+        mockEndDate
+      );
+      expect(mockHuasengheng.getCurrentHuasenghengPrice).not.toHaveBeenCalled();
+      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalled();
+
       // Verify result
       expect(result).toEqual({
-        labels: ["01/10/2023", "02/10/2023"],
-        dataArray: [
-          [2000, 2050],
-          [2100, 2120],
-        ], // Second bar has MIN_PRICE_BAR_HEIGHT (20) added
+        dataPeriod: {
+          startDate: mockStartDate,
+          endDate: mockEndDate,
+        },
+        chartAsBuffer: mockImageBuffer,
+        description: expect.stringContaining(
+          `ราคาทองคำ (${formatDateAsDDMMYYYY(
+            mockStartDate
+          )} - ${formatDateAsDDMMYYYY(mockEndDate)})`
+        ),
       });
     });
 
-    it("should process HOUR_WITH_DAY format labels correctly", async () => {
-      // Mock grouped data with HOUR_WITH_DAY format
-      const groupedData = {
-        "01/10/2023 10:00": [
-          {
-            Sell: 2000,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-01T10:00:00Z")
-            ),
-          },
-        ],
-        "01/10/2023 14:00": [
-          {
-            Sell: 2050,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-01T14:00:00Z")
-            ),
-          },
-        ],
-        "02/10/2023 10:00": [
-          {
-            Sell: 2100,
-            createdDateTime: Timestamp.fromDate(
-              new Date("2023-10-02T10:00:00Z")
-            ),
-          },
-        ],
-      };
-
-      // Call the private method
-      // @ts-ignore - accessing private method for testing
-      const result = goldPricePeriodGraph.prepareChartData(
-        groupedData,
-        GoldPriceGraphType.HOUR_WITH_DAY
+    it("should include real-time Huasengheng data when end date is today", async () => {
+      // Setup mock return values
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+      vi.mocked(mockHuasengheng.getCurrentHuasenghengPrice).mockResolvedValue(
+        huasengsengPriceData1
+      );
+      vi.mocked(mockGeneratePriceGraph.generatePriceGraph).mockResolvedValue(
+        mockImageBuffer
       );
 
-      // Verify result - for the second label of the same day, only time should be shown
-      expect(result.labels).toEqual([
-        "01/10/2023 10:00",
-        "14:00",
-        "02/10/2023 10:00",
-      ]);
+      // Test with endDate as today
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        today,
+        GoldPriceGraphType.DAY
+      );
+
+      // Verify Huasengheng was called
+      expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
+
+      // Verify result includes Huasengheng data
+      expect(result).toEqual({
+        dataPeriod: {
+          startDate: mockStartDate,
+          endDate: today,
+        },
+        chartAsBuffer: mockImageBuffer,
+        description: expect.stringContaining(
+          `ราคาทองคำ (${formatDateAsDDMMYYYY(
+            mockStartDate
+          )} - ${formatDateAsDDMMYYYY(today)})`
+        ),
+      });
+    });
+
+    it("should handle error from Huasengheng service", async () => {
+      // Setup mock return values
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+      vi.mocked(mockGeneratePriceGraph.generatePriceGraph).mockResolvedValue(
+        mockImageBuffer
+      );
+
+      // Mock Huasengheng to throw an error
+      vi.mocked(mockHuasengheng.getCurrentHuasenghengPrice).mockRejectedValue(
+        new Error("Huasengheng API error")
+      );
+
+      // Test with endDate as today to trigger Huasengheng call
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        today,
+        GoldPriceGraphType.DAY
+      );
+
+      // Verify Huasengheng was called and error was handled
+      expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
+      expect(result.chartAsBuffer).toBeDefined(); // Should still generate chart
+      expect(result.description).not.toContain("Huasengheng API error"); // Error should be caught
+    });
+
+    it("should handle empty data properly", async () => {
+      // Return empty data
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue([]);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue({
+        earliest_price: 0,
+        earliest_time: new Date(),
+        latest_price: 0,
+        latest_time: new Date(),
+      });
+      vi.mocked(mockHuasengheng.getCurrentHuasenghengPrice).mockResolvedValue(
+        undefined
+      );
+
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.DAY
+      );
+
+      // Verify error message in description
+      expect(result.chartAsBuffer).toBeUndefined();
+      expect(result.description).toContain("❌ ไม่พบข้อมูลราคาทองคำสำหรับช่วง");
+    });
+
+    it("should handle errors gracefully", async () => {
+      // Simulate an error
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockRejectedValue(new Error("Database error"));
+
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.DAY
+      );
+
+      // Verify error message in description
+      expect(result.chartAsBuffer).toBeUndefined();
+      expect(result.description).toContain(
+        "❌ เกิดข้อผิดพลาดในการดึงข้อมูลราคาทองคำ"
+      );
+    });
+
+    it("should select the appropriate time period based on graph type", async () => {
+      // Setup common mocks
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+      vi.mocked(mockGeneratePriceGraph.generatePriceGraph).mockResolvedValue(
+        mockImageBuffer
+      );
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+
+      // Test HOUR graph type
+      await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.HOUR
+      );
+      expect(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).toHaveBeenCalledWith("hour", mockStartDate, mockEndDate);
+      vi.clearAllMocks();
+
+      // Test MONTH graph type
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+
+      await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.MONTH
+      );
+      expect(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).toHaveBeenCalledWith("month", mockStartDate, mockEndDate);
+      vi.clearAllMocks();
+
+      // Test YEAR graph type
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+
+      await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.YEAR
+      );
+      expect(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).toHaveBeenCalledWith("year", mockStartDate, mockEndDate);
+
+      vi.clearAllMocks();
+
+      // Test HOUR_WITH_DAY graph type for line 104-105
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+
+      await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.HOUR_WITH_DAY
+      );
+      expect(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).toHaveBeenCalledWith("hour", mockStartDate, mockEndDate);
+    });
+
+    it("should use a specific chart title format for HOUR type", async () => {
+      vi.mocked(
+        mockGoldPriceDbRepo.getAggregatedDataByPeriod
+      ).mockResolvedValue(mockAggregatedData);
+      vi.mocked(mockGoldPriceDbRepo.getPriceRangeData).mockResolvedValue(
+        mockPriceRangeData
+      );
+      vi.mocked(mockGeneratePriceGraph.generatePriceGraph).mockResolvedValue(
+        mockImageBuffer
+      );
+
+      // Test with HOUR type
+      await goldPricePeriodGraph.getGoldPricePeriodGraph(
+        mockStartDate,
+        mockEndDate,
+        GoldPriceGraphType.HOUR
+      );
+
+      // Verify the chart title format
+      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalledWith(
+        expect.objectContaining({
+          chartTitle: expect.stringContaining(
+            `ราคาทองคำ (${formatDateAsDDMMYYYY(mockEndDate)})`
+          ),
+        })
+      );
     });
   });
 
-  describe("extractPriceData", () => {
-    it("should correctly extract price data with min, max, and price difference", async () => {
-      // Mock gold price data
-      const goldPriceData = [
+  describe("prepareChartDataFromAggregates", () => {
+    it("should properly format labels for DAY type", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const result = privateMethod(mockAggregatedData, GoldPriceGraphType.DAY);
+
+      // Check if labels are formatted as DD/MM/YYYY
+      expect(result.labels).toEqual([
+        formatDateAsDDMMYYYY(new Date("2023-01-01")),
+        formatDateAsDDMMYYYY(new Date("2023-01-02")),
+        formatDateAsDDMMYYYY(new Date("2023-01-03")),
+      ]);
+
+      // Check if data array contains price ranges
+      expect(result.dataArray).toEqual([
+        [40000, 40200],
+        [40100, 40300],
+        [40200, 40400],
+      ]);
+    });
+
+    it("should properly format labels for HOUR type", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const result = privateMethod(mockAggregatedData, GoldPriceGraphType.HOUR);
+
+      // Check if labels are formatted as HH:00
+      expect(result.labels).toEqual(["9:00", "9:00", "9:00"]);
+    });
+
+    it("should add a small buffer for equal min and max prices", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const equalPriceData: GoldPriceAggregate[] = [
         {
-          Sell: 2000,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-01T10:00:00Z")),
-        },
-        {
-          Sell: 2050,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-02T10:00:00Z")),
-        },
-        {
-          Sell: 2100,
-          createdDateTime: Timestamp.fromDate(new Date("2023-10-03T10:00:00Z")),
+          date_time: new Date("2023-01-01"),
+          min_sell: 40000,
+          max_sell: 40000,
         },
       ];
 
-      // Call the private method
-      // @ts-ignore - accessing private method for testing
-      const result = goldPricePeriodGraph.extractPriceData(goldPriceData);
+      const result = privateMethod(equalPriceData, GoldPriceGraphType.DAY);
 
-      // Verify result
+      // There should be a buffer added to display the bar (MIN_PRICE_BAR_HEIGHT = 20)
+      expect(result.dataArray[0][0]).toBe(40000 - 20);
+      expect(result.dataArray[0][1]).toBe(40000 + 20);
+    });
+
+    it("should format labels properly for MONTH type", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const monthData: GoldPriceAggregate[] = [
+        {
+          date_time: new Date("2023-01-15"),
+          min_sell: 40000,
+          max_sell: 40200,
+        },
+        {
+          date_time: new Date("2023-02-15"),
+          min_sell: 40100,
+          max_sell: 40300,
+        },
+      ];
+
+      const result = privateMethod(monthData, GoldPriceGraphType.MONTH);
+
+      // Labels should be formatted as MM/YYYY
+      expect(result.labels).toEqual(["1/2023", "2/2023"]);
+    });
+
+    it("should format labels properly for YEAR type", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const yearData: GoldPriceAggregate[] = [
+        {
+          date_time: new Date("2022-06-15"),
+          min_sell: 40000,
+          max_sell: 40200,
+        },
+        {
+          date_time: new Date("2023-06-15"),
+          min_sell: 40100,
+          max_sell: 40300,
+        },
+      ];
+
+      const result = privateMethod(yearData, GoldPriceGraphType.YEAR);
+
+      // Labels should be formatted as YYYY
+      expect(result.labels).toEqual(["2022", "2023"]);
+    });
+
+    it("should process and merge dates for HOUR_WITH_DAY type", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      const hourlyData: GoldPriceAggregate[] = [
+        {
+          date_time: new Date("2023-01-01T09:00:00"),
+          min_sell: 40000,
+          max_sell: 40200,
+        },
+        {
+          date_time: new Date("2023-01-01T10:00:00"),
+          min_sell: 40100,
+          max_sell: 40300,
+        },
+        {
+          date_time: new Date("2023-01-02T09:00:00"),
+          min_sell: 40200,
+          max_sell: 40400,
+        },
+      ];
+
+      const result = privateMethod(
+        hourlyData,
+        GoldPriceGraphType.HOUR_WITH_DAY
+      );
+
+      // First label should have full date+time, subsequent from same day should only have time
+      expect(result.labels[0]).toContain("01/01/2023");
+      expect(result.labels[1]).not.toContain("01/01/2023");
+      expect(result.labels[2]).toContain("02/01/2023");
+    });
+
+    it("should handle unexpected format in HOUR_WITH_DAY labels", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).prepareChartDataFromAggregates.bind(goldPricePeriodGraph);
+
+      // Add a record with unexpected date format
+      const hourlyDataWithIssue: GoldPriceAggregate[] = [
+        {
+          date_time: new Date("2023-01-01T09:00:00"),
+          min_sell: 40000,
+          max_sell: 40200,
+        },
+        {
+          date_time: new Date("Invalid Date"), // This will generate an invalid date
+          min_sell: 40100,
+          max_sell: 40300,
+        },
+      ];
+
+      const result = privateMethod(
+        hourlyDataWithIssue,
+        GoldPriceGraphType.HOUR_WITH_DAY
+      );
+
+      // Should not crash with invalid date and return the original label for invalid format
+      expect(result.labels.length).toBe(2);
+    });
+  });
+
+  describe("extractPriceDataWithRangeData", () => {
+    it("should extract price data from aggregated data and range data", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).extractPriceDataWithRangeData.bind(goldPricePeriodGraph);
+
+      const result = privateMethod(mockAggregatedData, mockPriceRangeData);
+
       expect(result).toEqual({
-        minPrice: 2000,
-        maxPrice: 2100,
-        priceDifference: 100, // 2100 - 2000
-        earliestPrice: 2000,
-        latestPrice: 2100,
+        minPrice: 40000,
+        maxPrice: 40400,
+        priceDifference: 400,
+        latestPrice: 40400,
+        earliestPrice: 40000,
       });
     });
 
-    it("should return default values for empty data", async () => {
-      // Call the private method with empty data
-      // @ts-ignore - accessing private method for testing
-      const result = goldPricePeriodGraph.extractPriceData([]);
+    it("should prioritize Huasengheng data when available", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).extractPriceDataWithRangeData.bind(goldPricePeriodGraph);
 
-      // Verify result
+      const result = privateMethod(
+        mockAggregatedData,
+        mockPriceRangeData,
+        huasengsengPriceData1
+      );
+
+      expect(result).toEqual({
+        minPrice: 40000,
+        maxPrice: 40460, // This comes from huasengsengPriceData1.Sell
+        priceDifference: 460, // Difference between huasengsengPriceData1.Sell and earliestPrice
+        latestPrice: 40460, // This comes from huasengsengPriceData1.Sell
+        earliestPrice: 40000,
+      });
+    });
+
+    it("should handle empty aggregated data when huasengheng is available", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).extractPriceDataWithRangeData.bind(goldPricePeriodGraph);
+
+      const result = privateMethod(
+        [],
+        mockPriceRangeData,
+        huasengsengPriceData1
+      );
+
+      expect(result.latestPrice).toBe(40460); // From huasengsengPriceData1.Sell
+      expect(result.minPrice).toBe(40460); // Min should be the only available price
+      expect(result.maxPrice).toBe(40460); // Max should be the only available price
+    });
+
+    it("should handle Number.MAX_VALUE and Number.MIN_VALUE edge cases with no data", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).extractPriceDataWithRangeData.bind(goldPricePeriodGraph);
+
+      // Create a scenario where minPrice remains Number.MAX_VALUE and maxPrice remains Number.MIN_VALUE
+      const result = privateMethod(
+        [], // Empty aggregated data
+        {
+          earliest_price: 0,
+          earliest_time: new Date(),
+          latest_price: 0,
+          latest_time: new Date(),
+        },
+        undefined // No huasengheng data
+      );
+
+      // Should set default values since minPrice would be MAX_VALUE and maxPrice would be MIN_VALUE
+      expect(result.minPrice).toBe(0);
+      expect(result.maxPrice).toBe(0);
+    });
+
+    it("should handle the case when no data is available", () => {
+      const privateMethod = (
+        goldPricePeriodGraph as any
+      ).extractPriceDataWithRangeData.bind(goldPricePeriodGraph);
+
+      const result = privateMethod([], {
+        earliest_price: 0,
+        earliest_time: new Date(),
+        latest_price: 0,
+        latest_time: new Date(),
+      });
+
       expect(result).toEqual({
         minPrice: 0,
         maxPrice: 0,
         priceDifference: 0,
-        earliestPrice: 0,
         latestPrice: 0,
+        earliestPrice: 0,
       });
     });
   });

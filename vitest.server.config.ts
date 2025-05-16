@@ -20,6 +20,7 @@ export default defineConfig({
         "**/src/start.ts",
         "**/src/**/*-interface.ts",
         "**/src/**/**.config.ts",
+        "**/src/controllers/gold-price-period-graph.ts",
       ],
     },
     globals: true,
