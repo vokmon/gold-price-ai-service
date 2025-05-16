@@ -1,3 +1,5 @@
+import { HuasenghengDataType } from "./huasengheng.ts";
+
 export interface GoldPrice {
   id: number;
   buy: number;
@@ -12,3 +14,8 @@ export interface GoldPrice {
 export interface GoldPriceCreate extends Omit<GoldPrice, "id"> {
   id?: number;
 }
+
+export type GoldPricePersisted = HuasenghengDataType & {
+  id: number;
+  createdDateTime: Date;
+};

@@ -2,11 +2,12 @@ import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
-import { GoldPriceAlertPersisted } from "~/models/gold-price-summary.ts";
 import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
-// import { randomUUID } from "crypto";
+import { GoldPriceGraphType } from "~/models/gold-price-graph.ts";
+import { GoldPricePersisted } from "~/models/gold-price.ts";
+
 export default class GoldPricePeriodGraph {
   private FONT_SIZE = 26;
   private FONT_SIZE_TITLE = 22;
@@ -15,8 +16,8 @@ export default class GoldPricePeriodGraph {
   private MIN_PRICE_BAR_HEIGHT = 20;
   private GRAPH_OFFSET = 100;
 
-  private FIRESTORE_COLLECTION_ALERT =
-    process.env.FIRESTORE_COLLECTION_PRICE_ALERT!;
+  private FIRESTORE_COLLECTION_PRICE_RECORD =
+    process.env.FIRESTORE_COLLECTION_PRICE_RECORD!;
 
   private _firestoreRepo: FirestoreRepo;
   private _huasengheng: Huasengheng;
@@ -28,22 +29,20 @@ export default class GoldPricePeriodGraph {
 
   async getGoldPricePeriodGraph(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    graphType: GoldPriceGraphType
   ): Promise<GoldPricePeriodGraphData> {
     console.log(
-      `Getting gold price period graph from collection ${
-        this.FIRESTORE_COLLECTION_ALERT
+      `📊 Getting gold price period graph from collection ${
+        this.FIRESTORE_COLLECTION_PRICE_RECORD
       } from ${getFormattedDate(startDate)} to ${getFormattedDate(endDate)}`
     );
 
     const promises = [
-      this._firestoreRepo.getDocumentsByDatetime<GoldPriceAlertPersisted>(
-        this.FIRESTORE_COLLECTION_ALERT,
+      this._firestoreRepo.getDocumentsByDatetime<GoldPricePersisted>(
+        this.FIRESTORE_COLLECTION_PRICE_RECORD,
         startDate,
-        endDate,
-        {
-          fields: ["createdDateTime", "currentPrice"],
-        }
+        endDate
       ),
     ] as any[];
 
@@ -64,7 +63,7 @@ export default class GoldPricePeriodGraph {
 
     const result = await Promise.allSettled(promises);
 
-    const goldPriceAlertData =
+    const goldPriceData =
       /* c8 ignore next */ result?.[0]?.status === "fulfilled"
         ? result[0].value
         : /* c8 ignore next */ [];
@@ -74,12 +73,12 @@ export default class GoldPricePeriodGraph {
         ? /* c8 ignore next */ result[1].value
         : /* c8 ignore next */ undefined;
 
-    console.log(`Found ${goldPriceAlertData.length} documents`);
-    console.log(`Huasengheng data: `, huasenghengData);
+    console.log(`🔎 Found ${goldPriceData.length} documents`);
+    console.log(`🔎 Huasengheng data: `, huasenghengData);
 
     if (huasenghengData) {
-      console.log("Add huasengheng data to gold price alert data");
-      goldPriceAlertData.push({
+      console.log("📊 Adding huasengheng data to gold price data");
+      goldPriceData.push({
         createdDateTime: Timestamp.now(),
         currentPrice: huasenghengData,
         priceAlert: true,
@@ -87,7 +86,7 @@ export default class GoldPricePeriodGraph {
         id: this.HUASENGHENG_ID,
       });
     }
-    if (goldPriceAlertData.length === 0) {
+    if (goldPriceData.length === 0) {
       return {
         dataPeriod: {
           startDate,
@@ -100,48 +99,26 @@ export default class GoldPricePeriodGraph {
       };
     }
 
-    return this.generateGoldPriceChart(goldPriceAlertData, startDate, endDate);
+    return this.generateGoldPriceChart(
+      goldPriceData,
+      startDate,
+      endDate,
+      graphType
+    );
   }
 
   private async generateGoldPriceChart(
-    goldPriceAlertData: GoldPriceAlertPersisted[],
+    goldPriceData: GoldPricePersisted[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    graphType: GoldPriceGraphType
   ): Promise<GoldPricePeriodGraphData> {
     // Group data by day
-    const { groupedData, isSameDay } = this.groupData(goldPriceAlertData);
+    const groupedData = this.groupData(goldPriceData, graphType);
 
     // Prepare chart data
-    const labels = Object.keys(groupedData);
-
-    const highestValues: number[] = [];
-    const lowestValues: number[] = [];
-    const dataArray: number[][] = [];
-
-    for (const record in groupedData) {
-      const prices =
-        groupedData[record]?.map(
-          (item) => item.currentPrice.Sell
-        ) /* c8 ignore next */ || [];
-
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      highestValues.push(maxPrice);
-      lowestValues.push(minPrice);
-
-      if (minPrice === maxPrice) {
-        // If the min and max price are the same, we need to add a small buffer to display the bar
-        dataArray.push([
-          minPrice - this.MIN_PRICE_BAR_HEIGHT,
-          minPrice + this.MIN_PRICE_BAR_HEIGHT,
-        ]);
-      } else {
-        dataArray.push([minPrice, maxPrice]);
-      }
-    }
-
-    const highestValue = Math.max(...highestValues) + this.GRAPH_OFFSET;
-    const lowestValue = Math.min(...lowestValues) - this.GRAPH_OFFSET;
+    const { labels, dataArray, highestValue, lowestValue } =
+      this.prepareChartData(groupedData, graphType);
 
     // Set up chart configuration
     const width = 1000;
@@ -153,24 +130,21 @@ export default class GoldPricePeriodGraph {
       backgroundColour: "white",
     });
 
-    const chartTitle = isSameDay
-      ? `ราคาทองคำ (${getFormattedDate(endDate)})`
-      : `ราคาทองคำ (${getFormattedDate(startDate)} - ${getFormattedDate(
-          endDate
-        )})`;
+    const chartTitle =
+      graphType === GoldPriceGraphType.HOUR
+        ? `ราคาทองคำ (${getFormattedDate(endDate)})`
+        : `ราคาทองคำ (${getFormattedDate(startDate)} - ${getFormattedDate(
+            endDate
+          )})`;
 
     // Ensure labels has at least 10 elements
-    if (labels.length < this.MIN_LABELS) {
-      const emptyLabelsToAdd = this.MIN_LABELS - labels.length;
-      for (let i = 0; i < emptyLabelsToAdd; i++) {
-        labels.push("");
-      }
-    }
+    const finalLabels = this.ensureMinimumLabels(labels);
 
+    console.log(`🔖 Final labels: `, finalLabels);
     const configuration = {
       type: "bar",
       data: {
-        labels: labels,
+        labels: finalLabels,
         datasets: [
           {
             label: "ราคาทองคำ",
@@ -240,6 +214,7 @@ export default class GoldPricePeriodGraph {
               font: {
                 size: this.FONT_SIZE,
               },
+              autoSkip: false,
             },
           },
         },
@@ -252,24 +227,25 @@ export default class GoldPricePeriodGraph {
     );
 
     // THIS IS FOR SAVING THE CHART TO A FILE
+    const fs = await import("fs/promises");
+    const path = await import("path");
 
-    // const fs = await import("fs/promises");
-    // const path = await import("path");
+    const outputDir = "./output";
+    await fs.mkdir(outputDir, { recursive: true });
 
-    // const outputDir = "./output";
-    // await fs.mkdir(outputDir, { recursive: true });
+    const fileName = `gold-price-chart-${new Date().getTime()}.png`;
+    const filePath = path.join(outputDir, fileName);
 
-    // const fileName = `gold-price-chart-${new Date().getTime()}.png`;
-    // const filePath = path.join(outputDir, fileName);
+    await fs.writeFile(filePath, imageBuffer);
+    console.log(`Chart has been generated and saved to ${filePath}`);
 
-    // await fs.writeFile(filePath, imageBuffer);
-    // console.log(`Chart has been generated and saved to ${filePath}`);
-
-    const priceData = this.extractPriceData(goldPriceAlertData);
+    const priceData = this.extractPriceData(goldPriceData);
 
     const description = `${chartTitle}\n
     ${convertGoldPricePeriodGraphToString(priceData)}
     `;
+
+    console.log(`📊📃 Description of the chart: `, description);
 
     return {
       dataPeriod: {
@@ -281,69 +257,135 @@ export default class GoldPricePeriodGraph {
     };
   }
 
-  private groupData(data: GoldPriceAlertPersisted[]) {
-    // First, determine the date range of the data
-    let minDate: Date | null = null;
-    let maxDate: Date | null = null;
+  private prepareChartData(
+    groupedData: Record<string, GoldPricePersisted[]>,
+    graphType: GoldPriceGraphType
+  ) {
+    // Get the keys (labels)
+    let labels = Object.keys(groupedData);
 
+    // Process labels for HOUR_WITH_DAY
+    if (graphType === GoldPriceGraphType.HOUR_WITH_DAY) {
+      console.log(`📊 Processing labels for HOUR_WITH_DAY`);
+      // Sort labels chronologically - we expect format "DD/MM/YYYY HH:00"
+      labels = labels.sort((a, b) => {
+        // Simple string comparison works because of the DD/MM/YYYY format
+        return a.localeCompare(b);
+      });
+
+      // Process labels to hide repeated dates
+      let previousDate: string | null = null;
+      labels = labels.map((label) => {
+        // Split by space to separate date and time
+        const parts = label.split(" ");
+        // We expect exactly 2 parts for date time format
+        if (parts.length === 2) {
+          const date = parts[0] || "";
+          const time = parts[1] || "";
+
+          if (date === previousDate) {
+            // Return only time if date is the same as previous
+            return time;
+          } else {
+            // Update previous date and return full label
+            previousDate = date;
+            return label;
+          }
+        }
+        // Return original label if format is unexpected
+        return label;
+      });
+    }
+
+    console.log(`📊 Grouped data: `, labels);
+
+    // Prepare price data arrays
+    const highestValues: number[] = [];
+    const lowestValues: number[] = [];
+    const dataArray: number[][] = [];
+
+    for (const record in groupedData) {
+      const prices =
+        groupedData[record]?.map((item) => item.Sell) /* c8 ignore next */ ||
+        [];
+
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      highestValues.push(maxPrice);
+      lowestValues.push(minPrice);
+
+      if (minPrice === maxPrice) {
+        // If the min and max price are the same, we need to add a small buffer to display the bar
+        dataArray.push([
+          minPrice - this.MIN_PRICE_BAR_HEIGHT,
+          minPrice + this.MIN_PRICE_BAR_HEIGHT,
+        ]);
+      } else {
+        dataArray.push([minPrice, maxPrice]);
+      }
+    }
+
+    const highestValue = Math.max(...highestValues) + this.GRAPH_OFFSET;
+    const lowestValue = Math.min(...lowestValues) - this.GRAPH_OFFSET;
+
+    console.log(`📊⬆️ Highest value: `, highestValue);
+    console.log(`📊⬇️ Lowest value: `, lowestValue);
+
+    return {
+      labels,
+      dataArray,
+      highestValue,
+      lowestValue,
+    };
+  }
+
+  private ensureMinimumLabels(labels: string[]): string[] {
+    // Ensure labels has at least MIN_LABELS elements
+    if (labels.length < this.MIN_LABELS) {
+      const emptyLabelsToAdd = this.MIN_LABELS - labels.length;
+      const extendedLabels = [...labels];
+      for (let i = 0; i < emptyLabelsToAdd; i++) {
+        extendedLabels.push("");
+      }
+      return extendedLabels;
+    }
+    return labels;
+  }
+
+  private groupData(data: GoldPricePersisted[], graphType: GoldPriceGraphType) {
     const validData = data.filter((item) => {
-      if (
-        !item.createdDateTime ||
-        !item.currentPrice ||
-        !item.currentPrice.Sell
-      ) {
+      if (!item.createdDateTime || !item.Sell) {
         return false;
       }
       return true;
     });
 
-    validData.forEach((item) => {
-      const date = (item.createdDateTime as unknown as Timestamp).toDate();
-      if (!minDate || date < minDate) minDate = date;
-      if (!maxDate || date > maxDate) maxDate = date;
-    });
-
-    // Determine grouping type
-    let groupingType: "hour" | "day" | "month" = "day"; // Default
-
-    if (minDate && maxDate) {
-      // Check if all data is within the same day
-      const isSameDay =
-        (minDate as Date).getDate() === (maxDate as Date).getDate() &&
-        (minDate as Date).getMonth() === (maxDate as Date).getMonth() &&
-        (minDate as Date).getFullYear() === (maxDate as Date).getFullYear();
-
-      // Check if data spans more than 2 months
-      const monthDiff =
-        ((maxDate as Date).getFullYear() - (minDate as Date).getFullYear()) *
-          12 +
-        (maxDate as Date).getMonth() -
-        (minDate as Date).getMonth();
-
-      if (isSameDay) {
-        groupingType = "hour";
-      } else if (monthDiff >= 2) {
-        groupingType = "month";
-      }
-    }
-
-    const groupedData: Record<string, GoldPriceAlertPersisted[]> = {};
+    const groupedData: Record<string, GoldPricePersisted[]> = {};
 
     validData.forEach((item) => {
       const date = (item.createdDateTime as unknown as Timestamp).toDate();
       let key: string;
 
-      switch (groupingType) {
-        case "hour":
+      switch (graphType) {
+        case GoldPriceGraphType.HOUR:
           // Format: HH:00
           key = `${date.getHours()}:00`;
           break;
-        case "month":
+        case GoldPriceGraphType.HOUR_WITH_DAY:
+          // Format: DD/MM/YYYY HH:00
+          key = `${formatDateAsDDMMYYYY(date)} ${date.getHours()}:00`;
+          break;
+        case GoldPriceGraphType.MONTH:
           // Format: MM/YYYY
           key = `${date.getMonth() + 1}/${date.getFullYear()}`;
           break;
+        case GoldPriceGraphType.YEAR:
+          // Format: YYYY
+          key = `${date.getFullYear()}`;
+          break;
+        case GoldPriceGraphType.DAY:
         default:
-          // Format: DD/MM/YYYY
+          // Format: DD/MM/YYYY (for DAY and any other cases)
           key = formatDateAsDDMMYYYY(date);
       }
 
@@ -354,18 +396,12 @@ export default class GoldPricePeriodGraph {
       groupedData[key]!.push(item);
     });
 
-    return {
-      isSameDay: groupingType === "hour",
-      groupedData,
-    };
+    return groupedData;
   }
 
-  private extractPriceData(data: GoldPriceAlertPersisted[]) {
+  private extractPriceData(data: GoldPricePersisted[]) {
     // Filter valid data with price information
-    const validData = data.filter(
-      (item) =>
-        item.createdDateTime && item.currentPrice && item.currentPrice.Sell
-    );
+    const validData = data.filter((item) => item.createdDateTime && item.Sell);
 
     if (validData.length === 0) {
       return {
@@ -378,7 +414,7 @@ export default class GoldPricePeriodGraph {
     }
 
     // Convert all prices to numbers
-    const prices = validData.map((item) => item.currentPrice.Sell);
+    const prices = validData.map((item) => item.Sell);
 
     // Find min and max prices
     const minPrice = Math.min(...prices);
@@ -396,17 +432,12 @@ export default class GoldPricePeriodGraph {
     });
 
     // Get earliest and latest prices
-    const earliestPrice =
-      sortedData[0]?.currentPrice?.Sell /* c8 ignore next */ || 0;
+    const earliestPrice = sortedData[0]?.Sell /* c8 ignore next */ || 0;
 
-    console.log(
-      `Latest price: `,
-      sortedData[sortedData.length - 1]?.currentPrice
-    );
+    console.log(`Latest price: `, sortedData[sortedData.length - 1]);
 
     const latestPrice =
-      sortedData[sortedData.length - 1]?.currentPrice
-        ?.Sell /* c8 ignore next */ || 0;
+      sortedData[sortedData.length - 1]?.Sell /* c8 ignore next */ || 0;
 
     // Calculate price difference
     const priceDifference = latestPrice - earliestPrice;

@@ -7,6 +7,7 @@ import TerminalOutput from "./services/outputs/impl/terminal-output.ts";
 import GoldPricePeriodSummary from "./controllers/gold-price-period-summary.ts";
 import GoldPricePeriodGraph from "./controllers/gold-price-period-graph.ts";
 import { GoldPriceDataRecorder } from "./controllers/gold-price-data-recorder.ts";
+import { GoldPriceGraphType } from "./models/gold-price-graph.ts";
 export default class MainApplication {
   /**
    * Maximum number of retry
@@ -62,7 +63,8 @@ export default class MainApplication {
 
       const graph = await this._goldPricePeriodGraph.getGoldPricePeriodGraph(
         startDate,
-        endDate
+        endDate,
+        GoldPriceGraphType.HOUR
       );
 
       if (graph.chartAsBuffer) {
@@ -110,7 +112,11 @@ export default class MainApplication {
 
     const [summary, graph] = await Promise.all([
       this._goldPricePeriodSummary.summarizeGoldPricePeriod(startDate, endDate),
-      this._goldPricePeriodGraph.getGoldPricePeriodGraph(startDate, endDate),
+      this._goldPricePeriodGraph.getGoldPricePeriodGraph(
+        startDate,
+        endDate,
+        GoldPriceGraphType.DAY
+      ),
     ]);
 
     console.log("🔖🔖🔖 Gold Price Period Summary: ", summary);
@@ -132,15 +138,20 @@ export default class MainApplication {
     console.log("\n");
   }
 
-  async summarizeGoldPricePeriodWithGraph(startDate: Date, endDate: Date) {
+  async summarizeGoldPricePeriodWithGraph(
+    startDate: Date,
+    endDate: Date,
+    graphType: GoldPriceGraphType
+  ) {
     console.log("\n");
-    const label = `💹💹💹 Gold Price Period Price Graph Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate}`;
+    const label = `💹💹💹 Gold Price Period Price Graph Summary Service: ${new Date()} with start date of ${startDate} and end date of ${endDate} and graph type of ${graphType}`;
     console.log(label);
     console.time(label);
 
     const graph = await this._goldPricePeriodGraph.getGoldPricePeriodGraph(
       startDate,
-      endDate
+      endDate,
+      graphType
     );
 
     const outputChannels = new OutputChannels([
@@ -148,7 +159,7 @@ export default class MainApplication {
       new TelegramOutput(),
     ]);
 
-    await outputChannels.outputDataGoldPricePeriodGraph(graph);
+    // await outputChannels.outputDataGoldPricePeriodGraph(graph);
 
     console.timeEnd(label);
     console.timeLog(`💹💹💹Process ${label} finished.`);
