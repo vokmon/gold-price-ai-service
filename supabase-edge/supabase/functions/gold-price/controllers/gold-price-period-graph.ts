@@ -1,17 +1,19 @@
 /* c8 ignore file */
-import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
-import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
-import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
-import { GoldPriceGraphType } from "~/models/gold-price-graph.ts";
+import { formatDateAsDDMMYYYY, getFormattedDate } from "../utils/date-utils.ts";
+import { GoldPricePeriodGraphData } from "../types/gold-price-period-graph.type.ts";
+import { convertGoldPricePeriodGraphToString } from "../utils/output-utils.ts";
+import { GoldPriceGraphType } from "../types/gold-price-graph.type.ts";
 import {
   GoldPriceAggregate,
   PriceRangeData,
   TimePeriod,
-} from "~/models/gold-price.ts";
-import GeneratePriceGraph from "~/services/graph/generate-price-graph.ts";
-import { GoldPriceDbRepository } from "~/repositories/database/gold-price-db-repository.ts";
-import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
-import { HuasenghengDataType } from "~/models/huasengheng.ts";
+} from "../types/gold-price.type.ts";
+import GeneratePriceGraph from "../services/graph/generate-price-graph.ts";
+import { GoldPriceDbRepository } from "../repositories/gold-price-supabase-repository.ts";
+import Huasengheng from "../services/huasengheng-service.ts";
+import { HuasenghengDataType } from "../types/huasengheng.type.ts";
+import OutputChannels from "../outputs/output-channels.ts";
+import TelegramOutput from "../outputs/impl/telegram-output.ts";
 
 export default class GoldPricePeriodGraph {
   private MIN_PRICE_BAR_HEIGHT = 20;
@@ -20,9 +22,9 @@ export default class GoldPricePeriodGraph {
   private _generatePriceGraph: GeneratePriceGraph;
   private _goldPriceDbRepo: GoldPriceDbRepository;
 
-  constructor() {
+  constructor(req: any) {
     this._generatePriceGraph = new GeneratePriceGraph();
-    this._goldPriceDbRepo = new GoldPriceDbRepository();
+    this._goldPriceDbRepo = new GoldPriceDbRepository(req);
     this._huasengheng = new Huasengheng();
   }
 
@@ -97,7 +99,7 @@ export default class GoldPricePeriodGraph {
         ? (results[2] as HuasenghengDataType | undefined)
         : undefined;
 
-      console.log(`🔎 Found ${aggregatedData.length} aggregated data points`);
+      console.log(`🔎 Aggregated data:`, aggregatedData);
       console.log(`📊 Price range data:`, priceRangeData);
 
       if (huasenghengData) {
@@ -120,15 +122,23 @@ export default class GoldPricePeriodGraph {
         };
       }
 
-      // Generate the chart with all available data
-      return this.generateGoldPriceChartFromAggregateData(
-        aggregatedData,
-        priceRangeData,
-        huasenghengData,
-        startDate,
-        endDate,
-        graphType
-      );
+      const goldPricePeriodGraph =
+        await this.generateGoldPriceChartFromAggregateData(
+          aggregatedData,
+          priceRangeData,
+          huasenghengData,
+          startDate,
+          endDate,
+          graphType
+        );
+      await this.outputGoldPricePeriodGraph(goldPricePeriodGraph);
+      return {
+        dataPeriod: {
+          startDate,
+          endDate,
+        },
+        description: goldPricePeriodGraph.description,
+      };
     } catch (error) {
       console.error("Error fetching data:", error);
 
@@ -269,6 +279,7 @@ export default class GoldPricePeriodGraph {
     // Process labels for HOUR_WITH_DAY to hide repeated dates
     if (graphType === GoldPriceGraphType.HOUR_WITH_DAY && labels.length > 0) {
       console.log(`📊 Processing labels for HOUR_WITH_DAY`);
+      // Sort labels chronologically
       const sortedIndexes = labels.map((_, i) => i);
 
       // Create new arrays with sorted data
@@ -420,5 +431,17 @@ export default class GoldPricePeriodGraph {
       latestPrice,
       earliestPrice,
     };
+  }
+
+  private async outputGoldPricePeriodGraph(
+    goldPricePeriodGraph: GoldPricePeriodGraphData
+  ) {
+    const outputChannels = new OutputChannels([new TelegramOutput()]);
+
+    if (goldPricePeriodGraph.chartAsBuffer) {
+      await outputChannels.outputDataGoldPricePeriodGraph(goldPricePeriodGraph);
+    } else {
+      await outputChannels.outputMessage(goldPricePeriodGraph.description);
+    }
   }
 }

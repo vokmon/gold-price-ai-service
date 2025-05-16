@@ -27,3 +27,17 @@ export interface GoldPriceAggregate {
 }
 
 export type TimePeriod = "hour" | "day" | "month" | "year";
+
+export interface PriceRangeData {
+  earliest_price: number;
+  earliest_time: Date;
+  latest_price: number;
+  latest_time: Date;
+}
+
+export interface PriceRangeData {
+  earliest_price: number;
+  earliest_time: Date;
+  latest_price: number;
+  latest_time: Date;
+}

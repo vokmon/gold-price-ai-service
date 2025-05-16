@@ -38,6 +38,14 @@ bunx supabase functions download gold-price-data-weekly-summary
 
 <br/>
 
+For Price Graph
+
+```
+bunx supabase functions download gold-price-graph
+```
+
+<br/>
+
 **Deploy the function**
 
 For Recording Price
@@ -68,6 +76,14 @@ For Weekly Summary
 
 ```
 bunx supabase functions deploy gold-price-data-weekly-summary
+```
+
+<br/>
+
+For Price Graph
+
+```
+bunx supabase functions deploy gold-price-graph
 ```
 
 <br/>
@@ -116,6 +132,19 @@ Weekly Summary:
 POST https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-data-weekly-summary
 
 Header: Authorization: Bearer <token>
+
+```
+
+<br />
+
+Weekly Summary:
+
+```
+POST https://gzdjohkzhnewiphyupxz.supabase.co/functions/v1/gold-price-graph
+
+Header: Authorization: Bearer <token>
+
+Payload: { "summaryPeriod": 'day'|'week'|'month'|'year',  "graphType": 'hour'|'day'|'hour_with_day'|'month'|'year'}
 
 ```
 

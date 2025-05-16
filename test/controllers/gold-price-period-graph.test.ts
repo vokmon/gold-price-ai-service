@@ -1,13 +1,13 @@
 import { describe, it, vi, beforeEach, expect } from "vitest";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
-import {
-  GoldPriceDbRepository,
-  PriceRangeData,
-} from "../../src/repositories/database/gold-price-db-repository";
+import { GoldPriceDbRepository } from "../../src/repositories/database/gold-price-db-repository";
 import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 import GeneratePriceGraph from "../../src/services/graph/generate-price-graph";
 import { GoldPriceGraphType } from "../../src/models/gold-price-graph";
-import { GoldPriceAggregate } from "../../src/models/gold-price";
+import {
+  GoldPriceAggregate,
+  PriceRangeData,
+} from "../../src/models/gold-price";
 import { huasengsengPriceData1 } from "../mock-data/huasengheng-data";
 import { formatDateAsDDMMYYYY } from "../../src/utils/date-utils";
 

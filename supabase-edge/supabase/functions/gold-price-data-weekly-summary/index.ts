@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import GoldPricePeriodSummary from "../gold-price/controllers/gold-price-period-summary.ts";
-import { getTodayThaiDate } from "../gold-price/utils/date-utils.ts";
 
 const goldPriceDataPeriodSummary = new GoldPricePeriodSummary();
 

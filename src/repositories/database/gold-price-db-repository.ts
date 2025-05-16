@@ -4,18 +4,9 @@ import {
   GoldPriceCreate,
   GoldPriceAggregate,
   TimePeriod,
+  PriceRangeData,
 } from "../../models/gold-price.ts";
 import { BaseRepository } from "./db/base-repository.ts";
-
-/**
- * Interface for earliest and latest price data
- */
-export interface PriceRangeData {
-  earliest_price: number;
-  earliest_time: Date;
-  latest_price: number;
-  latest_time: Date;
-}
 
 export class GoldPriceDbRepository extends BaseRepository {
   constructor() {

@@ -62,3 +62,20 @@ export function getTodayThaiDate(): Date {
   const thailandTime = new Date().toLocaleString("en-US", options);
   return new Date(thailandTime);
 }
+
+export function formatDateAsDDMMYYYY(date: Date = new Date()): string {
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+/**
+ * Converts a date string to a Date object in Thai timezone
+ */
+export function convertToThaiTimezone(dateString: string): Date {
+  return new Date(
+    new Date(dateString).toLocaleString("en-US", { timeZone: "Asia/Bangkok" })
+  );
+}
