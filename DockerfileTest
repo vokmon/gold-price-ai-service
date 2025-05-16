@@ -13,12 +13,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     # Minimal Chromium dependencies
     chromium \
-    # Minimal dependencies for chartjs-node-canvas
-    build-essential \
-    libcairo2-dev \
-    libpango1.0-dev \
-    # Only the essential font for Thai language
-    fonts-thai-tlwg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     /var/cache/apt/* \

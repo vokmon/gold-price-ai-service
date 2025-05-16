@@ -1,30 +1,28 @@
 import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
 import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
 import { GoldPriceGraphType } from "~/models/gold-price-graph.ts";
 import { GoldPricePersisted } from "~/models/gold-price.ts";
+import GeneratePriceGraph from "~/services/graph/generate-price-graph.ts";
 
 export default class GoldPricePeriodGraph {
-  private FONT_SIZE = 26;
-  private FONT_SIZE_TITLE = 22;
-  private MIN_LABELS = 10;
   private HUASENGHENG_ID = "huasengheng-current-price-id";
   private MIN_PRICE_BAR_HEIGHT = 20;
-  private GRAPH_OFFSET = 100;
 
   private FIRESTORE_COLLECTION_PRICE_RECORD =
     process.env.FIRESTORE_COLLECTION_PRICE_RECORD!;
 
   private _firestoreRepo: FirestoreRepo;
   private _huasengheng: Huasengheng;
+  private _generatePriceGraph: GeneratePriceGraph;
 
   constructor() {
     this._firestoreRepo = new FirestoreRepo();
     this._huasengheng = new Huasengheng();
+    this._generatePriceGraph = new GeneratePriceGraph();
   }
 
   async getGoldPricePeriodGraph(
@@ -116,20 +114,6 @@ export default class GoldPricePeriodGraph {
     // Group data by day
     const groupedData = this.groupData(goldPriceData, graphType);
 
-    // Prepare chart data
-    const { labels, dataArray, highestValue, lowestValue } =
-      this.prepareChartData(groupedData, graphType);
-
-    // Set up chart configuration
-    const width = 1000;
-    const height = 600;
-
-    const chartJSNodeCanvas = new ChartJSNodeCanvas({
-      width,
-      height,
-      backgroundColour: "white",
-    });
-
     const chartTitle =
       graphType === GoldPriceGraphType.HOUR
         ? `ราคาทองคำ (${getFormattedDate(endDate)})`
@@ -137,107 +121,23 @@ export default class GoldPricePeriodGraph {
             endDate
           )})`;
 
+    // Prepare chart data
+    const { labels, dataArray } = this.prepareChartData(groupedData, graphType);
+
     // Ensure labels has at least 10 elements
-    const finalLabels = this.ensureMinimumLabels(labels);
-
-    console.log(`🔖 Final labels: `, finalLabels);
-    const configuration = {
-      type: "bar",
-      data: {
-        labels: finalLabels,
-        datasets: [
-          {
-            label: "ราคาทองคำ",
-            data: dataArray,
-            backgroundColor: "rgba(55, 162, 240, 0.6)",
-            borderColor: "rgba(55, 162, 240, 1)",
-            borderWidth: 1,
-            borderRadius: 5,
-            borderSkipped: false,
-          },
-          {
-            data: dataArray.map(
-              (item) =>
-                ((item?.[0] /* c8 ignore next */ ?? 0) +
-                  (item?.[1] /* c8 ignore next */ ?? 0)) /
-                2
-            ),
-            backgroundColor: "rgba(255, 70, 120, 1)", // Golden rod
-            borderColor: "rgba(200, 75, 105, 1)", // Darker gold for border
-            borderWidth: 2,
-            pointRadius: 0,
-            tension: 0,
-            type: "line",
-          },
-        ],
-      },
-      options: {
-        plugins: {
-          title: {
-            display: true,
-            text: chartTitle,
-          },
-          legend: {
-            display: false,
-            position: "top",
-          },
-        },
-
-        scales: {
-          y: {
-            beginAtZero: false,
-            offset: true,
-            min: lowestValue,
-            max: highestValue,
-            title: {
-              display: true,
-              text: "ราคา (บาท)",
-              font: {
-                size: this.FONT_SIZE_TITLE,
-              },
-            },
-            ticks: {
-              font: {
-                size: this.FONT_SIZE,
-              },
-            },
-          },
-          x: {
-            title: {
-              display: false,
-              text: "วันที่",
-              font: {
-                size: this.FONT_SIZE_TITLE,
-              },
-            },
-            ticks: {
-              font: {
-                size: this.FONT_SIZE,
-              },
-              autoSkip: false,
-            },
-          },
-        },
-      },
-    };
-
-    // Generate chart as image buffer
-    const imageBuffer = await chartJSNodeCanvas.renderToBuffer(
-      configuration as any
+    const dataArrayForLineChart = dataArray.map(
+      (item) =>
+        ((item?.[0] /* c8 ignore next */ ?? 0) +
+          (item?.[1] /* c8 ignore next */ ?? 0)) /
+        2
     );
 
-    // THIS IS FOR SAVING THE CHART TO A FILE
-    const fs = await import("fs/promises");
-    const path = await import("path");
-
-    const outputDir = "./output";
-    await fs.mkdir(outputDir, { recursive: true });
-
-    const fileName = `gold-price-chart-${new Date().getTime()}.png`;
-    const filePath = path.join(outputDir, fileName);
-
-    await fs.writeFile(filePath, imageBuffer);
-    console.log(`Chart has been generated and saved to ${filePath}`);
+    const imageBuffer = await this._generatePriceGraph.generatePriceGraph({
+      labels,
+      dataArrayForBarChart: dataArray,
+      dataArrayForLineChart,
+      chartTitle,
+    });
 
     const priceData = this.extractPriceData(goldPriceData);
 
@@ -252,7 +152,7 @@ export default class GoldPricePeriodGraph {
         startDate,
         endDate,
       },
-      chartAsBuffer: imageBuffer,
+      chartAsBuffer: imageBuffer as Buffer,
       description: `📊 ${description}`,
     };
   }
@@ -325,31 +225,10 @@ export default class GoldPricePeriodGraph {
       }
     }
 
-    const highestValue = Math.max(...highestValues) + this.GRAPH_OFFSET;
-    const lowestValue = Math.min(...lowestValues) - this.GRAPH_OFFSET;
-
-    console.log(`📊⬆️ Highest value: `, highestValue);
-    console.log(`📊⬇️ Lowest value: `, lowestValue);
-
     return {
       labels,
       dataArray,
-      highestValue,
-      lowestValue,
     };
-  }
-
-  private ensureMinimumLabels(labels: string[]): string[] {
-    // Ensure labels has at least MIN_LABELS elements
-    if (labels.length < this.MIN_LABELS) {
-      const emptyLabelsToAdd = this.MIN_LABELS - labels.length;
-      const extendedLabels = [...labels];
-      for (let i = 0; i < emptyLabelsToAdd; i++) {
-        extendedLabels.push("");
-      }
-      return extendedLabels;
-    }
-    return labels;
   }
 
   private groupData(data: GoldPricePersisted[], graphType: GoldPriceGraphType) {
@@ -419,6 +298,8 @@ export default class GoldPricePeriodGraph {
     // Find min and max prices
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
+    console.log(`📊⬆️ Highest value: `, maxPrice);
+    console.log(`📊⬇️ Lowest value: `, minPrice);
 
     // Sort data by date to find earliest and latest entries
     const sortedData = [...validData].sort((a, b) => {
@@ -434,7 +315,7 @@ export default class GoldPricePeriodGraph {
     // Get earliest and latest prices
     const earliestPrice = sortedData[0]?.Sell /* c8 ignore next */ || 0;
 
-    console.log(`Latest price: `, sortedData[sortedData.length - 1]);
+    console.log(`💰 Latest price: `, sortedData[sortedData.length - 1]);
 
     const latestPrice =
       sortedData[sortedData.length - 1]?.Sell /* c8 ignore next */ || 0;

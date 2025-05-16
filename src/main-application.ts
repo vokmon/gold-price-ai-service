@@ -159,7 +159,7 @@ export default class MainApplication {
       new TelegramOutput(),
     ]);
 
-    // await outputChannels.outputDataGoldPricePeriodGraph(graph);
+    await outputChannels.outputDataGoldPricePeriodGraph(graph);
 
     console.timeEnd(label);
     console.timeLog(`💹💹💹Process ${label} finished.`);
