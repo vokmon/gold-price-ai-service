@@ -34,37 +34,81 @@ class TestRepository extends BaseRepository {
   }
 }
 
+// Mock objects
+const mockPoolClient = {
+  release: vi.fn(),
+};
+
+const mockPool = {
+  connect: vi.fn().mockResolvedValue(mockPoolClient),
+  on: vi.fn(function (event, handler) {
+    // Store the handler in _events for testing
+    if (!this._events) this._events = {};
+    if (!this._events[event]) this._events[event] = [];
+    if (Array.isArray(this._events[event])) {
+      this._events[event].push(handler);
+    } else {
+      this._events[event] = handler;
+    }
+    return this;
+  }),
+  end: vi.fn().mockResolvedValue(undefined),
+  query: vi.fn(),
+  _events: {},
+};
+
 // Mock the pg Pool
 vi.mock("pg", () => {
-  // Mock for PoolClient
-  const mockPoolClient = {
-    release: vi.fn(),
-  };
-
-  // Mock for Pool
-  const mockPool = {
-    connect: vi.fn().mockResolvedValue(mockPoolClient),
-    on: vi.fn(function (event, handler) {
-      // Store the handler in _events for testing
-      if (!this._events) this._events = {};
-      if (!this._events[event]) this._events[event] = [];
-      if (Array.isArray(this._events[event])) {
-        this._events[event].push(handler);
-      } else {
-        this._events[event] = handler;
-      }
-      return this;
-    }),
-    end: vi.fn().mockResolvedValue(undefined),
-    query: vi.fn(),
-    _events: {},
-  };
-
   return {
     Pool: vi.fn(() => mockPool),
     PoolClient: vi.fn(),
   };
 });
+
+// Mock the BaseRepository module to reset sharedPool between tests
+let mockedSharedPool: Pool | null = null;
+
+vi.mock(
+  "../../../../src/repositories/database/db/base-repository",
+  async (importOriginal) => {
+    const original = await importOriginal<
+      typeof import("../../../../src/repositories/database/db/base-repository")
+    >();
+
+    // Override the getDbPool function to use our controlled sharedPool variable
+    const getDbPool = () => {
+      if (!mockedSharedPool) {
+        const connectionString = process.env.DB_CONNECTION;
+        console.log("🔌 Connecting to database...");
+        if (!connectionString) {
+          throw new Error(
+            "🔴 Database connection string is missing. Please check DB_CONNECTION environment variable."
+          );
+        }
+
+        mockedSharedPool = new Pool({ connectionString });
+
+        mockedSharedPool.on("error", (err) => {
+          console.error("🔴 Unexpected error on database client", err);
+        });
+      }
+
+      return mockedSharedPool;
+    };
+
+    // Return the original module with our overridden getDbPool function
+    return {
+      ...original,
+      BaseRepository: class extends original.BaseRepository {
+        constructor() {
+          super();
+          // Override the pool to use our controlled pool
+          this.pool = getDbPool();
+        }
+      },
+    };
+  }
+);
 
 describe("BaseRepository", () => {
   let repository: TestRepository;
@@ -72,6 +116,12 @@ describe("BaseRepository", () => {
   let consoleSpy: any;
 
   beforeEach(() => {
+    // Reset mock calls between tests
+    vi.clearAllMocks();
+
+    // Reset the singleton pool
+    mockedSharedPool = null;
+
     // Save original environment and console methods
     originalEnv = { ...process.env };
     process.env.DB_CONNECTION =
@@ -121,6 +171,9 @@ describe("BaseRepository", () => {
     });
 
     it("should throw error if DB_CONNECTION is not set", () => {
+      // Reset the singleton pool to force new connection
+      mockedSharedPool = null;
+
       // Remove DB_CONNECTION and verify constructor throws
       delete process.env.DB_CONNECTION;
 
@@ -131,6 +184,21 @@ describe("BaseRepository", () => {
 
     it("should initialize tableName with default value", () => {
       expect(repository.getTableName()).toBe("unknown");
+    });
+
+    it("should reuse existing pool when one already exists", () => {
+      // Create first repository which should initialize the pool
+      const firstRepo = new TestRepository();
+      expect(Pool).toHaveBeenCalledTimes(1);
+
+      // Create second repository which should reuse the pool
+      const secondRepo = new TestRepository();
+
+      // Pool constructor should still only have been called once
+      expect(Pool).toHaveBeenCalledTimes(1);
+
+      // Both repositories should have the same pool instance
+      expect(secondRepo.getPool()).toBe(firstRepo.getPool());
     });
   });
 

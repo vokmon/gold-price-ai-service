@@ -1,24 +1,34 @@
 import { Pool, PoolClient } from "pg";
 
+// Singleton database pool
+let sharedPool: Pool | null = null;
+
+/**
+ * Get or create the shared database pool instance
+ */
+function getDbPool(): Pool {
+  if (!sharedPool) {
+    const connectionString = process.env.DB_CONNECTION;
+    console.log("🔌 Connecting to database...");
+
+    sharedPool = new Pool({ connectionString });
+
+    sharedPool.on("error", (err) => {
+      console.error("🔴 Unexpected error on database client", err);
+    });
+  }
+
+  return sharedPool;
+}
+
 export abstract class BaseRepository {
   protected pool: Pool;
   protected tableName: string = "unknown";
   protected client: PoolClient | null = null;
 
   constructor() {
-    const connectionString = process.env.DB_CONNECTION;
-    console.log("🔌 Connecting to database...", connectionString);
-    if (!connectionString) {
-      throw new Error(
-        "🔴 Database connection string is missing. Please check DB_CONNECTION environment variable."
-      );
-    }
-
-    this.pool = new Pool({ connectionString });
-
-    this.pool.on("error", (err) => {
-      console.error("🔴 Unexpected error on database client", err);
-    });
+    // Use the shared pool instead of creating a new one
+    this.pool = getDbPool();
   }
 
   async connect() {

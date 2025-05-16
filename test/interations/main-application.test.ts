@@ -10,6 +10,7 @@ import FirestoreOutput from "../../src/services/outputs/impl/firestore-output";
 import GoldPricePeriodSummary from "../../src/controllers/gold-price-period-summary";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
 import { GoldPriceDataRecorder } from "../../src/controllers/gold-price-data-recorder";
+import { GoldPriceGraphType } from "../../src/models/gold-price-graph";
 
 vi.mock("firebase-admin/firestore");
 vi.mock("firebase-admin/app");
@@ -193,7 +194,11 @@ describe("main application: Gold price period summary service", async () => {
     await mainApplication.summarizeGoldPricePeriod(startDate, endDate);
 
     expect(summarizeGoldPricePeriodSpy).toHaveBeenCalledTimes(1);
-    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
+    expect(graphSpy).toHaveBeenCalledWith(
+      startDate,
+      endDate,
+      GoldPriceGraphType.DAY
+    );
     expect(outputDataSpy).toHaveBeenCalledTimes(1);
     expect(outputGraphSpy).toHaveBeenCalledTimes(1);
   });
@@ -226,10 +231,53 @@ describe("main application: Gold price period graph service", async () => {
 
     const startDate = new Date("2023-01-01");
     const endDate = new Date("2023-01-07");
-    await mainApplication.summarizeGoldPricePeriodWithGraph(startDate, endDate);
+    await mainApplication.summarizeGoldPricePeriodWithGraph(
+      startDate,
+      endDate,
+      GoldPriceGraphType.DAY
+    );
 
-    expect(graphSpy).toHaveBeenCalledWith(startDate, endDate);
+    expect(graphSpy).toHaveBeenCalledWith(
+      startDate,
+      endDate,
+      GoldPriceGraphType.DAY
+    );
     expect(outputGraphSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should output only message when graph is not available", async () => {
+    const graphSpy = vi
+      .spyOn(GoldPricePeriodGraph.prototype, "getGoldPricePeriodGraph")
+      .mockReturnValueOnce(
+        Promise.resolve({
+          chartAsBuffer: undefined,
+          description: "test",
+        })
+      );
+
+    const outputGraphSpy = vi
+      .spyOn(OutputChannels.prototype, "outputDataGoldPricePeriodGraph")
+      .mockImplementationOnce(vi.fn());
+
+    const outputMessageSpy = vi
+      .spyOn(OutputChannels.prototype, "outputMessage")
+      .mockImplementationOnce(vi.fn());
+
+    const startDate = new Date("2023-01-01");
+    const endDate = new Date("2023-01-07");
+    await mainApplication.summarizeGoldPricePeriodWithGraph(
+      startDate,
+      endDate,
+      GoldPriceGraphType.DAY
+    );
+
+    expect(graphSpy).toHaveBeenCalledWith(
+      startDate,
+      endDate,
+      GoldPriceGraphType.DAY
+    );
+    expect(outputGraphSpy).not.toHaveBeenCalled();
+    expect(outputMessageSpy).toHaveBeenCalledTimes(1);
   });
 });
 

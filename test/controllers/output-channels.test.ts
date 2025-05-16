@@ -98,4 +98,10 @@ describe("send the summary information to the defined channels", async () => {
     });
     expect(outputGraphSpy).not.toHaveBeenCalled();
   });
+
+  it("should output message to all channels", async () => {
+    const outputMessageSpy = vi.spyOn(terminalOutput, "outputMessage");
+    await outputChannels.outputMessage("test");
+    expect(outputMessageSpy).toHaveBeenCalled();
+  });
 });

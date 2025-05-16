@@ -1,28 +1,27 @@
-import { FirestoreRepo } from "~/repositories/firebase/firestore/firestore.ts";
 import { formatDateAsDDMMYYYY, getFormattedDate } from "~/utils/date-utils.ts";
 import { GoldPricePeriodGraphData } from "~/models/gold-price-period-graph.ts";
-import { Timestamp } from "firebase-admin/firestore";
 import { convertGoldPricePeriodGraphToString } from "~/services/outputs/output-utils.ts";
-import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
 import { GoldPriceGraphType } from "~/models/gold-price-graph.ts";
-import { GoldPricePersisted } from "~/models/gold-price.ts";
+import { GoldPriceAggregate, TimePeriod } from "~/models/gold-price.ts";
 import GeneratePriceGraph from "~/services/graph/generate-price-graph.ts";
+import {
+  GoldPriceDbRepository,
+  PriceRangeData,
+} from "~/repositories/database/gold-price-db-repository.ts";
+import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
+import { HuasenghengDataType } from "~/models/huasengheng.ts";
 
 export default class GoldPricePeriodGraph {
-  private HUASENGHENG_ID = "huasengheng-current-price-id";
   private MIN_PRICE_BAR_HEIGHT = 20;
 
-  private FIRESTORE_COLLECTION_PRICE_RECORD =
-    process.env.FIRESTORE_COLLECTION_PRICE_RECORD!;
-
-  private _firestoreRepo: FirestoreRepo;
   private _huasengheng: Huasengheng;
   private _generatePriceGraph: GeneratePriceGraph;
+  private _goldPriceDbRepo: GoldPriceDbRepository;
 
   constructor() {
-    this._firestoreRepo = new FirestoreRepo();
-    this._huasengheng = new Huasengheng();
     this._generatePriceGraph = new GeneratePriceGraph();
+    this._goldPriceDbRepo = new GoldPriceDbRepository();
+    this._huasengheng = new Huasengheng();
   }
 
   async getGoldPricePeriodGraph(
@@ -31,89 +30,127 @@ export default class GoldPricePeriodGraph {
     graphType: GoldPriceGraphType
   ): Promise<GoldPricePeriodGraphData> {
     console.log(
-      `📊 Getting gold price period graph from collection ${
-        this.FIRESTORE_COLLECTION_PRICE_RECORD
-      } from ${getFormattedDate(startDate)} to ${getFormattedDate(endDate)}`
+      `📊 Getting gold price period graph for period from ${getFormattedDate(
+        startDate
+      )} to ${getFormattedDate(endDate)}`
     );
-
-    const promises = [
-      this._firestoreRepo.getDocumentsByDatetime<GoldPricePersisted>(
-        this.FIRESTORE_COLLECTION_PRICE_RECORD,
-        startDate,
-        endDate
-      ),
-    ] as any[];
 
     // Check if endDate is today or in the future
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const endDateIsToday = endDate.getTime() >= today.getTime();
 
-    // Only fetch current price if endDate includes today
-    if (endDateIsToday) {
-      console.log("🔍 Fetching huasengheng current price");
-      promises.push(this._huasengheng.getCurrentHuasenghengPrice());
-    } else {
-      console.log(
-        "🚫 End date is not today, skipping huasengheng current price"
+    // Determine the appropriate period based on graph type
+    let period: TimePeriod;
+    switch (graphType) {
+      case GoldPriceGraphType.HOUR:
+      case GoldPriceGraphType.HOUR_WITH_DAY:
+        period = "hour";
+        break;
+      case GoldPriceGraphType.MONTH:
+        period = "month";
+        break;
+      case GoldPriceGraphType.YEAR:
+        period = "year";
+        break;
+      case GoldPriceGraphType.DAY:
+      default:
+        period = "day";
+    }
+
+    try {
+      // Prepare promises array for parallel execution
+      const promisesToAwait: Promise<any>[] = [
+        this._goldPriceDbRepo.getAggregatedDataByPeriod(
+          period,
+          startDate,
+          endDate
+        ),
+        this._goldPriceDbRepo.getPriceRangeData(startDate, endDate),
+      ];
+
+      // Add Huasengheng promise if end date is today
+      if (endDateIsToday) {
+        console.log("🔍 Fetching huasengheng current price");
+        // Add the promise with error handling
+        promisesToAwait.push(
+          this._huasengheng.getCurrentHuasenghengPrice().catch((error) => {
+            console.error("Error fetching huasengheng data:", error);
+            return undefined;
+          })
+        );
+      } else {
+        console.log(
+          "🚫 End date is not today, skipping huasengheng current price"
+        );
+      }
+
+      // Execute all promises in parallel
+      const results = await Promise.all(promisesToAwait);
+
+      // Extract results
+      const aggregatedData = results[0] as GoldPriceAggregate[];
+      const priceRangeData = results[1] as PriceRangeData;
+      const huasenghengData = endDateIsToday
+        ? (results[2] as HuasenghengDataType | undefined)
+        : undefined;
+
+      console.log(`🔎 Found ${aggregatedData.length} aggregated data points`);
+      console.log(`📊 Price range data:`, priceRangeData);
+
+      if (huasenghengData) {
+        console.log(`🔎 Huasengheng current price data: `, huasenghengData);
+      } else if (endDateIsToday) {
+        console.log("⚠️ Huasengheng data not available");
+      }
+
+      // Check if we have any data
+      if (aggregatedData.length === 0 && !huasenghengData) {
+        return {
+          dataPeriod: {
+            startDate,
+            endDate,
+          },
+          chartAsBuffer: undefined,
+          description: `❌ ไม่พบข้อมูลราคาทองคำสำหรับช่วงวันที่ ${getFormattedDate(
+            startDate
+          )} ถึง ${getFormattedDate(endDate)}`,
+        };
+      }
+
+      // Generate the chart with all available data
+      return this.generateGoldPriceChartFromAggregateData(
+        aggregatedData,
+        priceRangeData,
+        huasenghengData,
+        startDate,
+        endDate,
+        graphType
       );
-    }
+    } catch (error) {
+      console.error("Error fetching data:", error);
 
-    const result = await Promise.allSettled(promises);
-
-    const goldPriceData =
-      /* c8 ignore next */ result?.[0]?.status === "fulfilled"
-        ? result[0].value
-        : /* c8 ignore next */ [];
-
-    const huasenghengData =
-      endDateIsToday && result?.[1]?.status === "fulfilled"
-        ? /* c8 ignore next */ result[1].value
-        : /* c8 ignore next */ undefined;
-
-    console.log(`🔎 Found ${goldPriceData.length} documents`);
-    console.log(`🔎 Huasengheng data: `, huasenghengData);
-
-    if (huasenghengData) {
-      console.log("📊 Adding huasengheng data to gold price data");
-      goldPriceData.push({
-        createdDateTime: Timestamp.now(),
-        currentPrice: huasenghengData,
-        priceAlert: true,
-        priceDiff: 0,
-        id: this.HUASENGHENG_ID,
-      });
-    }
-    if (goldPriceData.length === 0) {
       return {
         dataPeriod: {
           startDate,
           endDate,
         },
         chartAsBuffer: undefined,
-        description: `❌ ไม่พบข้อมูลราคาทองคำสำหรับช่วงวันที่ ${getFormattedDate(
+        description: `❌ เกิดข้อผิดพลาดในการดึงข้อมูลราคาทองคำสำหรับช่วงวันที่ ${getFormattedDate(
           startDate
         )} ถึง ${getFormattedDate(endDate)}`,
       };
     }
-
-    return this.generateGoldPriceChart(
-      goldPriceData,
-      startDate,
-      endDate,
-      graphType
-    );
   }
 
-  private async generateGoldPriceChart(
-    goldPriceData: GoldPricePersisted[],
+  private async generateGoldPriceChartFromAggregateData(
+    aggregatedData: GoldPriceAggregate[],
+    priceRangeData: PriceRangeData,
+    huasenghengData: HuasenghengDataType | undefined,
     startDate: Date,
     endDate: Date,
     graphType: GoldPriceGraphType
   ): Promise<GoldPricePeriodGraphData> {
-    // Group data by day
-    const groupedData = this.groupData(goldPriceData, graphType);
-
     const chartTitle =
       graphType === GoldPriceGraphType.HOUR
         ? `ราคาทองคำ (${getFormattedDate(endDate)})`
@@ -122,15 +159,22 @@ export default class GoldPricePeriodGraph {
           )})`;
 
     // Prepare chart data
-    const { labels, dataArray } = this.prepareChartData(groupedData, graphType);
-
-    // Ensure labels has at least 10 elements
-    const dataArrayForLineChart = dataArray.map(
-      (item) =>
-        ((item?.[0] /* c8 ignore next */ ?? 0) +
-          (item?.[1] /* c8 ignore next */ ?? 0)) /
-        2
+    const { labels, dataArray } = this.prepareChartDataFromAggregates(
+      aggregatedData,
+      graphType
     );
+
+    // Create properly typed line chart data array
+    const dataArrayForLineChart = dataArray.map((item) => {
+      // Ensure both values are numbers
+      const min =
+        typeof item[0] === "string" ? parseFloat(item[0]) : Number(item[0]);
+      const max =
+        typeof item[1] === "string" ? parseFloat(item[1]) : Number(item[1]);
+      return (min + max) / 2;
+    });
+
+    console.log("Line chart data:", dataArrayForLineChart);
 
     const imageBuffer = await this._generatePriceGraph.generatePriceGraph({
       labels,
@@ -139,7 +183,12 @@ export default class GoldPricePeriodGraph {
       chartTitle,
     });
 
-    const priceData = this.extractPriceData(goldPriceData);
+    // Extract price data for description using the priceRangeData and huasengheng data
+    const priceData = this.extractPriceDataWithRangeData(
+      aggregatedData,
+      priceRangeData,
+      huasenghengData
+    );
 
     const description = `${chartTitle}\n
     ${convertGoldPricePeriodGraphToString(priceData)}
@@ -157,23 +206,94 @@ export default class GoldPricePeriodGraph {
     };
   }
 
-  private prepareChartData(
-    groupedData: Record<string, GoldPricePersisted[]>,
+  private prepareChartDataFromAggregates(
+    aggregatedData: GoldPriceAggregate[],
     graphType: GoldPriceGraphType
   ) {
-    // Get the keys (labels)
-    let labels = Object.keys(groupedData);
+    // Get the labels based on date_time
+    let labels: string[] = [];
+    const dataArray: number[][] = [];
 
-    // Process labels for HOUR_WITH_DAY
-    if (graphType === GoldPriceGraphType.HOUR_WITH_DAY) {
+    for (const record of aggregatedData) {
+      const date = record.date_time;
+      let label: string;
+
+      switch (graphType) {
+        case GoldPriceGraphType.HOUR:
+          // Format: HH:00
+          label = `${date.getHours()}:00`;
+          break;
+        case GoldPriceGraphType.HOUR_WITH_DAY:
+          // Format: DD/MM/YYYY HH:00
+          label = `${formatDateAsDDMMYYYY(date)} ${date.getHours()}:00`;
+          break;
+        case GoldPriceGraphType.MONTH:
+          // Format: MM/YYYY
+          label = `${date.getMonth() + 1}/${date.getFullYear()}`;
+          break;
+        case GoldPriceGraphType.YEAR:
+          // Format: YYYY
+          label = `${date.getFullYear()}`;
+          break;
+        case GoldPriceGraphType.DAY:
+        default:
+          // Format: DD/MM/YYYY
+          label = formatDateAsDDMMYYYY(date);
+      }
+
+      labels.push(label);
+
+      // Explicitly convert to numbers to ensure consistent types
+      const minPrice =
+        typeof record.min_sell === "string"
+          ? parseFloat(record.min_sell)
+          : Number(record.min_sell);
+      const maxPrice =
+        typeof record.max_sell === "string"
+          ? parseFloat(record.max_sell)
+          : Number(record.max_sell);
+
+      if (minPrice === maxPrice) {
+        // If the min and max price are the same, we need to add a small buffer to display the bar
+        dataArray.push([
+          minPrice - this.MIN_PRICE_BAR_HEIGHT,
+          minPrice + this.MIN_PRICE_BAR_HEIGHT,
+        ]);
+      } else {
+        dataArray.push([minPrice, maxPrice]);
+      }
+    }
+
+    // Process labels for HOUR_WITH_DAY to hide repeated dates
+    if (graphType === GoldPriceGraphType.HOUR_WITH_DAY && labels.length > 0) {
       console.log(`📊 Processing labels for HOUR_WITH_DAY`);
-      // Sort labels chronologically - we expect format "DD/MM/YYYY HH:00"
-      labels = labels.sort((a, b) => {
-        // Simple string comparison works because of the DD/MM/YYYY format
-        return a.localeCompare(b);
-      });
+      // Sort labels chronologically
+      const sortedIndexes = labels
+        .map((_, i) => i)
+        .sort((a, b) => {
+          const labelA = labels[a] || "";
+          const labelB = labels[b] || "";
+          return labelA.localeCompare(labelB);
+        });
 
-      // Process labels to hide repeated dates
+      // Create new arrays with sorted data
+      const sortedLabels: string[] = [];
+      const sortedDataArray: number[][] = [];
+
+      for (const idx of sortedIndexes) {
+        const label = labels[idx];
+        const data = dataArray[idx];
+
+        if (label !== undefined && data !== undefined) {
+          sortedLabels.push(label);
+          sortedDataArray.push(data);
+        }
+      }
+
+      labels = sortedLabels;
+      dataArray.length = 0; // Clear the array
+      dataArray.push(...sortedDataArray); // Add sorted data
+
       let previousDate: string | null = null;
       labels = labels.map((label) => {
         // Split by space to separate date and time
@@ -197,33 +317,8 @@ export default class GoldPricePeriodGraph {
       });
     }
 
-    console.log(`📊 Grouped data: `, labels);
-
-    // Prepare price data arrays
-    const highestValues: number[] = [];
-    const lowestValues: number[] = [];
-    const dataArray: number[][] = [];
-
-    for (const record in groupedData) {
-      const prices =
-        groupedData[record]?.map((item) => item.Sell) /* c8 ignore next */ ||
-        [];
-
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      highestValues.push(maxPrice);
-      lowestValues.push(minPrice);
-
-      if (minPrice === maxPrice) {
-        // If the min and max price are the same, we need to add a small buffer to display the bar
-        dataArray.push([
-          minPrice - this.MIN_PRICE_BAR_HEIGHT,
-          minPrice + this.MIN_PRICE_BAR_HEIGHT,
-        ]);
-      } else {
-        dataArray.push([minPrice, maxPrice]);
-      }
-    }
+    console.log(`📊 Prepared ${labels.length} data points for chart`);
+    console.log("Final dataArray:", dataArray);
 
     return {
       labels,
@@ -231,58 +326,15 @@ export default class GoldPricePeriodGraph {
     };
   }
 
-  private groupData(data: GoldPricePersisted[], graphType: GoldPriceGraphType) {
-    const validData = data.filter((item) => {
-      if (!item.createdDateTime || !item.Sell) {
-        return false;
-      }
-      return true;
-    });
-
-    const groupedData: Record<string, GoldPricePersisted[]> = {};
-
-    validData.forEach((item) => {
-      const date = (item.createdDateTime as unknown as Timestamp).toDate();
-      let key: string;
-
-      switch (graphType) {
-        case GoldPriceGraphType.HOUR:
-          // Format: HH:00
-          key = `${date.getHours()}:00`;
-          break;
-        case GoldPriceGraphType.HOUR_WITH_DAY:
-          // Format: DD/MM/YYYY HH:00
-          key = `${formatDateAsDDMMYYYY(date)} ${date.getHours()}:00`;
-          break;
-        case GoldPriceGraphType.MONTH:
-          // Format: MM/YYYY
-          key = `${date.getMonth() + 1}/${date.getFullYear()}`;
-          break;
-        case GoldPriceGraphType.YEAR:
-          // Format: YYYY
-          key = `${date.getFullYear()}`;
-          break;
-        case GoldPriceGraphType.DAY:
-        default:
-          // Format: DD/MM/YYYY (for DAY and any other cases)
-          key = formatDateAsDDMMYYYY(date);
-      }
-
-      if (!groupedData[key]) {
-        groupedData[key] = [];
-      }
-
-      groupedData[key]!.push(item);
-    });
-
-    return groupedData;
-  }
-
-  private extractPriceData(data: GoldPricePersisted[]) {
-    // Filter valid data with price information
-    const validData = data.filter((item) => item.createdDateTime && item.Sell);
-
-    if (validData.length === 0) {
+  /**
+   * Extract price data using the price range data from database and huasengheng data if available
+   */
+  private extractPriceDataWithRangeData(
+    aggregatedData: GoldPriceAggregate[],
+    priceRangeData: PriceRangeData,
+    huasenghengData?: HuasenghengDataType
+  ) {
+    if (aggregatedData.length === 0 && !huasenghengData) {
       return {
         minPrice: 0,
         maxPrice: 0,
@@ -292,36 +344,79 @@ export default class GoldPricePeriodGraph {
       };
     }
 
-    // Convert all prices to numbers
-    const prices = validData.map((item) => item.Sell);
+    // Find min and max prices from aggregated data
+    let minPrice = Number.MAX_VALUE;
+    let maxPrice = Number.MIN_VALUE;
 
-    // Find min and max prices
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    console.log(`📊⬆️ Highest value: `, maxPrice);
-    console.log(`📊⬇️ Lowest value: `, minPrice);
+    for (const record of aggregatedData) {
+      // Ensure consistent number conversions
+      const min =
+        typeof record.min_sell === "string"
+          ? parseFloat(record.min_sell)
+          : Number(record.min_sell);
+      const max =
+        typeof record.max_sell === "string"
+          ? parseFloat(record.max_sell)
+          : Number(record.max_sell);
 
-    // Sort data by date to find earliest and latest entries
-    const sortedData = [...validData].sort((a, b) => {
-      const dateA = (a.createdDateTime as unknown as Timestamp)
-        .toDate()
-        .getTime();
-      const dateB = (b.createdDateTime as unknown as Timestamp)
-        .toDate()
-        .getTime();
-      return dateA - dateB;
-    });
+      if (min < minPrice) {
+        minPrice = min;
+      }
+      if (max > maxPrice) {
+        maxPrice = max;
+      }
+    }
 
-    // Get earliest and latest prices
-    const earliestPrice = sortedData[0]?.Sell /* c8 ignore next */ || 0;
+    // Get earliest price from price range data
+    const earliestPrice =
+      typeof priceRangeData.earliest_price === "string"
+        ? parseFloat(priceRangeData.earliest_price)
+        : Number(priceRangeData.earliest_price);
 
-    console.log(`💰 Latest price: `, sortedData[sortedData.length - 1]);
+    // Get latest price - prioritize Huasengheng data if available
+    let latestPrice;
+    let priceSource: string;
 
-    const latestPrice =
-      sortedData[sortedData.length - 1]?.Sell /* c8 ignore next */ || 0;
+    if (huasenghengData && huasenghengData.Sell) {
+      // Use Huasengheng price if available
+      latestPrice =
+        typeof huasenghengData.Sell === "string"
+          ? parseFloat(huasenghengData.Sell)
+          : Number(huasenghengData.Sell);
+      priceSource = "🧈 Huasengheng API (real-time)";
+    } else {
+      // Otherwise use the latest price from database
+      latestPrice =
+        typeof priceRangeData.latest_price === "string"
+          ? parseFloat(priceRangeData.latest_price)
+          : Number(priceRangeData.latest_price);
+      priceSource = "🗂️ Database record";
+    }
+
+    // Update min/max if Huasengheng price extends the range
+    if (latestPrice > maxPrice) {
+      maxPrice = latestPrice;
+    }
+    if (latestPrice < minPrice && minPrice !== Number.MAX_VALUE) {
+      minPrice = latestPrice;
+    }
+
+    // Ensure we have valid min/max values even with limited data
+    if (minPrice === Number.MAX_VALUE) {
+      minPrice = latestPrice || 0;
+    }
+    if (maxPrice === Number.MIN_VALUE) {
+      maxPrice = latestPrice || 0;
+    }
 
     // Calculate price difference
     const priceDifference = latestPrice - earliestPrice;
+
+    console.log(
+      `👉 First price: ${earliestPrice} at ${priceRangeData.earliest_time}`
+    );
+    console.log(`👉 Latest price: ${latestPrice} (source: ${priceSource})`);
+    console.log(`👉 Price difference: ${priceDifference}`);
 
     return {
       minPrice,

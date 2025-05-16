@@ -151,4 +151,175 @@ describe("GoldPriceDbRepository", () => {
       );
     });
   });
+
+  describe("getPriceRangeData", () => {
+    it("should return price range data when records exist", async () => {
+      // Setup mock dates
+      const startDate = new Date("2023-10-01");
+      const endDate = new Date("2023-10-31");
+
+      // Setup mock query response
+      const mockPriceRangeData = {
+        earliest_price: 2050.75,
+        earliest_time: new Date("2023-10-01T00:00:00.000Z"),
+        latest_price: 2100.5,
+        latest_time: new Date("2023-10-31T23:59:59.000Z"),
+      };
+
+      const mockPool = (repository as any).pool;
+      mockPool.query.mockResolvedValueOnce({
+        rows: [mockPriceRangeData],
+        rowCount: 1,
+      });
+
+      // Execute the method
+      const result = await repository.getPriceRangeData(startDate, endDate);
+
+      // Verify the query was called with correct parameters
+      expect(mockPool.query).toHaveBeenCalledTimes(1);
+      expect(mockPool.query.mock.calls[0][0]).toContain("SELECT");
+      expect(mockPool.query.mock.calls[0][1]).toEqual([startDate, endDate]);
+
+      // Verify the returned result
+      expect(result).toEqual(mockPriceRangeData);
+    });
+
+    it("should return default values when no records exist", async () => {
+      // Setup mock dates
+      const startDate = new Date("2023-12-01");
+      const endDate = new Date("2023-12-31");
+
+      // Setup mock query response with empty result
+      const mockPool = (repository as any).pool;
+      mockPool.query.mockResolvedValueOnce({
+        rows: [],
+        rowCount: 0,
+      });
+
+      // Execute the method
+      const result = await repository.getPriceRangeData(startDate, endDate);
+
+      // Verify default values are returned
+      expect(result).toEqual({
+        earliest_price: 0,
+        earliest_time: expect.any(Date),
+        latest_price: 0,
+        latest_time: expect.any(Date),
+      });
+    });
+  });
+
+  describe("getAggregatedDataByPeriod", () => {
+    it("should return aggregated data by hour", async () => {
+      // Setup mock dates
+      const startDate = new Date("2023-10-15");
+      const endDate = new Date("2023-10-16");
+
+      // Setup mock aggregated data
+      const mockAggregatedData = [
+        {
+          date_time: new Date("2023-10-15T00:00:00.000Z"),
+          min_sell: 2075.5,
+          max_sell: 2080.25,
+        },
+        {
+          date_time: new Date("2023-10-15T01:00:00.000Z"),
+          min_sell: 2080.0,
+          max_sell: 2085.5,
+        },
+      ];
+
+      const mockPool = (repository as any).pool;
+      mockPool.query.mockResolvedValueOnce({
+        rows: mockAggregatedData,
+        rowCount: mockAggregatedData.length,
+      });
+
+      // Execute the method
+      const result = await repository.getAggregatedDataByPeriod(
+        "hour",
+        startDate,
+        endDate
+      );
+
+      // Verify the query was called with correct parameters
+      expect(mockPool.query).toHaveBeenCalledTimes(1);
+      expect(mockPool.query.mock.calls[0][0]).toContain("DATE_TRUNC");
+      expect(mockPool.query.mock.calls[0][1]).toEqual([
+        "hour",
+        startDate,
+        endDate,
+      ]);
+
+      // Verify the returned result
+      expect(result).toEqual(mockAggregatedData);
+    });
+
+    it("should return aggregated data by day", async () => {
+      // Setup mock dates
+      const startDate = new Date("2023-10-01");
+      const endDate = new Date("2023-10-31");
+
+      // Setup mock aggregated data
+      const mockAggregatedData = [
+        {
+          date_time: new Date("2023-10-01T00:00:00.000Z"),
+          min_sell: 2050.75,
+          max_sell: 2065.25,
+        },
+        {
+          date_time: new Date("2023-10-02T00:00:00.000Z"),
+          min_sell: 2060.0,
+          max_sell: 2075.5,
+        },
+      ];
+
+      const mockPool = (repository as any).pool;
+      mockPool.query.mockResolvedValueOnce({
+        rows: mockAggregatedData,
+        rowCount: mockAggregatedData.length,
+      });
+
+      // Execute the method
+      const result = await repository.getAggregatedDataByPeriod(
+        "day",
+        startDate,
+        endDate
+      );
+
+      // Verify the query was called with correct parameters
+      expect(mockPool.query).toHaveBeenCalledTimes(1);
+      expect(mockPool.query.mock.calls[0][1]).toEqual([
+        "day",
+        startDate,
+        endDate,
+      ]);
+
+      // Verify the returned result
+      expect(result).toEqual(mockAggregatedData);
+    });
+
+    it("should return empty array when no records exist", async () => {
+      // Setup mock dates
+      const startDate = new Date("2023-12-01");
+      const endDate = new Date("2023-12-31");
+
+      // Setup mock query response with empty result
+      const mockPool = (repository as any).pool;
+      mockPool.query.mockResolvedValueOnce({
+        rows: [],
+        rowCount: 0,
+      });
+
+      // Execute the method
+      const result = await repository.getAggregatedDataByPeriod(
+        "month",
+        startDate,
+        endDate
+      );
+
+      // Verify an empty array is returned
+      expect(result).toEqual([]);
+    });
+  });
 });

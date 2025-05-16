@@ -71,8 +71,8 @@ describe("summarize gold price data from given context", async () => {
         .spyOn(Huasengheng.prototype, "getCurrentHuasenghengPrice")
         .mockReturnValueOnce(
           Promise.resolve({
-            Buy: "41,000",
-            Sell: "40,000",
+            Buy: 41000,
+            Sell: 40000,
           } as HuasenghengDataType)
         );
 

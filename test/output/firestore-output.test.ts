@@ -89,4 +89,12 @@ describe("FirestoreOutput", () => {
       testDescription
     );
   });
+
+  it("should print toString method", () => {
+    // Act
+    const result = firestoreOutput.toString();
+
+    // Assert
+    expect(result).toBeDefined();
+  });
 });

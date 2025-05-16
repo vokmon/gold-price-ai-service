@@ -80,7 +80,7 @@ export default class GeneratePriceGraph {
                 scaleLabel: {
                   display: true,
                   fontSize: this.FONT_SIZE,
-                  labelString: "เวลา/วันที่",
+                  labelString: "วันที่/เวลา",
                 },
                 ticks: {
                   autoSkip: false,
@@ -88,6 +88,11 @@ export default class GeneratePriceGraph {
                 },
               },
             ],
+          },
+          plugins: {
+            tickFormat: {
+              locale: "th-TH",
+            },
           },
         },
       },

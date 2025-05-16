@@ -19,3 +19,11 @@ export type GoldPricePersisted = HuasenghengDataType & {
   id: number;
   createdDateTime: Date;
 };
+
+export interface GoldPriceAggregate {
+  date_time: Date;
+  min_sell: number;
+  max_sell: number;
+}
+
+export type TimePeriod = "hour" | "day" | "month" | "year";

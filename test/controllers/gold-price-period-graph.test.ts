@@ -1,380 +1,356 @@
-// test/controllers/gold-price-period-graph.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { GoldPriceGraphType } from "../../src/models/gold-price-graph";
+import { Timestamp } from "firebase-admin/firestore";
 import GoldPricePeriodGraph from "../../src/controllers/gold-price-period-graph";
-import { HuasenghengDataType, HGoldType } from "../../src/models/huasengheng";
-import Huasengheng from "../../src/services/huasengheng/huasengheng-service";
 
-// This is a more complete mock of FirestoreRepo
-vi.mock("~/repositories/firebase/firestore/firestore.ts", () => {
-  const mockGetDocumentsByDatetime = vi.fn();
+// Mock dependencies
+vi.mock("../../src/repositories/firebase/firestore/firestore", () => ({
+  FirestoreRepo: vi.fn(() => ({
+    getDocumentsByDatetime: vi.fn(),
+  })),
+}));
 
-  return {
-    FirestoreRepo: vi.fn().mockImplementation(() => {
-      return {
-        getDocumentsByDatetime: mockGetDocumentsByDatetime,
-      };
-    }),
-  };
-});
+vi.mock("../../src/services/huasengheng/huasengheng-service", () => ({
+  default: vi.fn(() => ({
+    getCurrentHuasenghengPrice: vi.fn(),
+  })),
+}));
+
+vi.mock("../../src/services/graph/generate-price-graph", () => ({
+  default: vi.fn(() => ({
+    generatePriceGraph: vi.fn(),
+  })),
+}));
 
 describe("GoldPricePeriodGraph", () => {
   let goldPricePeriodGraph: GoldPricePeriodGraph;
-  let huasenghengSpy: ReturnType<typeof vi.spyOn>;
-
-  // Mock environment variable
-  const originalEnv = process.env;
+  let mockFirestoreRepo: any;
+  let mockHuasengheng: any;
+  let mockGeneratePriceGraph: any;
+  let consoleSpy: any;
 
   beforeEach(() => {
-    // Set environment variable before creating instance
-    process.env.FIRESTORE_COLLECTION_PRICE_ALERT = "test-price-alerts";
+    // Save original environment variables
+    process.env.FIRESTORE_COLLECTION_PRICE_RECORD = "gold_prices_test";
 
-    // Clear previous calls to mocks
-    vi.clearAllMocks();
+    // Setup spies
+    consoleSpy = {
+      log: vi.spyOn(console, "log").mockImplementation(() => {}),
+      error: vi.spyOn(console, "error").mockImplementation(() => {}),
+    };
 
-    // Create instance
     goldPricePeriodGraph = new GoldPricePeriodGraph();
 
-    huasenghengSpy = vi.spyOn(
-      Huasengheng.prototype,
-      "getCurrentHuasenghengPrice"
-    );
-
-    const mockHuasenghengData = createMockHuasenghengData(36999);
-    huasenghengSpy.mockResolvedValue(mockHuasenghengData);
+    // Get instances of mocks
+    mockFirestoreRepo = (goldPricePeriodGraph as any)._firestoreRepo;
+    mockHuasengheng = (goldPricePeriodGraph as any)._huasengheng;
+    mockGeneratePriceGraph = (goldPricePeriodGraph as any)._generatePriceGraph;
   });
 
   afterEach(() => {
-    // Restore environment
-    process.env = originalEnv;
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
+    consoleSpy.log.mockRestore();
+    consoleSpy.error.mockRestore();
   });
 
   describe("getGoldPricePeriodGraph", () => {
-    it("should fetch data from Firestore and generate chart", async () => {
-      // Arrange
-      const startDate = new Date("2023-01-01");
-      const endDate = new Date("2023-01-07");
+    it("should return data with chart for valid date range with data", async () => {
+      // Setup mock data
+      const startDate = new Date("2023-10-01");
+      const endDate = new Date("2023-10-03");
+      const graphType = GoldPriceGraphType.DAY;
 
-      // Create mock data with the structure expected in Firestore documents
-      const mockData = [
+      const mockGoldPriceData = [
         {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000),
+          id: "1",
+          Sell: 2000,
+          Buy: 2050,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-01T10:00:00Z")),
         },
         {
-          createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData(35500),
+          id: "2",
+          Sell: 2100,
+          Buy: 2150,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-02T10:00:00Z")),
         },
         {
-          createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          currentPrice: createMockHuasenghengData(36000),
+          id: "3",
+          Sell: 2050,
+          Buy: 2100,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-03T10:00:00Z")),
         },
       ];
 
-      // Mock the getDocumentsByDatetime call
-      // We need to access the mock implementation
-      const mockRepo = (goldPricePeriodGraph as any)._firestoreRepo;
-      mockRepo.getDocumentsByDatetime.mockResolvedValue(mockData);
+      const mockImageBuffer = Buffer.from("mock-image-data");
 
-      // Act
+      // Setup mock responses
+      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue(
+        mockGoldPriceData
+      );
+      mockGeneratePriceGraph.generatePriceGraph.mockResolvedValue(
+        mockImageBuffer
+      );
+
+      // Execute the method
       const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
         startDate,
+        endDate,
+        graphType
+      );
+
+      // Verify firestore was called with correct parameters
+      expect(mockFirestoreRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
+        "gold_prices_test",
+        startDate,
         endDate
       );
 
-      // Assert
-      expect(mockRepo.getDocumentsByDatetime).toHaveBeenCalledWith(
-        "test-price-alerts",
+      // Verify chart generation was called
+      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalled();
+
+      // Verify returned result
+      expect(result).toEqual({
+        dataPeriod: {
+          startDate,
+          endDate,
+        },
+        chartAsBuffer: mockImageBuffer,
+        description: expect.stringContaining("ราคาทองคำ"),
+      });
+    });
+
+    it("should include huasengheng data when end date is today", async () => {
+      // Setup today's date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Setup mock data
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - 2); // 2 days ago
+      const endDate = new Date(today);
+      const graphType = GoldPriceGraphType.DAY;
+
+      const mockGoldPriceData = [
+        {
+          id: "1",
+          Sell: 2000,
+          Buy: 2050,
+          createdDateTime: Timestamp.fromDate(new Date(startDate)),
+        },
+      ];
+
+      const mockHuasenghengData = {
+        sell: 2100,
+        buy: 2150,
+        sell_change: 50,
+        buy_change: 50,
+      };
+
+      const mockImageBuffer = Buffer.from("mock-image-data");
+
+      // Setup mock responses
+      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue(
+        mockGoldPriceData
+      );
+      mockHuasengheng.getCurrentHuasenghengPrice.mockResolvedValue(
+        mockHuasenghengData
+      );
+      mockGeneratePriceGraph.generatePriceGraph.mockResolvedValue(
+        mockImageBuffer
+      );
+
+      // Execute the method
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
         startDate,
         endDate,
-        {
-          fields: ["createdDateTime", "currentPrice"],
-        }
+        graphType
       );
 
+      // Verify huasengheng service was called
+      expect(mockHuasengheng.getCurrentHuasenghengPrice).toHaveBeenCalled();
+
+      // Verify chart generation was called
+      expect(mockGeneratePriceGraph.generatePriceGraph).toHaveBeenCalled();
+
+      // Verify returned result
       expect(result).toEqual({
         dataPeriod: {
           startDate,
           endDate,
         },
-        chartAsBuffer: expect.any(Buffer),
+        chartAsBuffer: mockImageBuffer,
         description: expect.stringContaining("ราคาทองคำ"),
       });
     });
 
-    it("should correctly parse gold prices with commas", async () => {
-      // Arrange - Create data with various price formats
-      const mockData = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000), // Format with 1 comma
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T12:00:00") },
-          currentPrice: createMockHuasenghengData(1234567), // Format with multiple commas
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData(35750), // Format with no commas
-        },
-      ];
+    it("should return error message when no data found", async () => {
+      // Setup mock data
+      const startDate = new Date("2023-12-01");
+      const endDate = new Date("2023-12-03");
+      const graphType = GoldPriceGraphType.DAY;
 
-      // Get direct access to the groupData method to prepare our data
-      const groupData = (goldPricePeriodGraph as any).groupData.bind(
-        goldPricePeriodGraph
-      );
-      const { groupedData } = groupData(mockData);
+      // Return empty data
+      mockFirestoreRepo.getDocumentsByDatetime.mockResolvedValue([]);
 
-      // Manually test the price parsing logic
-      // This directly tests the line you wanted to verify: parseInt(item.currentPrice.Sell.replace(/,/g, ""))
-      const parsedPrices: number[] = [];
-      for (const record in groupedData) {
-        groupedData[record]?.forEach((item) => {
-          // This is the exact logic we want to test
-          const parsedPrice = item.currentPrice.Sell;
-          parsedPrices.push(parsedPrice);
-        });
-      }
-
-      // Assert the prices were correctly parsed without commas
-      expect(parsedPrices).toContain(35000);
-      expect(parsedPrices).toContain(1234567);
-      expect(parsedPrices).toContain(35750);
-    });
-  });
-
-  describe("groupData", () => {
-    it("should skip items with missing data", () => {
-      // Arrange
-      interface IncompleteFirestoreDoc {
-        createdDateTime?: { toDate: () => Date };
-        currentPrice?: Partial<HuasenghengDataType>;
-      }
-
-      const data: IncompleteFirestoreDoc[] = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000),
-        },
-        {
-          // Missing createdDateTime
-          currentPrice: createMockHuasenghengData(35500),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          // Missing currentPrice
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-03T10:00:00") },
-          currentPrice: {}, // Missing Sell property
-        },
-      ];
-
-      // Use the private method via type assertion
-      const groupData = (goldPricePeriodGraph as any).groupData.bind(
-        goldPricePeriodGraph
-      );
-
-      // Act
-      const result = groupData(data);
-
-      // Assert
-      expect(result).toHaveProperty("groupedData");
-      expect(result).toHaveProperty("isSameDay");
-
-      // Should only have data for Jan 1 since other entries have missing required data
-      const keys = Object.keys(result.groupedData);
-      expect(keys.length).toBe(1);
-
-      // Verify Jan 1 data exists (using partial matching)
-      const jan1DataKey = keys.find((key) => key.includes("10:00"));
-      expect(jan1DataKey).toBeTruthy();
-      expect(result.groupedData[jan1DataKey!].length).toBe(1);
-    });
-
-    it("should group data by hour when all data is on the same day", () => {
-      // Arrange
-      const data = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData(35500),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T16:00:00") },
-          currentPrice: createMockHuasenghengData(36000),
-        },
-      ];
-
-      // Use the private method via type assertion
-      const groupData = (goldPricePeriodGraph as any).groupData.bind(
-        goldPricePeriodGraph
-      );
-
-      // Act
-      const result = groupData(data);
-
-      // Assert
-      expect(result).toHaveProperty("groupedData");
-      expect(result).toHaveProperty("isSameDay");
-      expect(result.isSameDay).toBe(true); // All data is on the same day
-      expect(Object.keys(result.groupedData)).toHaveLength(3);
-      // Check that the hours are formatted correctly
-      const keys = Object.keys(result.groupedData);
-      expect(keys).toContain("10:00");
-      expect(keys).toContain("14:00");
-      expect(keys).toContain("16:00");
-    });
-
-    it("should group data by month when data spans more than 2 months", () => {
-      // Arrange
-      const data = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-03-15T14:00:00") },
-          currentPrice: createMockHuasenghengData(35500),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-05-20T16:00:00") },
-          currentPrice: createMockHuasenghengData(36000),
-        },
-      ];
-
-      // Use the private method via type assertion
-      const groupData = (goldPricePeriodGraph as any).groupData.bind(
-        goldPricePeriodGraph
-      );
-
-      // Act
-      const result = groupData(data);
-
-      // Assert
-      expect(result).toHaveProperty("groupedData");
-      expect(result).toHaveProperty("isSameDay");
-      expect(result.isSameDay).toBe(false); // Data spans more than one day
-      // Test that we have 3 months of data
-      expect(Object.keys(result.groupedData).length).toBe(3);
-      // We don't assert the exact keys since the month format can vary
-    });
-  });
-
-  describe("generateGoldPriceChart", () => {
-    it("should process data and generate chart correctly", async () => {
-      // Arrange
-      const startDate = new Date("2023-01-01");
-      const endDate = new Date("2023-01-07");
-
-      const mockData = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T14:00:00") },
-          currentPrice: createMockHuasenghengData(35500),
-        },
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-02T10:00:00") },
-          currentPrice: createMockHuasenghengData(36000),
-        },
-      ];
-
-      // Use the private method via type assertion
-      const generateGoldPriceChart = (
-        goldPricePeriodGraph as any
-      ).generateGoldPriceChart.bind(goldPricePeriodGraph);
-
-      // Act
-      const result = await generateGoldPriceChart(mockData, startDate, endDate);
-
-      // Assert
-      expect(result).toEqual({
-        dataPeriod: {
-          startDate,
-          endDate,
-        },
-        chartAsBuffer: expect.any(Buffer),
-        description: expect.stringContaining("ราคาทองคำ"),
-      });
-    });
-
-    it("should handle days with single price point", async () => {
-      // Arrange
-      const startDate = new Date("2023-01-01");
-      const endDate = new Date("2023-01-01"); // Same day
-
-      const mockData = [
-        {
-          createdDateTime: { toDate: () => new Date("2023-01-01T10:00:00") },
-          currentPrice: createMockHuasenghengData(35000), // Only one price for this day
-        },
-      ];
-
-      // Use the private method via type assertion
-      const generateGoldPriceChart = (
-        goldPricePeriodGraph as any
-      ).generateGoldPriceChart.bind(goldPricePeriodGraph);
-
-      // Act
-      const result = await generateGoldPriceChart(mockData, startDate, endDate);
-
-      // Assert
-      expect(result).toEqual({
-        dataPeriod: {
-          startDate,
-          endDate,
-        },
-        chartAsBuffer: expect.any(Buffer),
-        description: expect.stringContaining("ราคาทองคำ"), // Just check for partial match since formatting can be complex
-      });
-    });
-
-    it("should handle empty data", async () => {
-      // Arrange
-      const startDate = new Date("2023-01-01");
-      const endDate = new Date("2023-01-07");
-      const emptyData: any[] = [];
-
-      // Use the private method via type assertion
-      const generateGoldPriceChart = (
-        goldPricePeriodGraph as any
-      ).generateGoldPriceChart.bind(goldPricePeriodGraph);
-
-      // Act
-      const result = await generateGoldPriceChart(
-        emptyData,
+      // Execute the method
+      const result = await goldPricePeriodGraph.getGoldPricePeriodGraph(
         startDate,
-        endDate
+        endDate,
+        graphType
       );
 
-      // Assert
+      // Verify generatePriceGraph was not called
+      expect(mockGeneratePriceGraph.generatePriceGraph).not.toHaveBeenCalled();
+
+      // Verify returned result
       expect(result).toEqual({
         dataPeriod: {
           startDate,
           endDate,
         },
-        chartAsBuffer: expect.any(Buffer),
-        description: expect.stringContaining("ราคาทองคำ"),
+        chartAsBuffer: undefined,
+        description: expect.stringContaining(
+          "❌ ไม่พบข้อมูลราคาทองคำสำหรับช่วงวันที่"
+        ),
+      });
+    });
+  });
+
+  describe("prepareChartData", () => {
+    it("should correctly prepare chart data with min and max prices", async () => {
+      // Mock grouped data
+      const groupedData = {
+        "01/10/2023": [
+          {
+            Sell: 2000,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-01T08:00:00Z")
+            ),
+          },
+          {
+            Sell: 2050,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-01T16:00:00Z")
+            ),
+          },
+        ],
+        "02/10/2023": [
+          {
+            Sell: 2100,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-02T10:00:00Z")
+            ),
+          },
+        ],
+      };
+
+      // Call the private method
+      // @ts-ignore - accessing private method for testing
+      const result = goldPricePeriodGraph.prepareChartData(
+        groupedData,
+        GoldPriceGraphType.DAY
+      );
+
+      // Verify result
+      expect(result).toEqual({
+        labels: ["01/10/2023", "02/10/2023"],
+        dataArray: [
+          [2000, 2050],
+          [2100, 2120],
+        ], // Second bar has MIN_PRICE_BAR_HEIGHT (20) added
+      });
+    });
+
+    it("should process HOUR_WITH_DAY format labels correctly", async () => {
+      // Mock grouped data with HOUR_WITH_DAY format
+      const groupedData = {
+        "01/10/2023 10:00": [
+          {
+            Sell: 2000,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-01T10:00:00Z")
+            ),
+          },
+        ],
+        "01/10/2023 14:00": [
+          {
+            Sell: 2050,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-01T14:00:00Z")
+            ),
+          },
+        ],
+        "02/10/2023 10:00": [
+          {
+            Sell: 2100,
+            createdDateTime: Timestamp.fromDate(
+              new Date("2023-10-02T10:00:00Z")
+            ),
+          },
+        ],
+      };
+
+      // Call the private method
+      // @ts-ignore - accessing private method for testing
+      const result = goldPricePeriodGraph.prepareChartData(
+        groupedData,
+        GoldPriceGraphType.HOUR_WITH_DAY
+      );
+
+      // Verify result - for the second label of the same day, only time should be shown
+      expect(result.labels).toEqual([
+        "01/10/2023 10:00",
+        "14:00",
+        "02/10/2023 10:00",
+      ]);
+    });
+  });
+
+  describe("extractPriceData", () => {
+    it("should correctly extract price data with min, max, and price difference", async () => {
+      // Mock gold price data
+      const goldPriceData = [
+        {
+          Sell: 2000,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-01T10:00:00Z")),
+        },
+        {
+          Sell: 2050,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-02T10:00:00Z")),
+        },
+        {
+          Sell: 2100,
+          createdDateTime: Timestamp.fromDate(new Date("2023-10-03T10:00:00Z")),
+        },
+      ];
+
+      // Call the private method
+      // @ts-ignore - accessing private method for testing
+      const result = goldPricePeriodGraph.extractPriceData(goldPriceData);
+
+      // Verify result
+      expect(result).toEqual({
+        minPrice: 2000,
+        maxPrice: 2100,
+        priceDifference: 100, // 2100 - 2000
+        earliestPrice: 2000,
+        latestPrice: 2100,
+      });
+    });
+
+    it("should return default values for empty data", async () => {
+      // Call the private method with empty data
+      // @ts-ignore - accessing private method for testing
+      const result = goldPricePeriodGraph.extractPriceData([]);
+
+      // Verify result
+      expect(result).toEqual({
+        minPrice: 0,
+        maxPrice: 0,
+        priceDifference: 0,
+        earliestPrice: 0,
+        latestPrice: 0,
       });
     });
   });
 });
-
-// Helper function to create a mock HuasenghengDataType object
-function createMockHuasenghengData(sellPrice: number): HuasenghengDataType {
-  return {
-    id: new Date().getTime(),
-    Buy: sellPrice - 50,
-    Sell: sellPrice,
-    TimeUpdate: "2023-01-01T10:00:00",
-    BuyChange: 0,
-    SellChange: 0,
-    StrTimeUpdate: "อัพเดตล่าสุด วันที่ 1 ม.ค. 2566",
-  };
-}
