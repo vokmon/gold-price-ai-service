@@ -31,20 +31,23 @@ Deno.serve(async (req) => {
 
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-    startDate.setHours(startDate.getHours() - 7); // -7 hours for Thailand timezone
 
     switch (summaryPeriod) {
       case "day":
+        startDate.setHours(startDate.getHours() - 7); // -7 hours for Thailand timezone
         break;
       case "week":
+        startDate.setHours(startDate.getHours() - 7); // -7 hours for Thailand timezone
         startDate.setDate(startDate.getDate() - 6); // -6 days to get the start date of the week
         break;
       case "month":
         startDate.setDate(1);
+        startDate.setHours(startDate.getHours() - 7); // -7 hours for Thailand timezone
         endDate.setDate(endDate.getDate() - 1); // -1 day to get the end date of the month
         break;
       case "year":
         startDate.setMonth(0, 1);
+        startDate.setHours(startDate.getHours() - 7); // -7 hours for Thailand timezone
         endDate.setDate(endDate.getDate() - 1); // -1 day to get the end date of the year
         break;
       default:
