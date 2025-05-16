@@ -100,7 +100,10 @@ export default class GeneratePriceGraph {
       },
       body: JSON.stringify(chartConfig),
     });
-
+    if (!response.ok) {
+      console.error(`❌ Failed to generate chart: ${response.statusText}`);
+      return null;
+    }
     const imageData = await response.arrayBuffer();
     const imageBuffer = new Uint8Array(imageData);
 
