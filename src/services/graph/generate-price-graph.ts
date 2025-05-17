@@ -4,8 +4,8 @@ export default class GeneratePriceGraph {
   private FONT_SIZE = 26;
   private FONT_SIZE_TITLE = 22;
   private MIN_LABELS = 10;
-  private OFFSET_AXIS_BOTTOM = 100;
-  private OFFSET_AXIS_TOP = 200;
+  private OFFSET_AXIS_BOTTOM = 150;
+  private OFFSET_AXIS_TOP = 150;
 
   async generatePriceGraph({
     labels,
@@ -81,6 +81,7 @@ export default class GeneratePriceGraph {
                   labelString: "ราคา (บาท)",
                 },
                 ticks: {
+                  beginAtZero: false,
                   fontSize: this.FONT_SIZE_TITLE,
                   min:
                     lowestPrice > 0
