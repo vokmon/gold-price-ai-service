@@ -17,12 +17,17 @@ export class GoldPriceDataRecorder {
 
   async recordGoldPriceData(req: any) {
     const marketStatus = await this.huasengheng.getMarketStatus();
-    console.log("🛒 Market status: ", marketStatus);
+    console.log(
+      `🛒  Market status: ${marketStatus.MarketStatus === "ON" ? "" : ""}${
+        marketStatus.MarketStatus === "ON" ? "🟢" : "🔴"
+      }`,
+      marketStatus
+    );
 
-    if (marketStatus.MarketStatus !== "ON") {
-      console.log("🔴 Market is off. No price recording.");
-      return;
-    }
+    // if (marketStatus.MarketStatus !== "ON") {
+    //   console.log("🔴 Market is off. No price recording.");
+    //   return;
+    // }
 
     const price = await this.huasengheng.getCurrentHuasenghengPrice();
     if (!price) {
