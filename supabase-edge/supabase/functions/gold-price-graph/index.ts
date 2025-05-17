@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     endDate.setMinutes(endDate.getMinutes() + 1); // Add 1 minute to avoid the current time
 
     const startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
+    startDate.setHours(2, 30, 0, 0);
 
     switch (summaryPeriod) {
       case "day":

@@ -4,7 +4,8 @@ export default class GeneratePriceGraph {
   private FONT_SIZE = 26;
   private FONT_SIZE_TITLE = 22;
   private MIN_LABELS = 10;
-  private OFFSET_AXIS = 100;
+  private OFFSET_AXIS_BOTTOM = 100;
+  private OFFSET_AXIS_TOP = 200;
 
   async generatePriceGraph({
     labels,
@@ -27,7 +28,9 @@ export default class GeneratePriceGraph {
 
     console.log(`🔖 All data: `, allData);
     const lowestPrice = Math.min(...allData);
+    const highestPrice = Math.max(...allData);
     console.log(`🔖 Lowest price: `, lowestPrice);
+    console.log(`🔖 Highest price: `, highestPrice);
 
     const chartConfig = {
       width: this.CHART_WIDTH,
@@ -81,7 +84,11 @@ export default class GeneratePriceGraph {
                   fontSize: this.FONT_SIZE_TITLE,
                   min:
                     lowestPrice > 0
-                      ? lowestPrice - this.OFFSET_AXIS
+                      ? lowestPrice - this.OFFSET_AXIS_BOTTOM
+                      : /* c8 ignore next */ undefined,
+                  max:
+                    highestPrice > 0
+                      ? highestPrice + this.OFFSET_AXIS_TOP
                       : /* c8 ignore next */ undefined,
                 },
               },
