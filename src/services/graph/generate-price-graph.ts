@@ -113,17 +113,17 @@ export default class GeneratePriceGraph {
     const imageBuffer = new Uint8Array(imageData);
 
     // THIS IS FOR SAVING THE CHART TO A FILE
-    // const fs = await import("fs/promises");
-    // const path = await import("path");
+    const fs = await import("fs/promises");
+    const path = await import("path");
 
-    // const outputDir = "./output";
-    // await fs.mkdir(outputDir, { recursive: true });
+    const outputDir = "./output";
+    await fs.mkdir(outputDir, { recursive: true });
 
-    // const fileName = `gold-price-chart-${new Date().getTime()}.png`;
-    // const filePath = path.join(outputDir, fileName);
+    const fileName = `gold-price-chart-${new Date().getTime()}.png`;
+    const filePath = path.join(outputDir, fileName);
 
-    // await fs.writeFile(filePath, imageBuffer);
-    // console.log(`Chart has been generated and saved to ${filePath}`);
+    await fs.writeFile(filePath, imageBuffer);
+    console.log(`Chart has been generated and saved to ${filePath}`);
 
     return imageBuffer;
   }

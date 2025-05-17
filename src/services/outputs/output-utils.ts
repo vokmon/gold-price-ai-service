@@ -3,7 +3,7 @@ import {
   getFormattedDate,
 } from "../../utils/date-utils.ts";
 import { GoldPriceSummary } from "../../models/gold-price-summary.ts";
-import { HuasenghengDataType } from "../../models/huasengheng.ts";
+import { HuasenghengDataType, MarketStatus } from "../../models/huasengheng.ts";
 import { GoldPricePeriodSummaryInfo } from "~/models/gold-price-period-summary.ts";
 
 export const convertSummaryDataToString = (summary: GoldPriceSummary) => {
@@ -92,12 +92,14 @@ export const convertGoldPricePeriodGraphToString = ({
   maxPrice,
   latestPrice,
   earliestPrice,
+  marketStatus,
 }: {
   priceDifference: number;
   minPrice: number;
   maxPrice: number;
   latestPrice: number;
   earliestPrice: number;
+  marketStatus: MarketStatus;
 }) => {
   return `
   ${
@@ -116,5 +118,7 @@ export const convertGoldPricePeriodGraphToString = ({
   💰 ราคาเริ่มต้น ${earliestPrice.toLocaleString()} บาท
 
   💹 ต่ำสุด-สูงสุด ${minPrice.toLocaleString()} ถึง ${maxPrice.toLocaleString()} บาท
+
+  ${marketStatus.MarketStatus === "ON" ? "🟢 ตลาดทองคำเปิด" : "🔴 ตลาดทองคำปิด"}
   `;
 };

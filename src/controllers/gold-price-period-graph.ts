@@ -11,7 +11,7 @@ import {
 import GeneratePriceGraph from "~/services/graph/generate-price-graph.ts";
 import { GoldPriceDbRepository } from "~/repositories/database/gold-price-db-repository.ts";
 import Huasengheng from "~/services/huasengheng/huasengheng-service.ts";
-import { HuasenghengDataType } from "~/models/huasengheng.ts";
+import { HuasenghengDataType, MarketStatus } from "~/models/huasengheng.ts";
 
 export default class GoldPricePeriodGraph {
   private MIN_PRICE_BAR_HEIGHT = 20;
@@ -69,6 +69,7 @@ export default class GoldPricePeriodGraph {
           endDate
         ),
         this._goldPriceDbRepo.getPriceRangeData(startDate, endDate),
+        this._huasengheng.getMarketStatus(),
       ];
 
       // Add Huasengheng promise if end date is today
@@ -93,8 +94,9 @@ export default class GoldPricePeriodGraph {
       // Extract results
       const aggregatedData = results[0] as GoldPriceAggregate[];
       const priceRangeData = results[1] as PriceRangeData;
+      const marketStatus = results[2] as MarketStatus;
       const huasenghengData = endDateIsToday
-        ? (results[2] as HuasenghengDataType | undefined)
+        ? (results[3] as HuasenghengDataType | undefined)
         : undefined;
 
       console.log(`🔎 Found ${aggregatedData.length} aggregated data points`);
@@ -121,14 +123,15 @@ export default class GoldPricePeriodGraph {
       }
 
       // Generate the chart with all available data
-      return this.generateGoldPriceChartFromAggregateData(
+      return this.generateGoldPriceChartFromAggregateData({
         aggregatedData,
         priceRangeData,
         huasenghengData,
+        marketStatus,
         startDate,
         endDate,
-        graphType
-      );
+        graphType,
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
 
@@ -145,14 +148,23 @@ export default class GoldPricePeriodGraph {
     }
   }
 
-  private async generateGoldPriceChartFromAggregateData(
-    aggregatedData: GoldPriceAggregate[],
-    priceRangeData: PriceRangeData,
-    huasenghengData: HuasenghengDataType | undefined,
-    startDate: Date,
-    endDate: Date,
-    graphType: GoldPriceGraphType
-  ): Promise<GoldPricePeriodGraphData> {
+  private async generateGoldPriceChartFromAggregateData({
+    aggregatedData,
+    priceRangeData,
+    huasenghengData,
+    marketStatus,
+    startDate,
+    endDate,
+    graphType,
+  }: {
+    aggregatedData: GoldPriceAggregate[];
+    priceRangeData: PriceRangeData;
+    huasenghengData: HuasenghengDataType | undefined;
+    marketStatus: MarketStatus;
+    startDate: Date;
+    endDate: Date;
+    graphType: GoldPriceGraphType;
+  }) {
     const chartTitle =
       graphType === GoldPriceGraphType.HOUR
         ? `ราคาทองคำ (${getFormattedDate(endDate)})`
@@ -186,14 +198,17 @@ export default class GoldPricePeriodGraph {
     });
 
     // Extract price data for description using the priceRangeData and huasengheng data
-    const priceData = this.extractPriceDataWithRangeData(
+    const priceData = this.extractPriceDataWithRangeData({
       aggregatedData,
       priceRangeData,
-      huasenghengData
-    );
+      huasenghengData,
+    });
 
     const description = `${chartTitle}\n
-    ${convertGoldPricePeriodGraphToString(priceData)}
+    ${convertGoldPricePeriodGraphToString({
+      ...priceData,
+      marketStatus,
+    })}
     `;
 
     console.log(`📊📃 Description of the chart: `, description);
@@ -324,11 +339,15 @@ export default class GoldPricePeriodGraph {
   /**
    * Extract price data using the price range data from database and huasengheng data if available
    */
-  private extractPriceDataWithRangeData(
-    aggregatedData: GoldPriceAggregate[],
-    priceRangeData: PriceRangeData,
-    huasenghengData?: HuasenghengDataType
-  ) {
+  private extractPriceDataWithRangeData({
+    aggregatedData,
+    priceRangeData,
+    huasenghengData,
+  }: {
+    aggregatedData: GoldPriceAggregate[];
+    priceRangeData: PriceRangeData;
+    huasenghengData: HuasenghengDataType | undefined;
+  }) {
     if (aggregatedData.length === 0 && !huasenghengData) {
       return {
         minPrice: 0,

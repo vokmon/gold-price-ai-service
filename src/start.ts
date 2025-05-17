@@ -7,8 +7,8 @@ const mainApp = new MainApplication();
 // await mainApp.summarizeGoldPricePeriod(new Date("2025-05-13"), new Date());
 
 await mainApp.summarizeGoldPricePeriodWithGraph(
-  new Date("2025-05-16:00:00:00"),
-  new Date("2025-05-16:23:01:00"),
+  new Date("2025-05-17:00:00:00"),
+  new Date("2025-05-17:23:01:00"),
   GoldPriceGraphType.HOUR_WITH_DAY
 );
 

@@ -89,6 +89,7 @@ describe("get output string from GoldPriceSummary", async () => {
       maxPrice: 12000,
       latestPrice: 11000,
       earliestPrice: 10000,
+      marketStatus: { MarketStatus: "ON" },
     });
     console.log(result);
     expect(result).toBeDefined();
@@ -101,6 +102,7 @@ describe("get output string from GoldPriceSummary", async () => {
       maxPrice: 12000,
       latestPrice: 11000,
       earliestPrice: 10000,
+      marketStatus: { MarketStatus: "ON" },
     });
     console.log(result);
     expect(result).toBeDefined();
@@ -113,6 +115,7 @@ describe("get output string from GoldPriceSummary", async () => {
       maxPrice: 12000,
       latestPrice: 11000,
       earliestPrice: 10000,
+      marketStatus: { MarketStatus: "OFF" },
     });
     console.log(result);
     expect(result).toBeDefined();

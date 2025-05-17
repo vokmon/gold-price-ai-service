@@ -11,7 +11,10 @@ import {
 import GeneratePriceGraph from "../services/graph/generate-price-graph.ts";
 import { GoldPriceDbRepository } from "../repositories/gold-price-supabase-repository.ts";
 import Huasengheng from "../services/huasengheng-service.ts";
-import { HuasenghengDataType } from "../types/huasengheng.type.ts";
+import {
+  HuasenghengDataType,
+  MarketStatus,
+} from "../types/huasengheng.type.ts";
 import OutputChannels from "../outputs/output-channels.ts";
 import TelegramOutput from "../outputs/impl/telegram-output.ts";
 
@@ -71,6 +74,7 @@ export default class GoldPricePeriodGraph {
           endDate
         ),
         this._goldPriceDbRepo.getPriceRangeData(startDate, endDate),
+        this._huasengheng.getMarketStatus(),
       ];
 
       // Add Huasengheng promise if end date is today
@@ -95,8 +99,9 @@ export default class GoldPricePeriodGraph {
       // Extract results
       const aggregatedData = results[0] as GoldPriceAggregate[];
       const priceRangeData = results[1] as PriceRangeData;
+      const marketStatus = results[2] as MarketStatus;
       const huasenghengData = endDateIsToday
-        ? (results[2] as HuasenghengDataType | undefined)
+        ? (results[3] as HuasenghengDataType | undefined)
         : undefined;
 
       console.log(`🔎 Aggregated data:`, aggregatedData);
@@ -123,14 +128,15 @@ export default class GoldPricePeriodGraph {
       }
 
       const goldPricePeriodGraph =
-        await this.generateGoldPriceChartFromAggregateData(
+        await this.generateGoldPriceChartFromAggregateData({
           aggregatedData,
           priceRangeData,
           huasenghengData,
+          marketStatus,
           startDate,
           endDate,
-          graphType
-        );
+          graphType,
+        });
       await this.outputGoldPricePeriodGraph(goldPricePeriodGraph);
       return {
         dataPeriod: {
@@ -155,14 +161,23 @@ export default class GoldPricePeriodGraph {
     }
   }
 
-  private async generateGoldPriceChartFromAggregateData(
-    aggregatedData: GoldPriceAggregate[],
-    priceRangeData: PriceRangeData,
-    huasenghengData: HuasenghengDataType | undefined,
-    startDate: Date,
-    endDate: Date,
-    graphType: GoldPriceGraphType
-  ): Promise<GoldPricePeriodGraphData> {
+  private async generateGoldPriceChartFromAggregateData({
+    aggregatedData,
+    priceRangeData,
+    huasenghengData,
+    marketStatus,
+    startDate,
+    endDate,
+    graphType,
+  }: {
+    aggregatedData: GoldPriceAggregate[];
+    priceRangeData: PriceRangeData;
+    huasenghengData: HuasenghengDataType | undefined;
+    marketStatus: MarketStatus;
+    startDate: Date;
+    endDate: Date;
+    graphType: GoldPriceGraphType;
+  }): Promise<GoldPricePeriodGraphData> {
     const chartTitle =
       graphType === GoldPriceGraphType.HOUR
         ? `ราคาทองคำ (${getFormattedDate(endDate)})`
@@ -203,7 +218,10 @@ export default class GoldPricePeriodGraph {
     );
 
     const description = `${chartTitle}\n
-    ${convertGoldPricePeriodGraphToString(priceData)}
+    ${convertGoldPricePeriodGraphToString({
+      ...priceData,
+      marketStatus,
+    })}
     `;
 
     console.log(`📊📃 Description of the chart: `, description);
