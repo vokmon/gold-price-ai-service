@@ -25,7 +25,7 @@ export const summaryPageTemplate = `
     Your goal is to study the information in the given context to analyze the gold price as best as you can.
     The data for the gold price not in this week should be exluded.
     Use the gold price from huasengheng.com to find out the current gold price.
-    Below you find the information about the gold price:
+    Below you find the information about the gold price, it can be text or html, if it is html, then you should extract the text from the html:
     --------
     {context}
     --------

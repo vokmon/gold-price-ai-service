@@ -60,18 +60,23 @@ export default class GoldPriceDataExtractor {
           wordwrap: 300,
         });
 
-        const result = await GoogleAIService.getInstance().generateFromTemplate(
-          extractInformationPageTemplate,
-          {
-            text,
-            dateRange: dateRange,
-          }
-        );
+        // Reduce the number of calls to the AI service to save cost
+        // const result = await GoogleAIService.getInstance().generateFromTemplate(
+        //   extractInformationPageTemplate,
+        //   {
+        //     text,
+        //     dateRange: dateRange,
+        //   }
+        // );
 
-        console.log(`🌐 Result of ${link} is ${result}`);
+        // console.log(`🌐 Result of ${link} is ${result}`);
+        // return {
+        //   link,
+        //   result,
+        // };
         return {
           link,
-          result,
+          result: text,
         };
       }
 
