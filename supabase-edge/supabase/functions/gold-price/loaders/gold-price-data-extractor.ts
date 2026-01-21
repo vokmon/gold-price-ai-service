@@ -58,7 +58,24 @@ export default class GoldPriceDataExtractor {
 
         const text = convert(content, {
           wordwrap: 300,
+          // Explicitly ignore script and style tags
+          ignoreHref: false,
+          ignoreImage: false,
+          // Remove selectors that might contain CSS/JS
+          selectors: [
+            { selector: "script", format: "skip" },
+            { selector: "style", format: "skip" },
+            { selector: "noscript", format: "skip" },
+          ],
         });
+
+        // Additional cleanup: remove any remaining CSS variable patterns and excessive whitespace
+        const cleanedText = text
+          .replace(/:root\s*\{[^}]*\}/gi, "") // Remove :root CSS blocks
+          .replace(/--[a-zA-Z0-9-]+:\s*[^;]+;/g, "") // Remove CSS variable declarations
+          .replace(/\{[^}]*\}/g, "") // Remove any remaining CSS blocks
+          .replace(/\s+/g, " ") // Replace multiple whitespace with single space
+          .trim();
 
         // Reduce the number of calls to the AI service to save cost
         // const result = await GoogleAIService.getInstance().generateFromTemplate(
@@ -76,7 +93,7 @@ export default class GoldPriceDataExtractor {
         // };
         return {
           link,
-          result: text,
+          result: cleanedText,
         };
       }
 

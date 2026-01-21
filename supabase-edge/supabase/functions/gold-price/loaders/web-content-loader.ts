@@ -30,6 +30,12 @@ export class WebContentLoader {
       // Load the HTML content with Cheerio
       const $ = cheerio.load(html);
 
+      // Remove script, style, and other non-content elements
+      $("script, style, noscript, iframe, embed, object, svg").remove();
+      
+      // Remove elements with style attributes that might contain CSS
+      $("[style]").removeAttr("style");
+      
       // Extract the text content from the HTML
       const pageContent = $("body").text();
 
